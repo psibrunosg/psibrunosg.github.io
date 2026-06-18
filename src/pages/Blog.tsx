@@ -2,7 +2,7 @@
 import { motion } from "framer-motion";
 import { ArrowLeft, Clock, ArrowRight } from "lucide-react";
 import { useEffect } from "react";
-import { posts } from "@/content/posts";
+import { posts } from "@/content/posts-loader";
 import { FloatingNav } from "@/components/ui/FloatingNav";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
 import { SkipLink } from "@/components/shared/SkipLink";
@@ -15,16 +15,16 @@ const navItems = [
   { label: "Blog", href: "/blog" },
 ];
 
-const categoriaMap: Record<string, string> = {
-  Abordagens: "var(--c-accent)",
-  Condicoes: "var(--c-moss)",
-  Publico: "var(--c-warm)",
+const categoriaCor: Record<string, string> = {
+  "Abordagens": "#B05D3A",
+  "Condicoes": "#4A6B47",
+  "Publico": "#8A6A3A",
 };
 
 export default function Blog() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "c");
-    document.title = "Blog | Bruno SG Psicologo | Saude Mental e TCC";
+    document.title = "Blog | Bruno SG Psicologo | Saude Mental TCC Pelotas";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -44,15 +44,8 @@ export default function Blog() {
             Voltar ao site
           </Link>
 
-          <motion.div
-            variants={stagger.container}
-            initial="hidden"
-            animate="visible"
-          >
-            <motion.p
-              variants={fadeUp}
-              className="text-xs tracking-[0.3em] uppercase text-[var(--c-accent)] font-semibold mb-2"
-            >
+          <motion.div variants={stagger.container} initial="hidden" animate="visible">
+            <motion.p variants={fadeUp} className="text-xs tracking-[0.3em] uppercase text-[var(--c-accent)] font-semibold mb-2">
               Conteudo educativo
             </motion.p>
             <motion.h1
@@ -62,52 +55,47 @@ export default function Blog() {
             >
               Blog
             </motion.h1>
-            <motion.p
-              variants={fadeUp}
-              className="text-[var(--c-muted)] max-w-xl mb-16 leading-relaxed"
-            >
+            <motion.p variants={fadeUp} className="text-[var(--c-muted)] max-w-xl mb-16 leading-relaxed">
               Textos sobre saude mental, terapia e o que acontece quando decidimos entender melhor o que sentimos. Sem jargoes, sem respostas prontas.
             </motion.p>
 
             <div className="grid md:grid-cols-2 gap-6">
-              {posts.map((post, i) => (
-                <motion.article
-                  key={post.slug}
-                  variants={fadeUp}
-                  custom={i}
-                  className="group rounded-2xl border border-[var(--c-border)] bg-[var(--c-surface)] hover:border-[var(--c-accent)]/50 transition-colors overflow-hidden"
-                >
-                  <Link to={"/blog/" + post.slug} className="block p-7">
-                    <div className="flex items-center justify-between mb-4">
-                      <span
-                        className="text-xs font-semibold tracking-widest uppercase px-3 py-1 rounded-full"
-                        style={{
-                          color: categoriaMap[post.categoria] ?? "var(--c-accent)",
-                          background: (categoriaMap[post.categoria] ?? "var(--c-accent)") + "18",
-                        }}
+              {posts.map((post, i) => {
+                const cor = categoriaCor[post.categoria] ?? "var(--c-accent)";
+                return (
+                  <motion.article
+                    key={post.slug}
+                    variants={fadeUp}
+                    custom={i}
+                    className="group rounded-2xl border border-[var(--c-border)] bg-[var(--c-surface)] hover:border-[var(--c-accent)]/50 transition-colors overflow-hidden"
+                  >
+                    <Link to={"/blog/" + post.slug} className="block p-7">
+                      <div className="flex items-center justify-between mb-4">
+                        <span
+                          className="text-xs font-semibold tracking-widest uppercase px-3 py-1 rounded-full"
+                          style={{ color: cor, background: cor + "20" }}
+                        >
+                          {post.categoria}
+                        </span>
+                        <span className="flex items-center gap-1 text-xs text-[var(--c-muted)]">
+                          <Clock size={13} aria-hidden="true" />
+                          {post.tempoLeitura}
+                        </span>
+                      </div>
+                      <h2
+                        className="text-xl font-semibold text-[var(--c-text)] mb-2 group-hover:text-[var(--c-accent)] transition-colors"
+                        style={{ fontFamily: "var(--font-heading)" }}
                       >
-                        {post.categoria}
+                        {post.titulo}
+                      </h2>
+                      <p className="text-[var(--c-muted)] text-sm leading-relaxed mb-5">{post.resumo}</p>
+                      <span className="inline-flex items-center gap-1.5 text-sm text-[var(--c-accent)] font-medium">
+                        Ler artigo <ArrowRight size={15} />
                       </span>
-                      <span className="flex items-center gap-1 text-xs text-[var(--c-muted)]">
-                        <Clock size={13} aria-hidden="true" />
-                        {post.tempoLeitura}
-                      </span>
-                    </div>
-                    <h2
-                      className="text-xl font-semibold text-[var(--c-text)] mb-2 group-hover:text-[var(--c-accent)] transition-colors"
-                      style={{ fontFamily: "var(--font-heading)" }}
-                    >
-                      {post.titulo}
-                    </h2>
-                    <p className="text-[var(--c-muted)] text-sm leading-relaxed mb-5">
-                      {post.resumo}
-                    </p>
-                    <span className="inline-flex items-center gap-1.5 text-sm text-[var(--c-accent)] font-medium">
-                      Ler artigo <ArrowRight size={15} />
-                    </span>
-                  </Link>
-                </motion.article>
-              ))}
+                    </Link>
+                  </motion.article>
+                );
+              })}
             </div>
           </motion.div>
         </div>

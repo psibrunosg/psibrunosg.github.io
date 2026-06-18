@@ -2,7 +2,9 @@
 import { motion } from "framer-motion";
 import { ArrowLeft, Clock } from "lucide-react";
 import { useEffect } from "react";
-import { posts, type PostSecao } from "@/content/posts";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { getPost } from "@/content/posts-loader";
 import { FloatingNav } from "@/components/ui/FloatingNav";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
 import { SkipLink } from "@/components/shared/SkipLink";
@@ -16,76 +18,13 @@ const navItems = [
   { label: "Blog", href: "/blog" },
 ];
 
-function renderSecao(s: PostSecao, i: number) {
-  switch (s.tipo) {
-    case "h2":
-      return (
-        <motion.h2
-          key={i}
-          variants={fadeUp}
-          className="text-2xl font-semibold text-[var(--c-text)] mt-10 mb-3"
-          style={{ fontFamily: "var(--font-heading)" }}
-        >
-          {s.texto}
-        </motion.h2>
-      );
-    case "h3":
-      return (
-        <motion.h3
-          key={i}
-          variants={fadeUp}
-          className="text-xl font-semibold text-[var(--c-text)] mt-8 mb-2"
-          style={{ fontFamily: "var(--font-heading)" }}
-        >
-          {s.texto}
-        </motion.h3>
-      );
-    case "p":
-      return (
-        <motion.p
-          key={i}
-          variants={fadeUp}
-          className="text-[var(--c-muted)] leading-relaxed mb-4"
-        >
-          {s.texto}
-        </motion.p>
-      );
-    case "ul":
-      return (
-        <motion.ul key={i} variants={fadeUp} className="space-y-2 mb-6 pl-4">
-          {(s.itens ?? []).map((item, j) => (
-            <li key={j} className="flex items-start gap-2 text-[var(--c-muted)] text-sm leading-relaxed">
-              <span className="w-1.5 h-1.5 rounded-full bg-[var(--c-accent)] mt-2 flex-shrink-0" />
-              {item}
-            </li>
-          ))}
-        </motion.ul>
-      );
-    case "nota":
-      return (
-        <motion.aside
-          key={i}
-          variants={fadeUp}
-          className="mt-10 border-l-4 border-[var(--c-accent)]/40 pl-5 py-2 text-sm text-[var(--c-muted)] italic leading-relaxed bg-[var(--c-surface)] rounded-r-xl"
-          aria-label="Nota informativa"
-        >
-          {s.texto}
-        </motion.aside>
-      );
-    default:
-      return null;
-  }
-}
-
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
-  const post = posts.find((p) => p.slug === slug);
+  const post = slug ? getPost(slug) : undefined;
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "c");
-    if (post) {
-      document.title = post.titulo + " | Bruno SG Psicologo";
-    }
+    if (post) document.title = post.titulo + " | Bruno SG Psicologo";
     return () => document.documentElement.removeAttribute("data-theme");
   }, [post]);
 
@@ -130,30 +69,33 @@ export default function BlogPost() {
               {post.titulo}
             </motion.h1>
 
-            <motion.p
-              variants={fadeUp}
-              className="text-lg text-[var(--c-muted)] mb-8 leading-relaxed"
-            >
+            <motion.p variants={fadeUp} className="text-lg text-[var(--c-muted)] mb-8 leading-relaxed">
               {post.subtitulo}
             </motion.p>
 
-            <motion.hr
-              variants={fadeUp}
-              className="border-[var(--c-border)] mb-8"
-            />
+            <motion.hr variants={fadeUp} className="border-[var(--c-border)] mb-8" />
 
-            <div>
-              {post.secoes.map((s, i) => renderSecao(s, i))}
-            </div>
+            <motion.div
+              variants={fadeUp}
+              className="prose prose-stone max-w-none
+                prose-headings:font-semibold prose-headings:text-[var(--c-text)]
+                prose-p:text-[var(--c-muted)] prose-p:leading-relaxed
+                prose-li:text-[var(--c-muted)] prose-li:leading-relaxed
+                prose-blockquote:border-l-4 prose-blockquote:border-[var(--c-accent)]/40
+                prose-blockquote:bg-[var(--c-surface)] prose-blockquote:rounded-r-xl
+                prose-blockquote:pl-5 prose-blockquote:py-2 prose-blockquote:not-italic
+                prose-blockquote:text-[var(--c-muted)] prose-blockquote:text-sm"
+            >
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {post.conteudo}
+              </ReactMarkdown>
+            </motion.div>
 
             <motion.div
               variants={fadeUp}
               className="mt-16 rounded-2xl bg-[var(--c-bg-dark)] text-white p-8 text-center"
             >
-              <p
-                className="text-2xl font-light mb-4"
-                style={{ fontFamily: "var(--font-display)" }}
-              >
+              <p className="text-2xl font-light mb-4" style={{ fontFamily: "var(--font-display)" }}>
                 Quer conversar sobre isso?
               </p>
               <p className="text-white/60 text-sm mb-6">
@@ -164,10 +106,7 @@ export default function BlogPost() {
 
             <motion.div variants={fadeUp} className="mt-10 flex flex-wrap gap-2">
               {post.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="text-xs px-3 py-1 rounded-full border border-[var(--c-border)] text-[var(--c-muted)]"
-                >
+                <span key={tag} className="text-xs px-3 py-1 rounded-full border border-[var(--c-border)] text-[var(--c-muted)]">
                   {tag}
                 </span>
               ))}

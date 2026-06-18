@@ -20,7 +20,7 @@ import {
   abordagens, faqs, contato, principiosEticos
 } from "@/content/copy";
 import { fadeUp, stagger } from "@/lib/motion";
-import { posts } from "@/content/posts";
+import { posts } from "@/content/posts-loader";
 import { Clock, ArrowRight } from "lucide-react";
 
 const navItems = [

@@ -2,6 +2,9 @@
 import VariantC from "./pages/VariantC";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
+import PacienteHub from "./pages/paciente/Hub";
+import PHQ9 from "./pages/paciente/PHQ9";
+import GAD7 from "./pages/paciente/GAD7";
 
 export default function App() {
   return (
@@ -10,6 +13,9 @@ export default function App() {
         <Route path="/" element={<VariantC />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:slug" element={<BlogPost />} />
+        <Route path="/paciente" element={<PacienteHub />} />
+        <Route path="/paciente/phq9" element={<PHQ9 />} />
+        <Route path="/paciente/gad7" element={<GAD7 />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
