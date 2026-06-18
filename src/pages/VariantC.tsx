@@ -1,4 +1,5 @@
 ﻿import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Leaf, Sprout, Heart } from "lucide-react";
 import { HeroParallax } from "@/components/ui/HeroParallax";
@@ -19,6 +20,8 @@ import {
   abordagens, faqs, contato, principiosEticos
 } from "@/content/copy";
 import { fadeUp, stagger } from "@/lib/motion";
+import { posts } from "@/content/posts";
+import { Clock, ArrowRight } from "lucide-react";
 
 const navItems = [
   { label: "Início",      href: "#hero" },
@@ -27,6 +30,7 @@ const navItems = [
   { label: "Processo",    href: "#processo" },
   { label: "Abordagens",  href: "#abordagens" },
   { label: "FAQ",         href: "#faq" },
+  { label: "Blog",        href: "/blog" },
 ];
 
 export default function VariantC() {
@@ -234,6 +238,10 @@ export default function VariantC() {
 
         <WaveDivider from="var(--c-surface)" to="var(--c-bg)" flip />
 
+        {/* SEO anchors */}
+        <span id="ansiedade-pelotas" className="block" style={{ scrollMarginTop: "80px" }} aria-hidden="true" />
+        <span id="esgotamento-burnout" className="block" aria-hidden="true" />
+
         {/* COMO AJUDO — BENTO */}
         <section id="ajudo" className="py-24 px-6 bg-[var(--c-bg)]">
           <div className="max-w-5xl mx-auto">
@@ -424,7 +432,74 @@ export default function VariantC() {
           </div>
         </section>
 
-        <WaveDivider from="var(--c-surface)" to="var(--c-bg-dark)" />
+
+        <WaveDivider from="var(--c-surface)" to="var(--c-bg)" flip />
+
+        {/* BLOG PREVIEW */}
+        <section className="py-24 px-6 bg-[var(--c-bg)]">
+          <div className="max-w-4xl mx-auto">
+            <motion.div
+              variants={stagger.container}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+            >
+              <motion.p variants={fadeUp} className="text-xs tracking-[0.3em] uppercase text-[var(--c-accent)] font-semibold mb-2">
+                Conteudo educativo
+              </motion.p>
+              <div className="flex items-end justify-between mb-12">
+                <motion.h2
+                  variants={fadeUp}
+                  className="text-3xl md:text-4xl font-semibold text-[var(--c-text)]"
+                  style={{ fontFamily: "var(--font-heading)" }}
+                >
+                  Do blog
+                </motion.h2>
+                <motion.div variants={fadeUp}>
+                  <Link
+                    to="/blog"
+                    className="inline-flex items-center gap-1.5 text-sm text-[var(--c-accent)] font-medium hover:underline"
+                  >
+                    Ver todos <ArrowRight size={15} />
+                  </Link>
+                </motion.div>
+              </div>
+              <div className="grid md:grid-cols-3 gap-5">
+                {posts.slice(0, 3).map((post, i) => (
+                  <motion.article
+                    key={post.slug}
+                    variants={fadeUp}
+                    custom={i}
+                    className="group rounded-2xl border border-[var(--c-border)] bg-[var(--c-surface)] hover:border-[var(--c-accent)]/50 transition-colors"
+                  >
+                    <Link to={"/blog/" + post.slug} className="block p-6">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-xs font-semibold tracking-widest uppercase text-[var(--c-accent)]">
+                          {post.categoria}
+                        </span>
+                        <span className="text-[var(--c-border)]">·</span>
+                        <span className="flex items-center gap-1 text-xs text-[var(--c-muted)]">
+                          <Clock size={12} aria-hidden="true" />
+                          {post.tempoLeitura}
+                        </span>
+                      </div>
+                      <h3
+                        className="text-base font-semibold text-[var(--c-text)] mb-2 group-hover:text-[var(--c-accent)] transition-colors leading-snug"
+                        style={{ fontFamily: "var(--font-heading)" }}
+                      >
+                        {post.titulo}
+                      </h3>
+                      <p className="text-[var(--c-muted)] text-xs leading-relaxed line-clamp-3">
+                        {post.resumo}
+                      </p>
+                    </Link>
+                  </motion.article>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </section>
+        <WaveDivider from="var(--c-bg)" to="var(--c-bg-dark)" />
 
         {/* CTA FINAL */}
         <section className="py-24 px-6 bg-[var(--c-bg-dark)] text-white text-center">
