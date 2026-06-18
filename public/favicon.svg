@@ -1,0 +1,5 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <circle cx="16" cy="16" r="16" fill="#B05D3A"/>
+  <circle cx="16" cy="16" r="12" fill="#C8785A" opacity="0.4"/>
+  <text x="16" y="22" font-size="17" font-family="Georgia,serif" font-weight="400" text-anchor="middle" fill="#FBF5EC">B</text>
+</svg>
