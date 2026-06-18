@@ -1,10 +1,9 @@
 ﻿import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, ChevronLeft, Send } from "lucide-react";
 import { useEffect } from "react";
 import { salvarResposta } from "@/lib/supabase";
-import { fadeUp } from "@/lib/motion";
 
 const perguntas = [
   "Pouco interesse ou prazer em fazer as coisas",
@@ -34,7 +33,6 @@ function classificar(score: number): { nivel: string; cor: string; orientacao: s
 }
 
 export default function PHQ9() {
-  const navigate = useNavigate();
   const [etapa, setEtapa] = useState<"intro" | "form" | "dados" | "resultado">("intro");
   const [respostas, setRespostas] = useState<(number | null)[]>(Array(9).fill(null));
   const [atual, setAtual] = useState(0);
