@@ -1,19 +1,12 @@
-﻿import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Landing from "./pages/Landing";
-import VariantA from "./pages/VariantA";
-import VariantB from "./pages/VariantB";
+﻿import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import VariantC from "./pages/VariantC";
-import Compare from "./pages/Compare";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/a" element={<VariantA />} />
-        <Route path="/b" element={<VariantB />} />
-        <Route path="/c" element={<VariantC />} />
-        <Route path="/compare" element={<Compare />} />
+        <Route path="/" element={<VariantC />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
