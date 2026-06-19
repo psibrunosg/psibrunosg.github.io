@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, Navigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import { salvarResposta } from "@/lib/supabase";
@@ -11,8 +11,8 @@ const perguntas = [
   "Se sentir cansado(a) ou com pouca energia",
   "Falta de apetite ou comer demais",
   "Se sentir mal consigo mesmo(a), achar que e um fracasso ou que decepcionou sua familia",
-  "Dificuldade para se concentrar nas coisas, como ler o jornal ou ver televisao",
-  "Falar ou se mover mais devagar do que o habitual, ou ficar inquieto(a) a ponto de se mexer muito mais do que de costume",
+  "Dificuldade para se concentrar nas coisas",
+  "Falar ou se mover mais devagar do que o habitual, ou ficar inquieto(a) demais",
   "Pensar em se machucar ou que seria melhor estar morto(a)",
 ];
 
@@ -23,8 +23,8 @@ const opcoes = [
   { label: "Quase todos os dias", valor: 3 },
 ];
 
-function classificar(score: number): { nivel: string; cor: string; orientacao: string } {
-  if (score <= 4) return { nivel: "Minima ou nenhuma", cor: "#4A6B47", orientacao: "Seu rastreio indica ausencia ou nivel minimo de sintomas depressivos. Continue atento ao seu bem-estar." };
+function classificar(score: number) {
+  if (score <= 4) return { nivel: "Minima ou nenhuma", cor: "#4A6B47", orientacao: "Seu rastreio indica ausencia ou nivel minimo de sintomas depressivos." };
   if (score <= 9) return { nivel: "Leve", cor: "#8A6A3A", orientacao: "Ha indicios leves. Compartilhe com seu psicologo para avaliacao conjunta." };
   if (score <= 14) return { nivel: "Moderada", cor: "#B05D3A", orientacao: "Nivel moderado. E importante discutir esses resultados com seu psicologo." };
   if (score <= 19) return { nivel: "Moderadamente grave", cor: "#A0522D", orientacao: "Nivel significativo. Traga esses resultados para a proxima sessao." };
@@ -32,10 +32,12 @@ function classificar(score: number): { nivel: string; cor: string; orientacao: s
 }
 
 export default function PHQ9() {
-  const [etapa, setEtapa] = useState<"intro" | "form" | "dados" | "resultado">("intro");
+  const location = useLocation();
+  const paciente = (location.state as { nome?: string; nascimento?: string; telefone?: string }) ?? {};
+
+  const [etapa, setEtapa] = useState<"intro" | "form" | "resultado">("intro");
   const [respostas, setRespostas] = useState<(number | null)[]>(Array(9).fill(null));
   const [atual, setAtual] = useState(0);
-  const [nome, setNome] = useState("");
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "c");
@@ -43,9 +45,15 @@ export default function PHQ9() {
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
+  if (!paciente.nome) return <Navigate to="/paciente" replace />;
+
   const pontuacao = respostas.reduce<number>((acc, r) => acc + (r ?? 0), 0);
   const resultado = classificar(pontuacao);
 
+  function finalizar() {
+    salvarResposta({ tipo: "phq9", nome: paciente.nome!, telefone: paciente.telefone, nascimento: paciente.nascimento, respostas: respostas as number[], pontuacao });
+    setEtapa("resultado");
+  }
 
   return (
     <div className="min-h-screen bg-[var(--c-bg)] flex flex-col" data-theme="c">
@@ -65,13 +73,11 @@ export default function PHQ9() {
               <motion.div key="intro" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="text-center">
                 <span className="text-xs font-semibold tracking-widest uppercase text-[var(--c-accent)] mb-3 block">PHQ-9</span>
                 <h1 className="text-3xl font-semibold text-[var(--c-text)] mb-4" style={{ fontFamily: "var(--font-heading)" }}>Rastreio de Depressao</h1>
+                <p className="text-sm text-[var(--c-muted)] mb-6">Ola, <strong className="text-[var(--c-text)]">{paciente.nome}</strong>.</p>
                 <p className="text-[var(--c-muted)] mb-4 leading-relaxed">
                   Este questionario pergunta sobre como voce tem se sentido nas <strong>ultimas duas semanas</strong>. Sao 9 perguntas, leva cerca de 3 minutos.
                 </p>
-                <p className="text-xs text-[var(--c-muted)] mb-4 italic">Ferramenta de rastreio, nao de diagnostico. Dados protegidos pelo sigilo profissional.</p>
-                <p className="text-xs text-[var(--c-muted)] mb-10 rounded-xl bg-[var(--c-surface)] border border-[var(--c-border)] p-4">
-                  Seus dados sao processados apenas no seu navegador. Ao final, voce pode baixar o PDF e compartilhar diretamente com seu psicologo por WhatsApp ou e-mail.
-                </p>
+                <p className="text-xs text-[var(--c-muted)] mb-10 italic">Ferramenta de rastreio, nao de diagnostico.</p>
                 <button onClick={() => setEtapa("form")} className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-[var(--c-accent)] text-white font-medium hover:opacity-90 transition-opacity">
                   Iniciar <ChevronRight size={18} />
                 </button>
@@ -89,7 +95,10 @@ export default function PHQ9() {
                   {opcoes.map((op) => (
                     <button key={op.valor} onClick={() => {
                       const novo = [...respostas]; novo[atual] = op.valor; setRespostas(novo);
-                      setTimeout(() => { if (atual < perguntas.length - 1) setAtual(atual + 1); else setEtapa("dados"); }, 200);
+                      setTimeout(() => {
+                        if (atual < perguntas.length - 1) setAtual(atual + 1);
+                        else finalizar();
+                      }, 200);
                     }}
                       className="w-full text-left px-5 py-4 rounded-xl border transition-all"
                       style={{ borderColor: respostas[atual] === op.valor ? "var(--c-accent)" : "var(--c-border)", background: respostas[atual] === op.valor ? "var(--c-accent)10" : "var(--c-surface)", color: "var(--c-text)" }}
@@ -104,36 +113,13 @@ export default function PHQ9() {
               </motion.div>
             )}
 
-            {etapa === "dados" && (
-              <motion.div key="dados" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                <h2 className="text-2xl font-semibold text-[var(--c-text)] mb-2" style={{ fontFamily: "var(--font-heading)" }}>Quase la</h2>
-                <p className="text-[var(--c-muted)] mb-8 leading-relaxed">Informe seu nome para gerar o documento com os resultados.</p>
-                <div className="mb-8">
-                  <label className="text-sm font-medium text-[var(--c-text)] block mb-1.5">Nome <span className="text-[var(--c-accent)]">*</span></label>
-                  <input type="text" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Seu nome completo"
-                    className="w-full px-4 py-3 rounded-xl border border-[var(--c-border)] bg-[var(--c-surface)] text-[var(--c-text)] placeholder:text-[var(--c-muted)]/50 focus:outline-none focus:border-[var(--c-accent)] transition-colors"
-                    onKeyDown={(e) => { if (e.key === "Enter" && nome.trim()) setEtapa("resultado"); }}
-                  />
-                </div>
-                <button onClick={() => {
-                    if (!nome.trim()) return;
-                    salvarResposta({ tipo: "phq9", nome: nome.trim(), respostas: respostas as number[], pontuacao });
-                    setEtapa("resultado");
-                  }} disabled={!nome.trim()}
-                  className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-[var(--c-accent)] text-white font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">
-                  Ver resultado
-                </button>
-                <p className="text-xs text-[var(--c-muted)] mt-4 text-center">Seus dados sao armazenados de forma segura e acessados apenas pelo seu psicologo.</p>
-              </motion.div>
-            )}
-
             {etapa === "resultado" && (
               <motion.div key="resultado" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
                 <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl font-bold text-white" style={{ background: resultado.cor }}>{pontuacao}</div>
                 <span className="text-xs tracking-widest uppercase font-semibold block mb-1" style={{ color: resultado.cor }}>{resultado.nivel}</span>
                 <h2 className="text-2xl font-semibold text-[var(--c-text)] mb-4" style={{ fontFamily: "var(--font-heading)" }}>Respostas registradas</h2>
                 <p className="text-[var(--c-muted)] leading-relaxed mb-6 max-w-sm mx-auto">{resultado.orientacao}</p>
-                <p className="text-xs text-[var(--c-muted)] mb-10 italic">PHQ-9: escala validada de rastreio. Nao constitui diagnostico. Suas respostas foram enviadas ao seu psicologo de forma segura.</p>
+                <p className="text-xs text-[var(--c-muted)] mb-10 italic">Suas respostas foram enviadas ao seu psicologo de forma segura.</p>
                 <Link to="/paciente" className="px-6 py-3 rounded-full border border-[var(--c-border)] text-[var(--c-text)] hover:border-[var(--c-accent)] transition-colors text-sm">Voltar</Link>
               </motion.div>
             )}

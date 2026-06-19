@@ -10,6 +10,7 @@ export interface QuestionnaireResponse {
   tipo: "phq9" | "gad7";
   nome: string;
   telefone?: string;
+  nascimento?: string;
   respostas: number[];
   pontuacao: number;
   criado_em?: string;
