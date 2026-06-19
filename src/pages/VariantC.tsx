@@ -31,6 +31,7 @@ const navItems = [
   { label: "Abordagens",  href: "#abordagens" },
   { label: "FAQ",         href: "#faq" },
   { label: "Blog",        href: "/blog" },
+  { label: "Paciente",    href: "/paciente" },
 ];
 
 export default function VariantC() {
