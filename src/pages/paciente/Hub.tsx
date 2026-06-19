@@ -90,7 +90,7 @@ export default function PacienteHub() {
   return (
     <>
       <SkipLink />
-      <AppAurora />
+      <AppAurora withLandmark />
 
       <header className="fixed top-0 left-0 right-0 z-50 px-6 py-4 glass-panel">
         <div className="mx-auto flex max-w-4xl items-center justify-between">
@@ -105,14 +105,14 @@ export default function PacienteHub() {
 
             <motion.div variants={fadeUp} className="mb-14 text-center">
               <motion.div
-                className="relative mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl"
-                style={{ background: "linear-gradient(140deg, var(--c-accent), var(--c-accent-lt))", boxShadow: "0 16px 40px -12px var(--c-accent)" }}
+                className="relative mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full"
+                style={{ background: "var(--c-warm-lt)", border: "1px solid var(--c-border)", boxShadow: "0 18px 46px -14px var(--c-accent)" }}
                 initial={{ scale: 0, rotate: -12 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", delay: 0.15, stiffness: 200 }}
               >
-                <Shield size={32} className="text-white" />
+                <img src="/img/simbolo-estendido.png" alt="Simbolo Bruno SG" className="h-16 w-16 object-contain" style={{ mixBlendMode: "multiply" }} draggable={false} />
                 <motion.span
-                  className="absolute inset-0 rounded-3xl ring-2 ring-[var(--c-accent)]/30"
-                  animate={{ scale: [1, 1.18, 1], opacity: [0.6, 0, 0.6] }}
+                  className="absolute inset-0 rounded-full ring-2 ring-[var(--c-accent)]/40"
+                  animate={{ scale: [1, 1.16, 1], opacity: [0.55, 0, 0.55] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                   aria-hidden="true"
                 />
