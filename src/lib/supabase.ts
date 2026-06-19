@@ -7,7 +7,7 @@ export const supabase = url && key ? createClient(url, key) : null;
 
 export interface QuestionnaireResponse {
   id?: number;
-  tipo: "phq9" | "gad7";
+  tipo: string;
   nome: string;
   telefone?: string;
   nascimento?: string;
