@@ -5,7 +5,20 @@ import { ChevronRight, ChevronLeft } from "lucide-react";
 import { salvarResposta } from "@/lib/supabase";
 import { escalas } from "@/content/escalas";
 import type { EscalaConfig } from "@/content/escalas";
+import { escalasGerais } from "@/content/escalas-gerais";
+import type { EscalaGeralConfig, BDIItem } from "@/content/escalas-gerais";
 
+type AnyConfig = EscalaConfig | EscalaGeralConfig;
+
+function isEscalaGeral(config: AnyConfig): config is EscalaGeralConfig {
+  return "tipo" in config;
+}
+
+function isBDIItem(item: unknown): item is BDIItem {
+  return typeof item === "object" && item !== null && "opcoes" in item;
+}
+
+// ===== Original schema scoring for YSQ/YPI/YCI =====
 interface SchemaResult {
   id: string;
   nome: string;
@@ -48,34 +61,103 @@ function computeThreshold(respostas: number[]): {
   return { flagged, pontuacao: flagged.length };
 }
 
+// ===== General scale scoring =====
+interface DominioResult {
+  id: string;
+  nome: string;
+  soma: number;
+  media: number;
+  itensCount: number;
+}
+
+function computeGeralScore(
+  config: EscalaGeralConfig,
+  respostas: number[]
+): { total: number; dominios: DominioResult[] } {
+  let total = 0;
+  const dominios: DominioResult[] = [];
+
+  if (config.tipo === "binary" && config.chaveCorrecao) {
+    // BHS scoring
+    for (let i = 0; i < respostas.length; i++) {
+      const chave = config.chaveCorrecao[i + 1];
+      const resposta = respostas[i] === 1 ? "C" : "E";
+      if (resposta === chave) total++;
+    }
+  } else if (config.tipo === "likert-statements") {
+    // BDI scoring - just sum
+    total = respostas.reduce((a, b) => a + b, 0);
+  } else {
+    // Likert scoring with possible reversed items and domains
+    if (config.dominios && config.dominios.length > 0) {
+      for (const dom of config.dominios) {
+        let soma = 0;
+        const invertidos = dom.invertidos ?? [];
+        const globalInvertidos = config.invertidos ?? [];
+        for (const idx of dom.itens) {
+          let val = respostas[idx - 1] ?? 0;
+          const isInverted = invertidos.includes(idx) || globalInvertidos.includes(idx);
+          if (isInverted) {
+            const maxVal = config.opcoes ? Math.max(...config.opcoes.map(o => o.valor)) : 4;
+            const minVal = config.opcoes ? Math.min(...config.opcoes.map(o => o.valor)) : 0;
+            val = maxVal + minVal - val;
+          }
+          soma += val;
+        }
+        const media = Math.round((soma / dom.itens.length) * 100) / 100;
+        dominios.push({ id: dom.id, nome: dom.nome, soma, media, itensCount: dom.itens.length });
+        total += soma;
+      }
+    } else {
+      total = respostas.reduce((a, b) => a + b, 0);
+    }
+  }
+
+  return { total, dominios };
+}
+
+// ===== Merged config lookup =====
+const allConfigs: Record<string, AnyConfig> = { ...escalas, ...escalasGerais };
+
 export default function Escala() {
   const { escalaId } = useParams<{ escalaId: string }>();
   const location = useLocation();
   const paciente = (location.state as { nome?: string; nascimento?: string; telefone?: string }) ?? {};
 
-  const config = escalaId ? escalas[escalaId] : undefined;
+  const config = escalaId ? allConfigs[escalaId] : undefined;
 
   const [etapa, setEtapa] = useState<"intro" | "form" | "resultado">("intro");
   const [respostas, setRespostas] = useState<(number | null)[]>([]);
   const [atual, setAtual] = useState(0);
 
-  useEffect(() => {
-    if (config) {
-      setRespostas(Array(config.itens.length).fill(null));
+  const total = useMemo(() => {
+    if (!config) return 0;
+    if (isEscalaGeral(config)) {
+      return Array.isArray(config.itens) ? config.itens.length : 0;
     }
+    return config.itens.length;
   }, [config]);
 
   useEffect(() => {
+    if (total > 0) {
+      setRespostas(Array(total).fill(null));
+    }
+  }, [total]);
+
+  useEffect(() => {
     document.documentElement.setAttribute("data-theme", "c");
-    if (config) document.title = `${config.sigla} | Bruno SG Psicologo`;
+    if (config) {
+      const sigla = "sigla" in config ? config.sigla : "";
+      document.title = `${sigla} | Bruno SG Psicologo`;
+    }
     return () => document.documentElement.removeAttribute("data-theme");
   }, [config]);
 
   if (!config) return <Navigate to="/paciente" replace />;
   if (!paciente.nome) return <Navigate to="/paciente" replace />;
 
-  const total = config.itens.length;
   const respondidas = respostas as number[];
+  const sigla = config.sigla;
 
   function handleResposta(valor: number) {
     const novo = [...respostas];
@@ -92,8 +174,11 @@ export default function Escala() {
 
   function finalizar(r: number[]) {
     let pontuacao = 0;
-    if (config!.scoring === "schema-avg") {
-      pontuacao = computeSchemaAvg(config!, r).pontuacao;
+    if (isEscalaGeral(config!)) {
+      const result = computeGeralScore(config!, r);
+      pontuacao = result.total;
+    } else if (config!.scoring === "schema-avg") {
+      pontuacao = computeSchemaAvg(config! as EscalaConfig, r).pontuacao;
     } else {
       pontuacao = computeThreshold(r).pontuacao;
     }
@@ -108,6 +193,39 @@ export default function Escala() {
     setEtapa("resultado");
   }
 
+  // Get current item text and options
+  function getCurrentItemText(): string {
+    if (!config) return "";
+    if (isEscalaGeral(config)) {
+      const item = config.itens[atual];
+      if (typeof item === "string") return item;
+      return `Item ${atual + 1}`;
+    }
+    return (config as EscalaConfig).itens[atual];
+  }
+
+  function getCurrentOptions(): { label: string; valor: number }[] {
+    if (!config) return [];
+    if (isEscalaGeral(config)) {
+      if (config.tipo === "likert-statements") {
+        const item = config.itens[atual];
+        if (isBDIItem(item)) {
+          return item.opcoes.map(o => ({ label: o.texto, valor: o.valor }));
+        }
+      }
+      if (config.tipo === "binary") {
+        return [
+          { label: "Certo", valor: 1 },
+          { label: "Errado", valor: 0 },
+        ];
+      }
+      return config.opcoes ?? [];
+    }
+    return (config as EscalaConfig).opcoes;
+  }
+
+  const isBDI = isEscalaGeral(config) && config.tipo === "likert-statements";
+
   return (
     <div className="min-h-screen bg-[var(--c-bg)] flex flex-col" data-theme="c">
       <header className="fixed top-0 left-0 right-0 z-50 px-6 py-4 bg-[var(--c-bg)]/95 backdrop-blur border-b border-[var(--c-border)]">
@@ -115,7 +233,7 @@ export default function Escala() {
           <Link to="/paciente" className="text-sm text-[var(--c-muted)] hover:text-[var(--c-accent)] transition-colors">
             Voltar
           </Link>
-          <span className="text-xs font-semibold text-[var(--c-text)]">{config.sigla}</span>
+          <span className="text-xs font-semibold text-[var(--c-text)]">{sigla}</span>
           {etapa === "form" ? (
             <span className="text-xs text-[var(--c-muted)]">
               {atual + 1} / {total}
@@ -132,7 +250,7 @@ export default function Escala() {
             {etapa === "intro" && (
               <motion.div key="intro" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="text-center">
                 <span className="text-xs font-semibold tracking-widest uppercase text-[var(--c-accent)] mb-3 block">
-                  {config.sigla}
+                  {sigla}
                 </span>
                 <h1 className="text-3xl font-semibold text-[var(--c-text)] mb-4" style={{ fontFamily: "var(--font-heading)" }}>
                   {config.nome}
@@ -160,11 +278,18 @@ export default function Escala() {
                   />
                 </div>
                 <p className="text-xs text-[var(--c-muted)] mb-1">Pergunta {atual + 1} de {total}</p>
-                <h2 className="text-xl font-semibold text-[var(--c-text)] mb-8" style={{ fontFamily: "var(--font-heading)" }}>
-                  {config.itens[atual]}
-                </h2>
+                {!isBDI && (
+                  <h2 className="text-xl font-semibold text-[var(--c-text)] mb-8" style={{ fontFamily: "var(--font-heading)" }}>
+                    {getCurrentItemText()}
+                  </h2>
+                )}
+                {isBDI && (
+                  <h2 className="text-lg font-semibold text-[var(--c-text)] mb-6" style={{ fontFamily: "var(--font-heading)" }}>
+                    Escolha a afirmacao que melhor descreve voce:
+                  </h2>
+                )}
                 <div className="space-y-3">
-                  {config.opcoes.map((op) => (
+                  {getCurrentOptions().map((op) => (
                     <button
                       key={op.valor}
                       onClick={() => handleResposta(op.valor)}
@@ -175,7 +300,8 @@ export default function Escala() {
                         color: "var(--c-text)",
                       }}
                     >
-                      <span className="font-semibold mr-2">{op.valor}.</span>
+                      {!isBDI && <span className="font-semibold mr-2">{op.valor}.</span>}
+                      {isBDI && <span className="font-semibold mr-2 text-[var(--c-accent)]">{op.valor}.</span>}
                       {op.label}
                     </button>
                   ))}
@@ -198,18 +324,75 @@ export default function Escala() {
   );
 }
 
+// ===== RESULT SCREENS =====
 function ResultadoScreen({
   config,
   respostas,
 }: {
-  config: EscalaConfig;
+  config: AnyConfig;
   respostas: number[];
   pacienteNome: string;
 }) {
+  if (isEscalaGeral(config)) {
+    return <ResultadoGeral config={config} respostas={respostas} />;
+  }
   if (config.scoring === "schema-avg") {
     return <ResultadoSchemaAvg config={config} respostas={respostas} />;
   }
   return <ResultadoThreshold config={config} respostas={respostas} />;
+}
+
+function ResultadoGeral({ config, respostas }: { config: EscalaGeralConfig; respostas: number[] }) {
+  const result = useMemo(() => computeGeralScore(config, respostas), [config, respostas]);
+
+  const maxPossible = config.pontuacaoMaxima ??
+    (config.opcoes ? Math.max(...config.opcoes.map(o => o.valor)) * respostas.length : result.total);
+
+  return (
+    <motion.div key="resultado" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
+      <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold text-white bg-[var(--c-accent)]">
+        {result.total}
+      </div>
+      <span className="text-xs tracking-widest uppercase font-semibold block mb-1 text-[var(--c-accent)]">
+        Pontuacao Total
+      </span>
+      <h2 className="text-2xl font-semibold text-[var(--c-text)] mb-4" style={{ fontFamily: "var(--font-heading)" }}>
+        Respostas registradas
+      </h2>
+      <p className="text-[var(--c-muted)] leading-relaxed mb-6 max-w-sm mx-auto">
+        Pontuacao: {result.total}{maxPossible > 0 ? ` de ${maxPossible}` : ""}. Converse com seu psicologo sobre estes resultados.
+      </p>
+
+      {result.dominios.length > 0 && (
+        <div className="text-left space-y-3 mb-8">
+          {result.dominios.map((dom) => (
+            <div key={dom.id} className="rounded-xl border border-[var(--c-border)] bg-[var(--c-surface)] p-4">
+              <div className="flex justify-between text-sm mb-2">
+                <span className="font-semibold text-[var(--c-text)]">{dom.nome}</span>
+                <span className="text-[var(--c-accent)] font-bold">
+                  {dom.media.toFixed(1)} (soma: {dom.soma})
+                </span>
+              </div>
+              <div className="h-2 bg-[var(--c-border)] rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{
+                    width: Math.min(100, (dom.media / (config.opcoes ? Math.max(...config.opcoes.map(o => o.valor)) : 6)) * 100) + "%",
+                    background: "var(--c-accent)",
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <p className="text-xs text-[var(--c-muted)] mb-10 italic">Suas respostas foram enviadas ao seu psicologo de forma segura.</p>
+      <Link to="/paciente" className="px-6 py-3 rounded-full border border-[var(--c-border)] text-[var(--c-text)] hover:border-[var(--c-accent)] transition-colors text-sm">
+        Voltar
+      </Link>
+    </motion.div>
+  );
 }
 
 function ResultadoSchemaAvg({ config, respostas }: { config: EscalaConfig; respostas: number[] }) {
