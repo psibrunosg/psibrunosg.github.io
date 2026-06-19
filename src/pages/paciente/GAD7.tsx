@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect } from "react";
-import { Link, useLocation, Navigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, ChevronLeft } from "lucide-react";
+import { ChevronRight, ChevronLeft, User } from "lucide-react";
 import { salvarResposta } from "@/lib/supabase";
 
 const perguntas = [
@@ -29,10 +29,10 @@ function classificar(score: number) {
 }
 
 export default function GAD7() {
-  const location = useLocation();
-  const paciente = (location.state as { nome?: string; nascimento?: string; telefone?: string }) ?? {};
-
-  const [etapa, setEtapa] = useState<"intro" | "form" | "resultado">("intro");
+  const [etapa, setEtapa] = useState<"dados" | "intro" | "form" | "resultado">("dados");
+  const [nome, setNome] = useState("");
+  const [nascimento, setNascimento] = useState("");
+  const [telefone, setTelefone] = useState("");
   const [respostas, setRespostas] = useState<(number | null)[]>(Array(7).fill(null));
   const [atual, setAtual] = useState(0);
 
@@ -42,13 +42,12 @@ export default function GAD7() {
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
-  if (!paciente.nome) return <Navigate to="/paciente" replace />;
-
+  const dadosValidos = nome.trim().length > 2 && nascimento.length > 0;
   const pontuacao = respostas.reduce<number>((acc, r) => acc + (r ?? 0), 0);
   const resultado = classificar(pontuacao);
 
   function finalizar() {
-    salvarResposta({ tipo: "gad7", nome: paciente.nome!, telefone: paciente.telefone, nascimento: paciente.nascimento, respostas: respostas as number[], pontuacao });
+    salvarResposta({ tipo: "gad7", nome: nome.trim(), telefone: telefone.trim(), nascimento, respostas: respostas as number[], pontuacao });
     setEtapa("resultado");
   }
 
@@ -66,11 +65,54 @@ export default function GAD7() {
         <div className="max-w-lg w-full">
           <AnimatePresence mode="wait">
 
+            {etapa === "dados" && (
+              <motion.div key="dados" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="max-w-md mx-auto">
+                <div className="rounded-2xl bg-[var(--c-surface)] border border-[var(--c-border)] p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "#4A6B47" + "15" }}>
+                      <User size={20} style={{ color: "#4A6B47" }} />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Seus dados</h2>
+                      <p className="text-xs text-[var(--c-muted)]">Necessarios para gerar o relatorio</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 mb-6">
+                    <div>
+                      <label className="text-sm font-medium text-[var(--c-text)] block mb-1.5">Nome completo <span className="text-[var(--c-accent)]">*</span></label>
+                      <input type="text" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Seu nome"
+                        className="w-full px-4 py-3 rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)] text-[var(--c-text)] placeholder:text-[var(--c-muted)]/50 focus:outline-none focus:border-[var(--c-accent)] transition-colors" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-[var(--c-text)] block mb-1.5">Data de nascimento <span className="text-[var(--c-accent)]">*</span></label>
+                      <input type="date" value={nascimento} onChange={(e) => setNascimento(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)] text-[var(--c-text)] focus:outline-none focus:border-[var(--c-accent)] transition-colors" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-[var(--c-text)] block mb-1.5">Telefone / WhatsApp <span className="text-[var(--c-muted)] text-xs font-normal">(opcional)</span></label>
+                      <input type="tel" value={telefone} onChange={(e) => setTelefone(e.target.value)} placeholder="(53) 9 9999-9999"
+                        className="w-full px-4 py-3 rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)] text-[var(--c-text)] placeholder:text-[var(--c-muted)]/50 focus:outline-none focus:border-[var(--c-accent)] transition-colors" />
+                    </div>
+                  </div>
+
+                  <button onClick={() => setEtapa("intro")} disabled={!dadosValidos}
+                    className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-full text-white font-medium hover:opacity-90 disabled:opacity-40 transition-opacity" style={{ background: "#4A6B47" }}>
+                    Continuar <ChevronRight size={16} />
+                  </button>
+
+                  <p className="text-xs text-[var(--c-muted)] mt-4 text-center">
+                    Dados protegidos pelo sigilo profissional e acessiveis apenas ao seu psicologo.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+
             {etapa === "intro" && (
               <motion.div key="intro" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="text-center">
                 <span className="text-xs font-semibold tracking-widest uppercase block mb-3" style={{ color: "#4A6B47" }}>GAD-7</span>
                 <h1 className="text-3xl font-semibold text-[var(--c-text)] mb-4" style={{ fontFamily: "var(--font-heading)" }}>Rastreio de Ansiedade</h1>
-                <p className="text-sm text-[var(--c-muted)] mb-6">Ola, <strong className="text-[var(--c-text)]">{paciente.nome}</strong>.</p>
+                <p className="text-sm text-[var(--c-muted)] mb-6">Ola, <strong className="text-[var(--c-text)]">{nome.trim()}</strong>.</p>
                 <p className="text-[var(--c-muted)] mb-4 leading-relaxed">
                   Este questionario pergunta sobre como voce tem se sentido nas <strong>ultimas duas semanas</strong>. Sao 7 perguntas, leva cerca de 2 minutos.
                 </p>

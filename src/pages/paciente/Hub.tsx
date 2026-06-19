@@ -1,7 +1,7 @@
-﻿import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+﻿import { useEffect } from "react";
+import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
-import { ClipboardList, Brain, ArrowRight, Shield, Lock, User, Heart, Leaf, Activity, BookOpen, Gauge, Zap, Eye, Sprout } from "lucide-react";
+import { ClipboardList, Brain, ArrowRight, Shield, Lock, Heart, Leaf, Activity, BookOpen, Gauge, Zap, Eye, Sprout } from "lucide-react";
 import { SkipLink } from "@/components/shared/SkipLink";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
 import { contato } from "@/content/copy";
@@ -50,10 +50,10 @@ function HubBlobs() {
   );
 }
 
-function FerramentaCard({ f, onClick }: { f: typeof ferramentasGerais[0]; onClick: () => void }) {
+function FerramentaCard({ f }: { f: typeof ferramentasGerais[0] }) {
   const Icon = f.icon;
   return (
-    <button onClick={onClick}
+    <Link to={f.href}
       className="block w-full text-left rounded-2xl border border-[var(--c-border)] bg-[var(--c-surface)] p-7 hover:border-[var(--c-accent)]/50 hover:shadow-lg transition-all group">
       <div className="flex items-start gap-4">
         <motion.div className="rounded-xl p-3 flex-shrink-0" style={{ background: f.cor + "18" }}
@@ -69,29 +69,16 @@ function FerramentaCard({ f, onClick }: { f: typeof ferramentasGerais[0]; onClic
           </span>
         </div>
       </div>
-    </button>
+    </Link>
   );
 }
 
 export default function PacienteHub() {
-  const navigate = useNavigate();
-  const [etapa, setEtapa] = useState<"dados" | "escolha">("dados");
-  const [nome, setNome] = useState("");
-  const [nascimento, setNascimento] = useState("");
-  const [telefone, setTelefone] = useState("");
-
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "c");
     document.title = "Area do Paciente | Bruno SG Psicologo";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
-
-  const dadosPaciente = { nome: nome.trim(), nascimento, telefone: telefone.trim() };
-  const dadosValidos = nome.trim().length > 2 && nascimento.length > 0;
-
-  function irPara(href: string) {
-    navigate(href, { state: dadosPaciente });
-  }
 
   return (
     <>
@@ -123,109 +110,55 @@ export default function PacienteHub() {
               </p>
             </motion.div>
 
-            {etapa === "dados" && (
-              <motion.div variants={fadeUp} className="max-w-md mx-auto">
-                <div className="rounded-2xl bg-[var(--c-surface)] border border-[var(--c-border)] p-8">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "var(--c-accent)" + "15" }}>
-                      <User size={20} style={{ color: "var(--c-accent)" }} />
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Seus dados</h2>
-                      <p className="text-xs text-[var(--c-muted)]">Necessarios para gerar o relatorio</p>
-                    </div>
+            {/* Rastreio Rapido */}
+            <motion.div variants={fadeUp} className="mb-8">
+              <h2 className="text-sm font-semibold tracking-widest uppercase text-[var(--c-muted)] mb-4">Rastreio Rapido</h2>
+              <div className="grid md:grid-cols-2 gap-5">
+                {ferramentasRastreio.map((f, i) => (
+                  <motion.div key={f.sigla} variants={fadeUp} custom={i}>
+                    <FerramentaCard f={f} />
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Escalas Gerais */}
+            <motion.div variants={fadeUp} className="mb-8">
+              <h2 className="text-sm font-semibold tracking-widest uppercase text-[var(--c-muted)] mb-4">Escalas Gerais</h2>
+              <div className="grid md:grid-cols-2 gap-5">
+                {ferramentasGerais.map((f, i) => (
+                  <motion.div key={f.sigla} variants={fadeUp} custom={i}>
+                    <FerramentaCard f={f} />
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Escalas de Esquemas */}
+            <motion.div variants={fadeUp} className="mb-16">
+              <h2 className="text-sm font-semibold tracking-widest uppercase text-[var(--c-muted)] mb-4">Escalas de Esquemas</h2>
+              <div className="grid md:grid-cols-2 gap-5">
+                {ferramentasEsquemas.map((f, i) => (
+                  <motion.div key={f.sigla} variants={fadeUp} custom={i}>
+                    <FerramentaCard f={f} />
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+
+            <motion.div variants={fadeUp} className="space-y-4">
+              <div className="rounded-2xl bg-[var(--c-surface)] border border-[var(--c-border)] p-6">
+                <div className="flex items-start gap-3">
+                  <Lock size={18} className="text-[var(--c-accent)] flex-shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-[var(--c-text)] text-sm block mb-1">Privacidade</strong>
+                    <p className="text-[var(--c-muted)] text-sm leading-relaxed">
+                      Suas respostas sao armazenadas de forma segura e acessiveis exclusivamente por Bruno SG, {contato.crp}. Estas ferramentas sao de rastreio, nao de diagnostico.
+                    </p>
                   </div>
-
-                  <div className="space-y-4 mb-6">
-                    <div>
-                      <label className="text-sm font-medium text-[var(--c-text)] block mb-1.5">Nome completo <span className="text-[var(--c-accent)]">*</span></label>
-                      <input type="text" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Seu nome"
-                        className="w-full px-4 py-3 rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)] text-[var(--c-text)] placeholder:text-[var(--c-muted)]/50 focus:outline-none focus:border-[var(--c-accent)] transition-colors" />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-[var(--c-text)] block mb-1.5">Data de nascimento <span className="text-[var(--c-accent)]">*</span></label>
-                      <input type="date" value={nascimento} onChange={(e) => setNascimento(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)] text-[var(--c-text)] focus:outline-none focus:border-[var(--c-accent)] transition-colors" />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-[var(--c-text)] block mb-1.5">Telefone / WhatsApp <span className="text-[var(--c-muted)] text-xs font-normal">(opcional)</span></label>
-                      <input type="tel" value={telefone} onChange={(e) => setTelefone(e.target.value)} placeholder="(53) 9 9999-9999"
-                        className="w-full px-4 py-3 rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)] text-[var(--c-text)] placeholder:text-[var(--c-muted)]/50 focus:outline-none focus:border-[var(--c-accent)] transition-colors" />
-                    </div>
-                  </div>
-
-                  <button onClick={() => setEtapa("escolha")} disabled={!dadosValidos}
-                    className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-[var(--c-accent)] text-white font-medium hover:opacity-90 disabled:opacity-40 transition-opacity">
-                    Continuar <ArrowRight size={16} />
-                  </button>
-
-                  <p className="text-xs text-[var(--c-muted)] mt-4 text-center">
-                    Dados protegidos pelo sigilo profissional e acessiveis apenas ao seu psicologo.
-                  </p>
                 </div>
-              </motion.div>
-            )}
-
-            {etapa === "escolha" && (
-              <>
-                <motion.div variants={fadeUp} className="text-center mb-8">
-                  <p className="text-sm text-[var(--c-muted)]">
-                    Ola, <strong className="text-[var(--c-text)]">{nome.trim()}</strong>. Escolha o questionario abaixo.
-                  </p>
-                  <button onClick={() => setEtapa("dados")} className="text-xs text-[var(--c-accent)] hover:underline mt-1">Alterar dados</button>
-                </motion.div>
-
-                {/* Rastreio Rapido */}
-                <motion.div variants={fadeUp} className="mb-8">
-                  <h2 className="text-sm font-semibold tracking-widest uppercase text-[var(--c-muted)] mb-4">Rastreio Rapido</h2>
-                  <div className="grid md:grid-cols-2 gap-5">
-                    {ferramentasRastreio.map((f, i) => (
-                      <motion.div key={f.sigla} variants={fadeUp} custom={i}>
-                        <FerramentaCard f={f} onClick={() => irPara(f.href)} />
-                      </motion.div>
-                    ))}
-                  </div>
-                </motion.div>
-
-                {/* Escalas Gerais */}
-                <motion.div variants={fadeUp} className="mb-8">
-                  <h2 className="text-sm font-semibold tracking-widest uppercase text-[var(--c-muted)] mb-4">Escalas Gerais</h2>
-                  <div className="grid md:grid-cols-2 gap-5">
-                    {ferramentasGerais.map((f, i) => (
-                      <motion.div key={f.sigla} variants={fadeUp} custom={i}>
-                        <FerramentaCard f={f} onClick={() => irPara(f.href)} />
-                      </motion.div>
-                    ))}
-                  </div>
-                </motion.div>
-
-                {/* Escalas de Esquemas */}
-                <motion.div variants={fadeUp} className="mb-16">
-                  <h2 className="text-sm font-semibold tracking-widest uppercase text-[var(--c-muted)] mb-4">Escalas de Esquemas</h2>
-                  <div className="grid md:grid-cols-2 gap-5">
-                    {ferramentasEsquemas.map((f, i) => (
-                      <motion.div key={f.sigla} variants={fadeUp} custom={i}>
-                        <FerramentaCard f={f} onClick={() => irPara(f.href)} />
-                      </motion.div>
-                    ))}
-                  </div>
-                </motion.div>
-
-                <motion.div variants={fadeUp} className="space-y-4">
-                  <div className="rounded-2xl bg-[var(--c-surface)] border border-[var(--c-border)] p-6">
-                    <div className="flex items-start gap-3">
-                      <Lock size={18} className="text-[var(--c-accent)] flex-shrink-0 mt-0.5" />
-                      <div>
-                        <strong className="text-[var(--c-text)] text-sm block mb-1">Privacidade</strong>
-                        <p className="text-[var(--c-muted)] text-sm leading-relaxed">
-                          Suas respostas sao armazenadas de forma segura e acessiveis exclusivamente por Bruno SG, {contato.crp}. Estas ferramentas sao de rastreio, nao de diagnostico.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              </>
-            )}
+              </div>
+            </motion.div>
 
           </motion.div>
         </div>
