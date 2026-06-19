@@ -29,6 +29,60 @@ body {
   border-radius: 2px;
 }
 
+/* ===== App shell visuals (paciente / admin) ===== */
+@keyframes aurora-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(3%, -4%) scale(1.1); }
+  66%      { transform: translate(-4%, 3%) scale(0.95); }
+}
+@keyframes shine-sweep {
+  0%   { transform: translateX(-150%) skewX(-12deg); }
+  100% { transform: translateX(240%) skewX(-12deg); }
+}
+
+.app-aurora {
+  position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+  background: var(--c-bg);
+}
+.app-aurora::before {
+  content: ""; position: absolute; inset: -25%;
+  background:
+    radial-gradient(38% 38% at 18% 22%, color-mix(in oklab, var(--c-accent) 40%, transparent), transparent 70%),
+    radial-gradient(34% 34% at 82% 28%, color-mix(in oklab, var(--c-moss) 32%, transparent), transparent 70%),
+    radial-gradient(46% 46% at 62% 82%, color-mix(in oklab, var(--c-warm) 60%, transparent), transparent 72%),
+    radial-gradient(30% 30% at 35% 70%, color-mix(in oklab, var(--c-accent-lt) 30%, transparent), transparent 70%);
+  filter: blur(70px) saturate(1.05);
+  opacity: .55;
+  animation: aurora-drift 26s ease-in-out infinite;
+}
+.app-aurora::after {
+  content: ""; position: absolute; inset: 0; opacity: .04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.glass-card {
+  background: color-mix(in oklab, var(--c-bg) 72%, transparent);
+  backdrop-filter: blur(16px) saturate(1.1);
+  -webkit-backdrop-filter: blur(16px) saturate(1.1);
+  border: 1px solid color-mix(in oklab, var(--c-border) 65%, white 12%);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset, 0 10px 34px -12px rgba(58,42,31,0.22);
+}
+.glass-panel {
+  background: color-mix(in oklab, var(--c-bg) 82%, transparent);
+  backdrop-filter: blur(18px) saturate(1.1);
+  -webkit-backdrop-filter: blur(18px) saturate(1.1);
+  border: 1px solid color-mix(in oklab, var(--c-border) 60%, white 14%);
+}
+
+.shine-host { position: relative; overflow: hidden; }
+.shine-host::after {
+  content: ""; position: absolute; top: 0; left: 0; width: 45%; height: 100%;
+  background: linear-gradient(100deg, transparent, color-mix(in oklab, white 55%, transparent), transparent);
+  transform: translateX(-160%) skewX(-12deg);
+  pointer-events: none; opacity: 0;
+}
+.shine-host:hover::after { opacity: 1; animation: shine-sweep .9s ease; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -36,4 +90,6 @@ body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+  .app-aurora::before { animation: none; }
+  .shine-host:hover::after { opacity: 0; }
 }

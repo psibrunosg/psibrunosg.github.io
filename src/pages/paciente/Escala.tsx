@@ -1,12 +1,13 @@
 ﻿import { useState, useEffect, useMemo } from "react";
 import { Link, useParams, Navigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, ChevronLeft, User } from "lucide-react";
+import { ChevronRight, ChevronLeft, User, Check, ClipboardList } from "lucide-react";
 import { salvarResposta } from "@/lib/supabase";
 import { escalas } from "@/content/escalas";
 import type { EscalaConfig } from "@/content/escalas";
 import { escalasGerais } from "@/content/escalas-gerais";
 import type { EscalaGeralConfig, BDIItem } from "@/content/escalas-gerais";
+import { AppAurora } from "@/components/ui/AppAurora";
 
 type AnyConfig = EscalaConfig | EscalaGeralConfig;
 
@@ -26,10 +27,7 @@ interface SchemaResult {
   dominio: string;
 }
 
-function computeSchemaAvg(
-  config: EscalaConfig,
-  respostas: number[]
-): { schemas: SchemaResult[]; pontuacao: number } {
+function computeSchemaAvg(config: EscalaConfig, respostas: number[]): { schemas: SchemaResult[]; pontuacao: number } {
   const schemas: SchemaResult[] = [];
   let highest = 0;
   for (const dominio of config.dominios ?? []) {
@@ -48,15 +46,10 @@ function computeSchemaAvg(
   return { schemas, pontuacao: Math.round(highest * 10) / 10 };
 }
 
-function computeThreshold(respostas: number[]): {
-  flagged: { index: number; valor: number }[];
-  pontuacao: number;
-} {
+function computeThreshold(respostas: number[]): { flagged: { index: number; valor: number }[]; pontuacao: number } {
   const flagged: { index: number; valor: number }[] = [];
   for (let i = 0; i < respostas.length; i++) {
-    if (respostas[i] >= 5) {
-      flagged.push({ index: i, valor: respostas[i] });
-    }
+    if (respostas[i] >= 5) flagged.push({ index: i, valor: respostas[i] });
   }
   return { flagged, pontuacao: flagged.length };
 }
@@ -70,25 +63,19 @@ interface DominioResult {
   itensCount: number;
 }
 
-function computeGeralScore(
-  config: EscalaGeralConfig,
-  respostas: number[]
-): { total: number; dominios: DominioResult[] } {
+function computeGeralScore(config: EscalaGeralConfig, respostas: number[]): { total: number; dominios: DominioResult[] } {
   let total = 0;
   const dominios: DominioResult[] = [];
 
   if (config.tipo === "binary" && config.chaveCorrecao) {
-    // BHS scoring
     for (let i = 0; i < respostas.length; i++) {
       const chave = config.chaveCorrecao[i + 1];
       const resposta = respostas[i] === 1 ? "C" : "E";
       if (resposta === chave) total++;
     }
   } else if (config.tipo === "likert-statements") {
-    // BDI scoring - just sum
     total = respostas.reduce((a, b) => a + b, 0);
   } else {
-    // Likert scoring with possible reversed items and domains
     if (config.dominios && config.dominios.length > 0) {
       for (const dom of config.dominios) {
         let soma = 0;
@@ -98,8 +85,8 @@ function computeGeralScore(
           let val = respostas[idx - 1] ?? 0;
           const isInverted = invertidos.includes(idx) || globalInvertidos.includes(idx);
           if (isInverted) {
-            const maxVal = config.opcoes ? Math.max(...config.opcoes.map(o => o.valor)) : 4;
-            const minVal = config.opcoes ? Math.min(...config.opcoes.map(o => o.valor)) : 0;
+            const maxVal = config.opcoes ? Math.max(...config.opcoes.map((o) => o.valor)) : 4;
+            const minVal = config.opcoes ? Math.min(...config.opcoes.map((o) => o.valor)) : 0;
             val = maxVal + minVal - val;
           }
           soma += val;
@@ -119,9 +106,43 @@ function computeGeralScore(
 // ===== Merged config lookup =====
 const allConfigs: Record<string, AnyConfig> = { ...escalas, ...escalasGerais };
 
+// ===== Shared visual bits =====
+function ScoreRing({ value, max, color = "var(--c-accent)", caption }: { value: number; max: number; color?: string; caption?: string }) {
+  const pct = max > 0 ? Math.min(1, value / max) : 0;
+  const r = 52;
+  const circ = 2 * Math.PI * r;
+  return (
+    <div className="relative mx-auto mb-5 h-32 w-32">
+      <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
+        <circle cx="60" cy="60" r={r} fill="none" stroke="var(--c-border)" strokeWidth="10" opacity="0.5" />
+        <motion.circle
+          cx="60" cy="60" r={r} fill="none" stroke={color} strokeWidth="10" strokeLinecap="round"
+          strokeDasharray={circ}
+          initial={{ strokeDashoffset: circ }}
+          animate={{ strokeDashoffset: circ * (1 - pct) }}
+          transition={{ duration: 1.1, ease: "easeOut", delay: 0.2 }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <motion.span initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.5, type: "spring" }} className="text-3xl font-bold text-[var(--c-text)]">
+          {value}
+        </motion.span>
+        {caption && <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--c-muted)]">{caption}</span>}
+      </div>
+    </div>
+  );
+}
+
+function AnimatedBar({ pct, color, delay = 0 }: { pct: number; color: string; delay?: number }) {
+  return (
+    <div className="h-2 overflow-hidden rounded-full bg-[var(--c-border)]">
+      <motion.div className="h-full rounded-full" style={{ background: color }} initial={{ width: 0 }} animate={{ width: Math.min(100, pct) + "%" }} transition={{ duration: 0.8, ease: "easeOut", delay }} />
+    </div>
+  );
+}
+
 export default function Escala() {
   const { escalaId } = useParams<{ escalaId: string }>();
-
   const config = escalaId ? allConfigs[escalaId] : undefined;
 
   const [etapa, setEtapa] = useState<"dados" | "intro" | "form" | "resultado">("dados");
@@ -133,16 +154,12 @@ export default function Escala() {
 
   const total = useMemo(() => {
     if (!config) return 0;
-    if (isEscalaGeral(config)) {
-      return Array.isArray(config.itens) ? config.itens.length : 0;
-    }
+    if (isEscalaGeral(config)) return Array.isArray(config.itens) ? config.itens.length : 0;
     return config.itens.length;
   }, [config]);
 
   useEffect(() => {
-    if (total > 0) {
-      setRespostas(Array(total).fill(null));
-    }
+    if (total > 0) setRespostas(Array(total).fill(null));
   }, [total]);
 
   useEffect(() => {
@@ -165,36 +182,20 @@ export default function Escala() {
     novo[atual] = valor;
     setRespostas(novo);
     setTimeout(() => {
-      if (atual < total - 1) {
-        setAtual(atual + 1);
-      } else {
-        finalizar(novo as number[]);
-      }
-    }, 200);
+      if (atual < total - 1) setAtual(atual + 1);
+      else finalizar(novo as number[]);
+    }, 220);
   }
 
   function finalizar(r: number[]) {
     let pontuacao = 0;
-    if (isEscalaGeral(config!)) {
-      const result = computeGeralScore(config!, r);
-      pontuacao = result.total;
-    } else if (config!.scoring === "schema-avg") {
-      pontuacao = computeSchemaAvg(config! as EscalaConfig, r).pontuacao;
-    } else {
-      pontuacao = computeThreshold(r).pontuacao;
-    }
-    salvarResposta({
-      tipo: config!.id,
-      nome: nome.trim(),
-      telefone: telefone.trim(),
-      nascimento,
-      respostas: r,
-      pontuacao,
-    });
+    if (isEscalaGeral(config!)) pontuacao = computeGeralScore(config!, r).total;
+    else if (config!.scoring === "schema-avg") pontuacao = computeSchemaAvg(config! as EscalaConfig, r).pontuacao;
+    else pontuacao = computeThreshold(r).pontuacao;
+    salvarResposta({ tipo: config!.id, nome: nome.trim(), telefone: telefone.trim(), nascimento, respostas: r, pontuacao });
     setEtapa("resultado");
   }
 
-  // Get current item text and options
   function getCurrentItemText(): string {
     if (!config) return "";
     if (isEscalaGeral(config)) {
@@ -210,51 +211,39 @@ export default function Escala() {
     if (isEscalaGeral(config)) {
       if (config.tipo === "likert-statements") {
         const item = config.itens[atual];
-        if (isBDIItem(item)) {
-          return item.opcoes.map(o => ({ label: o.texto, valor: o.valor }));
-        }
+        if (isBDIItem(item)) return item.opcoes.map((o) => ({ label: o.texto, valor: o.valor }));
       }
-      if (config.tipo === "binary") {
-        return [
-          { label: "Certo", valor: 1 },
-          { label: "Errado", valor: 0 },
-        ];
-      }
+      if (config.tipo === "binary") return [{ label: "Certo", valor: 1 }, { label: "Errado", valor: 0 }];
       return config.opcoes ?? [];
     }
     return (config as EscalaConfig).opcoes;
   }
 
   const isBDI = isEscalaGeral(config) && config.tipo === "likert-statements";
+  const pct = total > 0 ? Math.round(((atual + 1) / total) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-[var(--c-bg)] flex flex-col" data-theme="c">
-      <header className="fixed top-0 left-0 right-0 z-50 px-6 py-4 bg-[var(--c-bg)]/95 backdrop-blur border-b border-[var(--c-border)]">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <Link to="/paciente" className="text-sm text-[var(--c-muted)] hover:text-[var(--c-accent)] transition-colors">
-            Voltar
-          </Link>
-          <span className="text-xs font-semibold text-[var(--c-text)]">{sigla}</span>
-          {etapa === "form" ? (
-            <span className="text-xs text-[var(--c-muted)]">
-              {atual + 1} / {total}
-            </span>
-          ) : (
-            <span />
-          )}
+    <div className="relative flex min-h-screen flex-col" data-theme="c">
+      <AppAurora />
+
+      <header className="fixed left-0 right-0 top-0 z-50 px-6 py-4 glass-panel">
+        <div className="mx-auto flex max-w-2xl items-center justify-between">
+          <Link to="/paciente" className="text-sm text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]">Voltar</Link>
+          <span className="text-xs font-bold tracking-widest uppercase text-[var(--c-accent)]">{sigla}</span>
+          {etapa === "form" ? <span className="text-xs font-medium text-[var(--c-muted)]">{atual + 1} / {total}</span> : <span className="w-12" />}
         </div>
       </header>
 
-      <main id="main" className="flex-1 flex items-center justify-center pt-20 pb-12 px-6">
-        <div className="max-w-lg w-full">
+      <main id="main" className="relative z-10 flex flex-1 items-center justify-center px-6 pb-12 pt-24">
+        <div className="w-full max-w-lg">
           <AnimatePresence mode="wait">
 
             {etapa === "dados" && (
-              <motion.div key="dados" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="max-w-md mx-auto">
-                <div className="rounded-2xl bg-[var(--c-surface)] border border-[var(--c-border)] p-8">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "var(--c-accent)" + "15" }}>
-                      <User size={20} style={{ color: "var(--c-accent)" }} />
+              <motion.div key="dados" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="mx-auto max-w-md">
+                <div className="glass-card rounded-3xl p-8">
+                  <div className="mb-6 flex items-center gap-3">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl" style={{ background: "linear-gradient(140deg, var(--c-accent), var(--c-accent-lt))", boxShadow: "0 10px 26px -10px var(--c-accent)" }}>
+                      <User size={20} className="text-white" />
                     </div>
                     <div>
                       <h2 className="text-lg font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Seus dados</h2>
@@ -262,106 +251,110 @@ export default function Escala() {
                     </div>
                   </div>
 
-                  <div className="space-y-4 mb-6">
+                  <div className="mb-6 space-y-4">
                     <div>
-                      <label className="text-sm font-medium text-[var(--c-text)] block mb-1.5">Nome completo <span className="text-[var(--c-accent)]">*</span></label>
+                      <label className="mb-1.5 block text-sm font-medium text-[var(--c-text)]">Nome completo <span className="text-[var(--c-accent)]">*</span></label>
                       <input type="text" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Seu nome"
-                        className="w-full px-4 py-3 rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)] text-[var(--c-text)] placeholder:text-[var(--c-muted)]/50 focus:outline-none focus:border-[var(--c-accent)] transition-colors" />
+                        className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors placeholder:text-[var(--c-muted)]/50 focus:border-[var(--c-accent)] focus:outline-none" />
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-[var(--c-text)] block mb-1.5">Data de nascimento <span className="text-[var(--c-accent)]">*</span></label>
+                      <label className="mb-1.5 block text-sm font-medium text-[var(--c-text)]">Data de nascimento <span className="text-[var(--c-accent)]">*</span></label>
                       <input type="date" value={nascimento} onChange={(e) => setNascimento(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)] text-[var(--c-text)] focus:outline-none focus:border-[var(--c-accent)] transition-colors" />
+                        className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors focus:border-[var(--c-accent)] focus:outline-none" />
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-[var(--c-text)] block mb-1.5">Telefone / WhatsApp <span className="text-[var(--c-muted)] text-xs font-normal">(opcional)</span></label>
+                      <label className="mb-1.5 block text-sm font-medium text-[var(--c-text)]">Telefone / WhatsApp <span className="text-xs font-normal text-[var(--c-muted)]">(opcional)</span></label>
                       <input type="tel" value={telefone} onChange={(e) => setTelefone(e.target.value)} placeholder="(53) 9 9999-9999"
-                        className="w-full px-4 py-3 rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)] text-[var(--c-text)] placeholder:text-[var(--c-muted)]/50 focus:outline-none focus:border-[var(--c-accent)] transition-colors" />
+                        className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors placeholder:text-[var(--c-muted)]/50 focus:border-[var(--c-accent)] focus:outline-none" />
                     </div>
                   </div>
 
-                  <button onClick={() => setEtapa("intro")} disabled={!dadosValidos}
-                    className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-[var(--c-accent)] text-white font-medium hover:opacity-90 disabled:opacity-40 transition-opacity">
+                  <motion.button whileHover={{ scale: dadosValidos ? 1.02 : 1 }} whileTap={{ scale: 0.98 }} onClick={() => setEtapa("intro")} disabled={!dadosValidos}
+                    className="flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 font-medium text-white transition-opacity disabled:opacity-40"
+                    style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))", boxShadow: "0 12px 30px -10px var(--c-accent)" }}>
                     Continuar <ChevronRight size={16} />
-                  </button>
-
-                  <p className="text-xs text-[var(--c-muted)] mt-4 text-center">
-                    Dados protegidos pelo sigilo profissional e acessiveis apenas ao seu psicologo.
-                  </p>
+                  </motion.button>
+                  <p className="mt-4 text-center text-xs text-[var(--c-muted)]">Dados protegidos pelo sigilo profissional e acessiveis apenas ao seu psicologo.</p>
                 </div>
               </motion.div>
             )}
 
             {etapa === "intro" && (
               <motion.div key="intro" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="text-center">
-                <span className="text-xs font-semibold tracking-widest uppercase text-[var(--c-accent)] mb-3 block">
-                  {sigla}
-                </span>
-                <h1 className="text-3xl font-semibold text-[var(--c-text)] mb-4" style={{ fontFamily: "var(--font-heading)" }}>
-                  {config.nome}
-                </h1>
-                <p className="text-sm text-[var(--c-muted)] mb-6">
-                  Ola, <strong className="text-[var(--c-text)]">{nome.trim()}</strong>.
-                </p>
-                <p className="text-[var(--c-muted)] mb-4 leading-relaxed">{config.instrucoes}</p>
-                <p className="text-xs text-[var(--c-muted)] mb-2">
-                  {total} perguntas
-                </p>
-                <p className="text-xs text-[var(--c-muted)] mb-10 italic">Ferramenta de rastreio, nao de diagnostico.</p>
-                <button onClick={() => setEtapa("form")} className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-[var(--c-accent)] text-white font-medium hover:opacity-90 transition-opacity">
+                <motion.div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl"
+                  style={{ background: "linear-gradient(140deg, var(--c-accent), var(--c-accent-lt))", boxShadow: "0 16px 40px -12px var(--c-accent)" }}
+                  initial={{ scale: 0, rotate: -10 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 200 }}>
+                  <ClipboardList size={30} className="text-white" />
+                </motion.div>
+                <span className="mb-3 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--c-accent)]">{sigla}</span>
+                <h1 className="mb-3 text-3xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{config.nome}</h1>
+                <p className="mb-5 text-sm text-[var(--c-muted)]">Ola, <strong className="text-[var(--c-text)]">{nome.trim()}</strong>.</p>
+                <p className="mx-auto mb-6 max-w-md leading-relaxed text-[var(--c-muted)]">{config.instrucoes}</p>
+                <div className="mb-8 flex items-center justify-center gap-2">
+                  <span className="rounded-full bg-[var(--c-surface)] px-3 py-1 text-xs font-medium text-[var(--c-muted)]">{total} perguntas</span>
+                  <span className="rounded-full bg-[var(--c-surface)] px-3 py-1 text-xs font-medium text-[var(--c-muted)]">Rastreio, nao diagnostico</span>
+                </div>
+                <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} onClick={() => setEtapa("form")}
+                  className="inline-flex items-center gap-2 rounded-full px-8 py-3 font-medium text-white"
+                  style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))", boxShadow: "0 12px 30px -10px var(--c-accent)" }}>
                   Iniciar <ChevronRight size={18} />
-                </button>
+                </motion.button>
               </motion.div>
             )}
 
             {etapa === "form" && (
               <motion.div key={"q" + atual} initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.25 }}>
-                <div className="h-1.5 bg-[var(--c-border)] rounded-full overflow-hidden mb-6">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{ width: ((atual + 1) / total) * 100 + "%", background: "var(--c-accent)" }}
-                  />
+                <div className="mb-2 flex items-center justify-between text-xs font-medium text-[var(--c-muted)]">
+                  <span>Pergunta {atual + 1} de {total}</span>
+                  <span className="text-[var(--c-accent)]">{pct}%</span>
                 </div>
-                <p className="text-xs text-[var(--c-muted)] mb-1">Pergunta {atual + 1} de {total}</p>
-                {!isBDI && (
-                  <h2 className="text-xl font-semibold text-[var(--c-text)] mb-8" style={{ fontFamily: "var(--font-heading)" }}>
-                    {getCurrentItemText()}
-                  </h2>
-                )}
-                {isBDI && (
-                  <h2 className="text-lg font-semibold text-[var(--c-text)] mb-6" style={{ fontFamily: "var(--font-heading)" }}>
-                    Escolha a afirmacao que melhor descreve voce:
-                  </h2>
-                )}
+                <div className="mb-6 h-2 overflow-hidden rounded-full bg-[var(--c-border)]">
+                  <motion.div className="h-full rounded-full" style={{ background: "linear-gradient(90deg, var(--c-accent), var(--c-accent-lt))" }} animate={{ width: pct + "%" }} transition={{ duration: 0.4, ease: "easeOut" }} />
+                </div>
+
+                <div className="glass-card mb-5 rounded-2xl p-6">
+                  {!isBDI ? (
+                    <h2 className="text-xl font-semibold leading-snug text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{getCurrentItemText()}</h2>
+                  ) : (
+                    <h2 className="text-lg font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Escolha a afirmacao que melhor descreve voce:</h2>
+                  )}
+                </div>
+
                 <div className="space-y-3">
-                  {getCurrentOptions().map((op) => (
-                    <button
-                      key={op.valor}
-                      onClick={() => handleResposta(op.valor)}
-                      className="w-full text-left px-5 py-4 rounded-xl border transition-all"
-                      style={{
-                        borderColor: respostas[atual] === op.valor ? "var(--c-accent)" : "var(--c-border)",
-                        background: respostas[atual] === op.valor ? "var(--c-accent)10" : "var(--c-surface)",
-                        color: "var(--c-text)",
-                      }}
-                    >
-                      {!isBDI && <span className="font-semibold mr-2">{op.valor}.</span>}
-                      {isBDI && <span className="font-semibold mr-2 text-[var(--c-accent)]">{op.valor}.</span>}
-                      {op.label}
-                    </button>
-                  ))}
+                  {getCurrentOptions().map((op, i) => {
+                    const selected = respostas[atual] === op.valor;
+                    return (
+                      <motion.button
+                        key={op.valor}
+                        initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
+                        whileHover={{ x: 4 }} whileTap={{ scale: 0.99 }}
+                        onClick={() => handleResposta(op.valor)}
+                        className="flex w-full items-center gap-3 rounded-xl border px-5 py-4 text-left transition-colors"
+                        style={{
+                          borderColor: selected ? "var(--c-accent)" : "var(--c-border)",
+                          background: selected ? "color-mix(in oklab, var(--c-accent) 12%, transparent)" : "color-mix(in oklab, var(--c-bg) 60%, transparent)",
+                          color: "var(--c-text)",
+                        }}
+                      >
+                        <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg text-xs font-bold transition-colors"
+                          style={{ background: selected ? "var(--c-accent)" : "var(--c-surface)", color: selected ? "#fff" : "var(--c-muted)" }}>
+                          {selected ? <Check size={14} /> : op.valor}
+                        </span>
+                        <span className="flex-1">{op.label}</span>
+                      </motion.button>
+                    );
+                  })}
                 </div>
+
                 {atual > 0 && (
-                  <button onClick={() => setAtual(atual - 1)} className="mt-6 inline-flex items-center gap-1 text-sm text-[var(--c-muted)] hover:text-[var(--c-accent)] transition-colors">
+                  <button onClick={() => setAtual(atual - 1)} className="mt-6 inline-flex items-center gap-1 text-sm text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]">
                     <ChevronLeft size={16} /> Voltar
                   </button>
                 )}
               </motion.div>
             )}
 
-            {etapa === "resultado" && (
-              <ResultadoScreen config={config} respostas={respondidas} pacienteNome={nome.trim()} />
-            )}
+            {etapa === "resultado" && <ResultadoScreen config={config} respostas={respondidas} pacienteNome={nome.trim()} />}
           </AnimatePresence>
         </div>
       </main>
@@ -370,72 +363,41 @@ export default function Escala() {
 }
 
 // ===== RESULT SCREENS =====
-function ResultadoScreen({
-  config,
-  respostas,
-}: {
-  config: AnyConfig;
-  respostas: number[];
-  pacienteNome: string;
-}) {
-  if (isEscalaGeral(config)) {
-    return <ResultadoGeral config={config} respostas={respostas} />;
-  }
-  if (config.scoring === "schema-avg") {
-    return <ResultadoSchemaAvg config={config} respostas={respostas} />;
-  }
+function ResultadoScreen({ config, respostas }: { config: AnyConfig; respostas: number[]; pacienteNome: string }) {
+  if (isEscalaGeral(config)) return <ResultadoGeral config={config} respostas={respostas} />;
+  if (config.scoring === "schema-avg") return <ResultadoSchemaAvg config={config} respostas={respostas} />;
   return <ResultadoThreshold config={config} respostas={respostas} />;
 }
 
 function ResultadoGeral({ config, respostas }: { config: EscalaGeralConfig; respostas: number[] }) {
   const result = useMemo(() => computeGeralScore(config, respostas), [config, respostas]);
-
-  const maxPossible = config.pontuacaoMaxima ??
-    (config.opcoes ? Math.max(...config.opcoes.map(o => o.valor)) * respostas.length : result.total);
+  const maxPossible = config.pontuacaoMaxima ?? (config.opcoes ? Math.max(...config.opcoes.map((o) => o.valor)) * respostas.length : result.total);
+  const maxOp = config.opcoes ? Math.max(...config.opcoes.map((o) => o.valor)) : 6;
 
   return (
     <motion.div key="resultado" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-      <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold text-white bg-[var(--c-accent)]">
-        {result.total}
-      </div>
-      <span className="text-xs tracking-widest uppercase font-semibold block mb-1 text-[var(--c-accent)]">
-        Pontuacao Total
-      </span>
-      <h2 className="text-2xl font-semibold text-[var(--c-text)] mb-4" style={{ fontFamily: "var(--font-heading)" }}>
-        Respostas registradas
-      </h2>
-      <p className="text-[var(--c-muted)] leading-relaxed mb-6 max-w-sm mx-auto">
+      <ScoreRing value={result.total} max={maxPossible} caption="Total" />
+      <h2 className="mb-3 text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Respostas registradas</h2>
+      <p className="mx-auto mb-7 max-w-sm leading-relaxed text-[var(--c-muted)]">
         Pontuacao: {result.total}{maxPossible > 0 ? ` de ${maxPossible}` : ""}. Converse com seu psicologo sobre estes resultados.
       </p>
 
       {result.dominios.length > 0 && (
-        <div className="text-left space-y-3 mb-8">
-          {result.dominios.map((dom) => (
-            <div key={dom.id} className="rounded-xl border border-[var(--c-border)] bg-[var(--c-surface)] p-4">
-              <div className="flex justify-between text-sm mb-2">
+        <div className="mb-8 space-y-3 text-left">
+          {result.dominios.map((dom, i) => (
+            <div key={dom.id} className="glass-card rounded-xl p-4">
+              <div className="mb-2 flex justify-between text-sm">
                 <span className="font-semibold text-[var(--c-text)]">{dom.nome}</span>
-                <span className="text-[var(--c-accent)] font-bold">
-                  {dom.media.toFixed(1)} (soma: {dom.soma})
-                </span>
+                <span className="font-bold text-[var(--c-accent)]">{dom.media.toFixed(1)} (soma: {dom.soma})</span>
               </div>
-              <div className="h-2 bg-[var(--c-border)] rounded-full overflow-hidden">
-                <div
-                  className="h-full rounded-full transition-all duration-700"
-                  style={{
-                    width: Math.min(100, (dom.media / (config.opcoes ? Math.max(...config.opcoes.map(o => o.valor)) : 6)) * 100) + "%",
-                    background: "var(--c-accent)",
-                  }}
-                />
-              </div>
+              <AnimatedBar pct={(dom.media / maxOp) * 100} color="var(--c-accent)" delay={i * 0.08} />
             </div>
           ))}
         </div>
       )}
 
-      <p className="text-xs text-[var(--c-muted)] mb-10 italic">Suas respostas foram enviadas ao seu psicologo de forma segura.</p>
-      <Link to="/paciente" className="px-6 py-3 rounded-full border border-[var(--c-border)] text-[var(--c-text)] hover:border-[var(--c-accent)] transition-colors text-sm">
-        Voltar
-      </Link>
+      <p className="mb-8 text-xs italic text-[var(--c-muted)]">Suas respostas foram enviadas ao seu psicologo de forma segura.</p>
+      <Link to="/paciente" className="rounded-full border border-[var(--c-border)] px-6 py-3 text-sm text-[var(--c-text)] transition-colors hover:border-[var(--c-accent)]">Voltar</Link>
     </motion.div>
   );
 }
@@ -455,43 +417,25 @@ function ResultadoSchemaAvg({ config, respostas }: { config: EscalaConfig; respo
 
   return (
     <motion.div key="resultado" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-      <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold text-white bg-[var(--c-accent)]">
-        {ativos.length}
-      </div>
-      <span className="text-xs tracking-widest uppercase font-semibold block mb-1 text-[var(--c-accent)]">
+      <ScoreRing value={ativos.length} max={schemas.length} caption="Ativos" />
+      <span className="mb-1 block text-xs font-bold uppercase tracking-widest text-[var(--c-accent)]">
         {ativos.length === 0 ? "Nenhum esquema ativado" : `${ativos.length} esquema${ativos.length > 1 ? "s" : ""} ativo${ativos.length > 1 ? "s" : ""}`}
       </span>
-      <h2 className="text-2xl font-semibold text-[var(--c-text)] mb-4" style={{ fontFamily: "var(--font-heading)" }}>
-        Respostas registradas
-      </h2>
-      <p className="text-[var(--c-muted)] leading-relaxed mb-6 max-w-sm mx-auto">
-        Esquemas com media acima de 3.5 sao considerados ativos. Converse com seu psicologo sobre estes resultados.
-      </p>
+      <h2 className="mb-3 text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Respostas registradas</h2>
+      <p className="mx-auto mb-7 max-w-sm leading-relaxed text-[var(--c-muted)]">Esquemas com media acima de 3.5 sao considerados ativos. Converse com seu psicologo sobre estes resultados.</p>
 
-      <div className="text-left space-y-4 mb-8">
+      <div className="mb-8 space-y-4 text-left">
         {Array.from(dominioGroups.entries()).map(([domNome, esquemas]) => (
-          <div key={domNome} className="rounded-xl border border-[var(--c-border)] bg-[var(--c-surface)] p-4">
-            <h3 className="text-sm font-semibold text-[var(--c-text)] mb-3">{domNome}</h3>
-            <div className="space-y-2">
-              {esquemas.map((e) => (
+          <div key={domNome} className="glass-card rounded-xl p-4">
+            <h3 className="mb-3 text-sm font-semibold text-[var(--c-text)]">{domNome}</h3>
+            <div className="space-y-2.5">
+              {esquemas.map((e, i) => (
                 <div key={e.id}>
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className={e.media > 3.5 ? "font-bold text-[var(--c-accent)]" : "text-[var(--c-muted)]"}>
-                      {e.nome}
-                    </span>
-                    <span className={e.media > 3.5 ? "font-bold text-[var(--c-accent)]" : "text-[var(--c-muted)]"}>
-                      {e.media.toFixed(1)}
-                    </span>
+                  <div className="mb-1 flex justify-between text-xs">
+                    <span className={e.media > 3.5 ? "font-bold text-[var(--c-accent)]" : "text-[var(--c-muted)]"}>{e.nome}</span>
+                    <span className={e.media > 3.5 ? "font-bold text-[var(--c-accent)]" : "text-[var(--c-muted)]"}>{e.media.toFixed(1)}</span>
                   </div>
-                  <div className="h-2 bg-[var(--c-border)] rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-700"
-                      style={{
-                        width: (e.media / 6) * 100 + "%",
-                        background: e.media > 3.5 ? "var(--c-accent)" : "var(--c-muted)",
-                      }}
-                    />
-                  </div>
+                  <AnimatedBar pct={(e.media / 6) * 100} color={e.media > 3.5 ? "var(--c-accent)" : "var(--c-muted)"} delay={i * 0.05} />
                 </div>
               ))}
             </div>
@@ -499,10 +443,8 @@ function ResultadoSchemaAvg({ config, respostas }: { config: EscalaConfig; respo
         ))}
       </div>
 
-      <p className="text-xs text-[var(--c-muted)] mb-10 italic">Suas respostas foram enviadas ao seu psicologo de forma segura.</p>
-      <Link to="/paciente" className="px-6 py-3 rounded-full border border-[var(--c-border)] text-[var(--c-text)] hover:border-[var(--c-accent)] transition-colors text-sm">
-        Voltar
-      </Link>
+      <p className="mb-8 text-xs italic text-[var(--c-muted)]">Suas respostas foram enviadas ao seu psicologo de forma segura.</p>
+      <Link to="/paciente" className="rounded-full border border-[var(--c-border)] px-6 py-3 text-sm text-[var(--c-text)] transition-colors hover:border-[var(--c-accent)]">Voltar</Link>
     </motion.div>
   );
 }
@@ -512,39 +454,29 @@ function ResultadoThreshold({ config, respostas }: { config: EscalaConfig; respo
 
   return (
     <motion.div key="resultado" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-      <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold text-white bg-[var(--c-accent)]">
-        {pontuacao}
-      </div>
-      <span className="text-xs tracking-widest uppercase font-semibold block mb-1 text-[var(--c-accent)]">
+      <ScoreRing value={pontuacao} max={respostas.length} caption="Defesas" />
+      <span className="mb-1 block text-xs font-bold uppercase tracking-widest text-[var(--c-accent)]">
         {pontuacao === 0 ? "Nenhuma defesa ativada" : `${pontuacao} defesa${pontuacao > 1 ? "s" : ""} ativa${pontuacao > 1 ? "s" : ""}`}
       </span>
-      <h2 className="text-2xl font-semibold text-[var(--c-text)] mb-4" style={{ fontFamily: "var(--font-heading)" }}>
-        Respostas registradas
-      </h2>
-      <p className="text-[var(--c-muted)] leading-relaxed mb-6 max-w-sm mx-auto">
-        Itens com nota 5 ou 6 indicam forte ativacao da estrategia compensatoria. Compartilhe esses resultados com seu psicologo.
-      </p>
+      <h2 className="mb-3 text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Respostas registradas</h2>
+      <p className="mx-auto mb-7 max-w-sm leading-relaxed text-[var(--c-muted)]">Itens com nota 5 ou 6 indicam forte ativacao da estrategia compensatoria. Compartilhe esses resultados com seu psicologo.</p>
 
       {flagged.length > 0 && (
-        <div className="text-left mb-8 rounded-xl border border-[var(--c-accent)]/30 bg-[var(--c-surface)] p-4">
-          <h3 className="text-sm font-semibold text-[var(--c-accent)] mb-3">Defesas ativas</h3>
+        <div className="glass-card mb-8 rounded-xl border border-[var(--c-accent)]/30 p-4 text-left">
+          <h3 className="mb-3 text-sm font-semibold text-[var(--c-accent)]">Defesas ativas</h3>
           <ul className="space-y-2">
-            {flagged.map((f) => (
-              <li key={f.index} className="flex items-start gap-3 text-sm">
-                <span className="flex-shrink-0 w-7 h-7 rounded-lg bg-[var(--c-accent)] text-white font-bold flex items-center justify-center text-xs">
-                  {f.valor}
-                </span>
-                <span className="text-[var(--c-text)] leading-snug">{config.itens[f.index]}</span>
-              </li>
+            {flagged.map((f, i) => (
+              <motion.li key={f.index} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }} className="flex items-start gap-3 text-sm">
+                <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-[var(--c-accent)] text-xs font-bold text-white">{f.valor}</span>
+                <span className="leading-snug text-[var(--c-text)]">{config.itens[f.index]}</span>
+              </motion.li>
             ))}
           </ul>
         </div>
       )}
 
-      <p className="text-xs text-[var(--c-muted)] mb-10 italic">Suas respostas foram enviadas ao seu psicologo de forma segura.</p>
-      <Link to="/paciente" className="px-6 py-3 rounded-full border border-[var(--c-border)] text-[var(--c-text)] hover:border-[var(--c-accent)] transition-colors text-sm">
-        Voltar
-      </Link>
+      <p className="mb-8 text-xs italic text-[var(--c-muted)]">Suas respostas foram enviadas ao seu psicologo de forma segura.</p>
+      <Link to="/paciente" className="rounded-full border border-[var(--c-border)] px-6 py-3 text-sm text-[var(--c-text)] transition-colors hover:border-[var(--c-accent)]">Voltar</Link>
     </motion.div>
   );
 }

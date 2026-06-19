@@ -1,19 +1,23 @@
 ﻿import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { ClipboardList, Brain, ArrowRight, Shield, Lock, Heart, Leaf, Activity, BookOpen, Gauge, Zap, Eye, Sprout } from "lucide-react";
 import { SkipLink } from "@/components/shared/SkipLink";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
+import { AppAurora } from "@/components/ui/AppAurora";
 import { contato } from "@/content/copy";
 import { fadeUp, stagger } from "@/lib/motion";
 
-const ferramentasEsquemas = [
-  { id: "ysq", href: "/paciente/escala/ysq", icon: Brain, sigla: "YSQ-S3", nome: "Questionario de Esquemas", descricao: "90 perguntas sobre padroes emocionais profundos. ~20 min.", cor: "#7A4A8C" },
-  { id: "ypi", href: "/paciente/escala/ypi", icon: ClipboardList, sigla: "YPI", nome: "Inventario Parental de Young", descricao: "72 perguntas sobre atitudes dos seus pais. ~15 min.", cor: "#3A6B8C" },
-  { id: "yci", href: "/paciente/escala/yci", icon: Shield, sigla: "YCI", nome: "Inventario de Compensacao", descricao: "48 perguntas sobre estrategias de enfrentamento. ~10 min.", cor: "#6B5B3A" },
+type Ferramenta = {
+  id: string; href: string; icon: typeof Brain; sigla: string; nome: string; descricao: string; cor: string;
+};
+
+const ferramentasRastreio: Ferramenta[] = [
+  { id: "phq9", href: "/paciente/phq9", icon: Brain, sigla: "PHQ-9", nome: "Rastreio de Depressao", descricao: "9 perguntas sobre humor nas ultimas duas semanas. ~3 min.", cor: "#B05D3A" },
+  { id: "gad7", href: "/paciente/gad7", icon: ClipboardList, sigla: "GAD-7", nome: "Rastreio de Ansiedade", descricao: "7 perguntas sobre ansiedade e preocupacao. ~2 min.", cor: "#4A6B47" },
 ];
 
-const ferramentasGerais = [
+const ferramentasGerais: Ferramenta[] = [
   { id: "asrs", href: "/paciente/escala/asrs", icon: Zap, sigla: "ASRS-18", nome: "Rastreio de TDAH", descricao: "18 perguntas sobre atencao e hiperatividade. ~5 min.", cor: "#C06839" },
   { id: "bai", href: "/paciente/escala/bai", icon: Activity, sigla: "BAI", nome: "Inventario de Ansiedade de Beck", descricao: "21 sintomas de ansiedade na ultima semana. ~5 min.", cor: "#4A6B47" },
   { id: "bdi", href: "/paciente/escala/bdi", icon: Heart, sigla: "BDI", nome: "Inventario de Depressao de Beck", descricao: "21 grupos de sentimentos sobre humor atual. ~8 min.", cor: "#8C4A5B" },
@@ -24,52 +28,55 @@ const ferramentasGerais = [
   { id: "neopir", href: "/paciente/escala/neopir", icon: Sprout, sigla: "NEO-PI-R", nome: "Personalidade (Versao Completa)", descricao: "240 perguntas sobre personalidade detalhada. ~45 min.", cor: "#3A5B8C" },
 ];
 
-const ferramentasRastreio = [
-  { id: "phq9", href: "/paciente/phq9", icon: Brain, sigla: "PHQ-9", nome: "Rastreio de Depressao", descricao: "9 perguntas sobre humor nas ultimas duas semanas. ~3 min.", cor: "#B05D3A" },
-  { id: "gad7", href: "/paciente/gad7", icon: ClipboardList, sigla: "GAD-7", nome: "Rastreio de Ansiedade", descricao: "7 perguntas sobre ansiedade e preocupacao. ~2 min.", cor: "#4A6B47" },
+const ferramentasEsquemas: Ferramenta[] = [
+  { id: "ysq", href: "/paciente/escala/ysq", icon: Brain, sigla: "YSQ-S3", nome: "Questionario de Esquemas", descricao: "90 perguntas sobre padroes emocionais profundos. ~20 min.", cor: "#7A4A8C" },
+  { id: "ypi", href: "/paciente/escala/ypi", icon: ClipboardList, sigla: "YPI", nome: "Inventario Parental de Young", descricao: "72 perguntas sobre atitudes dos seus pais. ~15 min.", cor: "#3A6B8C" },
+  { id: "yci", href: "/paciente/escala/yci", icon: Shield, sigla: "YCI", nome: "Inventario de Compensacao", descricao: "48 perguntas sobre estrategias de enfrentamento. ~10 min.", cor: "#6B5B3A" },
 ];
 
-function HubBlobs() {
-  const reduced = useReducedMotion();
-  if (reduced) return null;
-  const blobs = [
-    { size: 280, x: "10%", y: "15%", color: "var(--c-accent)", delay: 0 },
-    { size: 200, x: "75%", y: "60%", color: "var(--c-moss)", delay: 2 },
-    { size: 160, x: "50%", y: "80%", color: "var(--c-warm)", delay: 4 },
-  ];
+function FerramentaCard({ f }: { f: Ferramenta }) {
+  const Icon = f.icon;
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
-      {blobs.map((b, i) => (
-        <motion.div key={i} className="absolute rounded-full opacity-[0.06] blur-3xl"
-          style={{ width: b.size, height: b.size, left: b.x, top: b.y, background: b.color }}
-          animate={{ x: [0, 30, -20, 0], y: [0, -25, 15, 0], scale: [1, 1.15, 0.95, 1] }}
-          transition={{ duration: 18 + i * 4, repeat: Infinity, ease: "easeInOut", delay: b.delay }}
-        />
-      ))}
-    </div>
+    <motion.div variants={fadeUp} whileHover={{ y: -5 }} transition={{ type: "spring", stiffness: 300, damping: 22 }}>
+      <Link
+        to={f.href}
+        className="shine-host glass-card group relative block h-full overflow-hidden rounded-2xl p-6 transition-shadow duration-300 hover:shadow-[0_18px_44px_-16px_rgba(58,42,31,0.4)]"
+      >
+        {/* fita de cor lateral */}
+        <span className="absolute left-0 top-0 h-full w-1.5" style={{ background: `linear-gradient(to bottom, ${f.cor}, ${f.cor}55)` }} aria-hidden="true" />
+        <div className="flex items-start gap-4 pl-1">
+          <motion.div
+            className="relative flex-shrink-0 rounded-2xl p-3.5"
+            style={{ background: f.cor + "1A", boxShadow: `0 8px 22px -8px ${f.cor}88` }}
+            whileHover={{ scale: 1.1, rotate: 6 }}
+            transition={{ type: "spring", stiffness: 320 }}
+          >
+            <Icon size={24} style={{ color: f.cor }} aria-hidden="true" />
+          </motion.div>
+          <div className="flex-1">
+            <span className="text-[11px] font-bold tracking-[0.15em] uppercase" style={{ color: f.cor }}>{f.sigla}</span>
+            <h3 className="mb-1.5 text-lg font-semibold text-[var(--c-text)] leading-snug" style={{ fontFamily: "var(--font-heading)" }}>{f.nome}</h3>
+            <p className="mb-4 text-sm leading-relaxed text-[var(--c-muted)]">{f.descricao}</p>
+            <span className="inline-flex items-center gap-1.5 text-sm font-semibold transition-all group-hover:gap-3" style={{ color: f.cor }}>
+              Responder <ArrowRight size={15} />
+            </span>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
   );
 }
 
-function FerramentaCard({ f }: { f: typeof ferramentasGerais[0] }) {
-  const Icon = f.icon;
+function Secao({ titulo, count, children }: { titulo: string; count: number; children: React.ReactNode }) {
   return (
-    <Link to={f.href}
-      className="block w-full text-left rounded-2xl border border-[var(--c-border)] bg-[var(--c-surface)] p-7 hover:border-[var(--c-accent)]/50 hover:shadow-lg transition-all group">
-      <div className="flex items-start gap-4">
-        <motion.div className="rounded-xl p-3 flex-shrink-0" style={{ background: f.cor + "18" }}
-          whileHover={{ scale: 1.1, rotate: 5 }} transition={{ type: "spring", stiffness: 300 }}>
-          <Icon size={22} style={{ color: f.cor }} aria-hidden="true" />
-        </motion.div>
-        <div className="flex-1">
-          <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: f.cor }}>{f.sigla}</span>
-          <h3 className="text-lg font-semibold text-[var(--c-text)] mb-2" style={{ fontFamily: "var(--font-heading)" }}>{f.nome}</h3>
-          <p className="text-[var(--c-muted)] text-sm leading-relaxed mb-4">{f.descricao}</p>
-          <span className="inline-flex items-center gap-1.5 text-sm font-medium group-hover:gap-2.5 transition-all" style={{ color: f.cor }}>
-            Responder <ArrowRight size={15} />
-          </span>
-        </div>
+    <motion.section variants={fadeUp} className="mb-12">
+      <div className="mb-5 flex items-center gap-3">
+        <h2 className="text-sm font-bold tracking-[0.18em] uppercase text-[var(--c-muted)]">{titulo}</h2>
+        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--c-accent)]/12 px-1.5 text-[11px] font-bold text-[var(--c-accent)]">{count}</span>
+        <div className="h-px flex-1 rounded-full bg-gradient-to-r from-[var(--c-border)] to-transparent" />
       </div>
-    </Link>
+      <div className="grid gap-5 md:grid-cols-2">{children}</div>
+    </motion.section>
   );
 }
 
@@ -83,79 +90,63 @@ export default function PacienteHub() {
   return (
     <>
       <SkipLink />
-      <HubBlobs />
+      <AppAurora />
 
-      <header className="fixed top-0 left-0 right-0 z-50 px-6 py-4 bg-[var(--c-bg)]/95 backdrop-blur border-b border-[var(--c-border)]">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link to="/" className="text-sm font-semibold text-[var(--c-text)] hover:text-[var(--c-accent)] transition-colors">Bruno SG</Link>
+      <header className="fixed top-0 left-0 right-0 z-50 px-6 py-4 glass-panel">
+        <div className="mx-auto flex max-w-4xl items-center justify-between">
+          <Link to="/" className="text-sm font-semibold text-[var(--c-text)] transition-colors hover:text-[var(--c-accent)]">Bruno SG</Link>
           <span className="text-xs text-[var(--c-muted)]">{contato.crp}</span>
         </div>
       </header>
 
-      <main id="main" className="min-h-screen bg-[var(--c-bg)] pt-28 pb-24 px-6 relative z-10">
-        <div className="max-w-3xl mx-auto">
+      <main id="main" className="relative z-10 min-h-screen px-6 pb-24 pt-28">
+        <div className="mx-auto max-w-3xl">
           <motion.div variants={stagger.container} initial="hidden" animate="visible">
 
-            <motion.div variants={fadeUp} className="text-center mb-12">
-              <motion.div className="w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center"
-                style={{ background: "var(--c-accent)" + "15" }}
-                initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.2 }}>
-                <Shield size={28} style={{ color: "var(--c-accent)" }} />
+            <motion.div variants={fadeUp} className="mb-14 text-center">
+              <motion.div
+                className="relative mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl"
+                style={{ background: "linear-gradient(140deg, var(--c-accent), var(--c-accent-lt))", boxShadow: "0 16px 40px -12px var(--c-accent)" }}
+                initial={{ scale: 0, rotate: -12 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", delay: 0.15, stiffness: 200 }}
+              >
+                <Shield size={32} className="text-white" />
+                <motion.span
+                  className="absolute inset-0 rounded-3xl ring-2 ring-[var(--c-accent)]/30"
+                  animate={{ scale: [1, 1.18, 1], opacity: [0.6, 0, 0.6] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  aria-hidden="true"
+                />
               </motion.div>
-              <h1 className="text-4xl md:text-5xl font-semibold text-[var(--c-text)] mb-4" style={{ fontFamily: "var(--font-heading)" }}>
+              <h1 className="mb-4 text-4xl font-semibold md:text-5xl" style={{ fontFamily: "var(--font-heading)", background: "linear-gradient(120deg, var(--c-text), var(--c-accent))", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>
                 Area do Paciente
               </h1>
-              <p className="text-[var(--c-muted)] max-w-lg mx-auto leading-relaxed">
-                Ferramentas de autoavaliacao indicadas pelo seu psicologo.
+              <p className="mx-auto max-w-lg leading-relaxed text-[var(--c-muted)]">
+                Ferramentas de autoavaliacao indicadas pelo seu psicologo. Escolha um questionario para comecar.
               </p>
             </motion.div>
 
-            {/* Rastreio Rapido */}
-            <motion.div variants={fadeUp} className="mb-8">
-              <h2 className="text-sm font-semibold tracking-widest uppercase text-[var(--c-muted)] mb-4">Rastreio Rapido</h2>
-              <div className="grid md:grid-cols-2 gap-5">
-                {ferramentasRastreio.map((f, i) => (
-                  <motion.div key={f.sigla} variants={fadeUp} custom={i}>
-                    <FerramentaCard f={f} />
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
+            <Secao titulo="Rastreio Rapido" count={ferramentasRastreio.length}>
+              {ferramentasRastreio.map((f) => <FerramentaCard key={f.id} f={f} />)}
+            </Secao>
 
-            {/* Escalas Gerais */}
-            <motion.div variants={fadeUp} className="mb-8">
-              <h2 className="text-sm font-semibold tracking-widest uppercase text-[var(--c-muted)] mb-4">Escalas Gerais</h2>
-              <div className="grid md:grid-cols-2 gap-5">
-                {ferramentasGerais.map((f, i) => (
-                  <motion.div key={f.sigla} variants={fadeUp} custom={i}>
-                    <FerramentaCard f={f} />
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
+            <Secao titulo="Escalas Gerais" count={ferramentasGerais.length}>
+              {ferramentasGerais.map((f) => <FerramentaCard key={f.id} f={f} />)}
+            </Secao>
 
-            {/* Escalas de Esquemas */}
-            <motion.div variants={fadeUp} className="mb-16">
-              <h2 className="text-sm font-semibold tracking-widest uppercase text-[var(--c-muted)] mb-4">Escalas de Esquemas</h2>
-              <div className="grid md:grid-cols-2 gap-5">
-                {ferramentasEsquemas.map((f, i) => (
-                  <motion.div key={f.sigla} variants={fadeUp} custom={i}>
-                    <FerramentaCard f={f} />
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
+            <Secao titulo="Escalas de Esquemas" count={ferramentasEsquemas.length}>
+              {ferramentasEsquemas.map((f) => <FerramentaCard key={f.id} f={f} />)}
+            </Secao>
 
-            <motion.div variants={fadeUp} className="space-y-4">
-              <div className="rounded-2xl bg-[var(--c-surface)] border border-[var(--c-border)] p-6">
-                <div className="flex items-start gap-3">
-                  <Lock size={18} className="text-[var(--c-accent)] flex-shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-[var(--c-text)] text-sm block mb-1">Privacidade</strong>
-                    <p className="text-[var(--c-muted)] text-sm leading-relaxed">
-                      Suas respostas sao armazenadas de forma segura e acessiveis exclusivamente por Bruno SG, {contato.crp}. Estas ferramentas sao de rastreio, nao de diagnostico.
-                    </p>
-                  </div>
+            <motion.div variants={fadeUp} className="glass-card rounded-2xl p-6">
+              <div className="flex items-start gap-3">
+                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-[var(--c-accent)]/12">
+                  <Lock size={17} className="text-[var(--c-accent)]" />
+                </div>
+                <div>
+                  <strong className="mb-1 block text-sm text-[var(--c-text)]">Privacidade</strong>
+                  <p className="text-sm leading-relaxed text-[var(--c-muted)]">
+                    Suas respostas sao armazenadas de forma segura e acessiveis exclusivamente por Bruno SG, {contato.crp}. Estas ferramentas sao de rastreio, nao de diagnostico.
+                  </p>
                 </div>
               </div>
             </motion.div>
@@ -164,7 +155,9 @@ export default function PacienteHub() {
         </div>
       </main>
 
-      <EthicalFooter />
+      <div className="relative z-10">
+        <EthicalFooter />
+      </div>
     </>
   );
 }
