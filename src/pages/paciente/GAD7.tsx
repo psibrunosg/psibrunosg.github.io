@@ -1,8 +1,7 @@
 ﻿import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, ChevronLeft, Download, MessageCircle, Mail } from "lucide-react";
-import { baixarPDF, gerarWhatsAppLink, gerarEmailLink } from "@/lib/pdf-generator";
+import { ChevronRight, ChevronLeft } from "lucide-react";
 import { salvarResposta } from "@/lib/supabase";
 
 const perguntas = [
@@ -43,17 +42,7 @@ export default function GAD7() {
 
   const pontuacao = respostas.reduce<number>((acc, r) => acc + (r ?? 0), 0);
   const resultado = classificar(pontuacao);
-  const dataHoje = new Date().toLocaleDateString("pt-BR");
 
-  const dadosPDF = {
-    tipo: "GAD-7" as const,
-    nome,
-    pontuacao,
-    nivel: resultado.nivel,
-    respostas: respostas as number[],
-    perguntas,
-    data: dataHoje,
-  };
 
   return (
     <div className="min-h-screen bg-[var(--c-bg)] flex flex-col" data-theme="c">
@@ -139,25 +128,10 @@ export default function GAD7() {
               <motion.div key="resultado" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
                 <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl font-bold text-white" style={{ background: resultado.cor }}>{pontuacao}</div>
                 <span className="text-xs tracking-widest uppercase font-semibold block mb-1" style={{ color: resultado.cor }}>{resultado.nivel}</span>
-                <h2 className="text-2xl font-semibold text-[var(--c-text)] mb-4" style={{ fontFamily: "var(--font-heading)" }}>Resultado do GAD-7</h2>
-                <p className="text-[var(--c-muted)] leading-relaxed mb-8 max-w-sm mx-auto">{resultado.orientacao}</p>
-
-                <div className="space-y-3 mb-8 max-w-xs mx-auto">
-                  <button onClick={() => baixarPDF(dadosPDF)} className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-full text-white font-medium hover:opacity-90 transition-opacity" style={{ background: "#4A6B47" }}>
-                    <Download size={16} /> Baixar PDF
-                  </button>
-                  <a href={gerarWhatsAppLink(dadosPDF, "5553991898309")} target="_blank" rel="noopener noreferrer"
-                    className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 border-[#25D366] text-[#25D366] font-medium hover:bg-[#25D366]/10 transition-colors">
-                    <MessageCircle size={16} /> Enviar por WhatsApp
-                  </a>
-                  <a href={gerarEmailLink(dadosPDF, "brunosg2711@gmail.com")} target="_blank" rel="noopener noreferrer"
-                    className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-full border border-[var(--c-border)] text-[var(--c-text)] font-medium hover:border-[var(--c-accent)] transition-colors">
-                    <Mail size={16} /> Enviar por e-mail
-                  </a>
-                </div>
-
-                <p className="text-xs text-[var(--c-muted)] mb-8 italic">GAD-7: escala validada de rastreio. Nao constitui diagnostico. Dados protegidos e acessiveis apenas ao seu psicologo.</p>
-                <Link to="/paciente" className="text-sm text-[var(--c-accent)] hover:underline">Outros questionarios</Link>
+                <h2 className="text-2xl font-semibold text-[var(--c-text)] mb-4" style={{ fontFamily: "var(--font-heading)" }}>Respostas registradas</h2>
+                <p className="text-[var(--c-muted)] leading-relaxed mb-6 max-w-sm mx-auto">{resultado.orientacao}</p>
+                <p className="text-xs text-[var(--c-muted)] mb-10 italic">GAD-7: escala validada de rastreio. Nao constitui diagnostico. Suas respostas foram enviadas ao seu psicologo de forma segura.</p>
+                <Link to="/paciente" className="px-6 py-3 rounded-full border border-[var(--c-border)] text-[var(--c-text)] hover:border-[var(--c-accent)] transition-colors text-sm">Voltar</Link>
               </motion.div>
             )}
 

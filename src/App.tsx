@@ -5,6 +5,7 @@ import BlogPost from "./pages/BlogPost";
 import PacienteHub from "./pages/paciente/Hub";
 import PHQ9 from "./pages/paciente/PHQ9";
 import GAD7 from "./pages/paciente/GAD7";
+import AdminRespostas from "./pages/admin/Respostas";
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="/paciente" element={<PacienteHub />} />
         <Route path="/paciente/phq9" element={<PHQ9 />} />
         <Route path="/paciente/gad7" element={<GAD7 />} />
+        <Route path="/admin/respostas" element={<AdminRespostas />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
