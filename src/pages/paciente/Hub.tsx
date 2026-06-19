@@ -100,7 +100,7 @@ export default function PacienteHub() {
                 className="inline-flex items-center gap-2 text-xs text-[var(--c-accent)] bg-[var(--c-accent)]/8 px-4 py-2 rounded-full"
               >
                 <Lock size={13} />
-                Nenhum dado armazenado online. Tudo processado no seu navegador.
+                Dados protegidos pelo sigilo profissional e armazenados de forma segura.
               </motion.div>
             </motion.div>
 
@@ -156,7 +156,7 @@ export default function PacienteHub() {
                   <div>
                     <strong className="text-[var(--c-text)] text-sm block mb-1">Privacidade e LGPD</strong>
                     <p className="text-[var(--c-muted)] text-sm leading-relaxed">
-                      Nenhum dado pessoal e armazenado em servidores. Todas as respostas sao processadas exclusivamente no seu navegador. O PDF gerado fica apenas no seu dispositivo ate que voce decida compartilha-lo com seu psicologo.
+                      Suas respostas sao armazenadas de forma segura e acessiveis exclusivamente por Bruno SG, CRP 07/44472. Voce tambem pode baixar o PDF e compartilhar por WhatsApp ou e-mail.
                     </p>
                   </div>
                 </div>

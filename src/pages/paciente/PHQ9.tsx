@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, ChevronLeft, Download, MessageCircle, Mail } from "lucide-react";
 import { baixarPDF, gerarWhatsAppLink, gerarEmailLink } from "@/lib/pdf-generator";
+import { salvarResposta } from "@/lib/supabase";
 
 const perguntas = [
   "Pouco interesse ou prazer em fazer as coisas",
@@ -78,7 +79,7 @@ export default function PHQ9() {
                 <p className="text-[var(--c-muted)] mb-4 leading-relaxed">
                   Este questionario pergunta sobre como voce tem se sentido nas <strong>ultimas duas semanas</strong>. Sao 9 perguntas, leva cerca de 3 minutos.
                 </p>
-                <p className="text-xs text-[var(--c-muted)] mb-4 italic">Ferramenta de rastreio, nao de diagnostico. Nenhum dado e armazenado online.</p>
+                <p className="text-xs text-[var(--c-muted)] mb-4 italic">Ferramenta de rastreio, nao de diagnostico. Dados protegidos pelo sigilo profissional.</p>
                 <p className="text-xs text-[var(--c-muted)] mb-10 rounded-xl bg-[var(--c-surface)] border border-[var(--c-border)] p-4">
                   Seus dados sao processados apenas no seu navegador. Ao final, voce pode baixar o PDF e compartilhar diretamente com seu psicologo por WhatsApp ou e-mail.
                 </p>
@@ -125,11 +126,15 @@ export default function PHQ9() {
                     onKeyDown={(e) => { if (e.key === "Enter" && nome.trim()) setEtapa("resultado"); }}
                   />
                 </div>
-                <button onClick={() => { if (nome.trim()) setEtapa("resultado"); }} disabled={!nome.trim()}
+                <button onClick={() => {
+                    if (!nome.trim()) return;
+                    salvarResposta({ tipo: "phq9", nome: nome.trim(), respostas: respostas as number[], pontuacao });
+                    setEtapa("resultado");
+                  }} disabled={!nome.trim()}
                   className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-[var(--c-accent)] text-white font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">
                   Ver resultado
                 </button>
-                <p className="text-xs text-[var(--c-muted)] mt-4 text-center">Nenhum dado e enviado ou armazenado online.</p>
+                <p className="text-xs text-[var(--c-muted)] mt-4 text-center">Seus dados sao armazenados de forma segura e acessados apenas pelo seu psicologo.</p>
               </motion.div>
             )}
 
@@ -154,7 +159,7 @@ export default function PHQ9() {
                   </a>
                 </div>
 
-                <p className="text-xs text-[var(--c-muted)] mb-8 italic">PHQ-9: escala validada de rastreio. Nao constitui diagnostico. Nenhum dado armazenado online.</p>
+                <p className="text-xs text-[var(--c-muted)] mb-8 italic">PHQ-9: escala validada de rastreio. Nao constitui diagnostico. Dados protegidos e acessiveis apenas ao seu psicologo.</p>
                 <Link to="/paciente" className="text-sm text-[var(--c-accent)] hover:underline">Outros questionarios</Link>
               </motion.div>
             )}
