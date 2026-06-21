@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Download, Trash2, Lock, BarChart3, FileText, ExternalLink, RefreshCw, Plus, Save, Eye, EyeOff, Edit3, X, Bold, Italic, Heading2, List, RotateCcw } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Download, Trash2, Lock, FileText, ExternalLink, RefreshCw, Plus, Save, Eye, EyeOff, Edit3, X, Bold, Italic, Heading2, List, RotateCcw, Bell } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import JSZip from "jszip";
@@ -42,22 +42,8 @@ function classNivel(tipo: string, s: number) {
   if (s <= 4) return "Minima"; if (s <= 9) return "Leve"; if (s <= 14) return "Moderada"; return "Grave";
 }
 
-function CountUp({ value }: { value: number }) {
-  const [n, setN] = useState(0);
-  useEffect(() => {
-    let raf = 0;
-    const start = performance.now();
-    const dur = 700;
-    const tick = (t: number) => {
-      const p = Math.min(1, (t - start) / dur);
-      setN(Math.round(value * (1 - Math.pow(1 - p, 3))));
-      if (p < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [value]);
-  return <>{n}</>;
-}
+interface Notificacao { id: number; tipo: string; nome: string; tempo: string; }
+
 
 interface Resposta { id: number; tipo: string; nome: string; telefone?: string; nascimento?: string; respostas: number[]; pontuacao: number; criado_em: string; }
 
@@ -85,6 +71,7 @@ export default function BrunoPainel() {
   const [sintese, setSintese] = useState("");
   const [consideracoes, setConsideracoes] = useState("");
   const [addTesteId, setAddTesteId] = useState<TesteId>("phq9");
+  const [notificacoes, setNotificacoes] = useState<Notificacao[]>([]);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "c");
@@ -97,7 +84,16 @@ export default function BrunoPainel() {
       const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
         setAuth(!!session);
       });
-      return () => { document.documentElement.removeAttribute("data-theme"); subscription.unsubscribe(); };
+      const channel = supabase.channel("respostas-realtime").on(
+        "postgres_changes", { event: "INSERT", schema: "public", table: "respostas_questionarios" },
+        (payload: { new: { id: number; tipo: string; nome: string; criado_em: string } }) => {
+          const r = payload.new;
+          const nota: Notificacao = { id: r.id, tipo: r.tipo, nome: r.nome, tempo: "agora" };
+          setNotificacoes((prev) => [nota, ...prev].slice(0, 5));
+          setTimeout(() => setNotificacoes((prev) => prev.filter((n) => n.id !== r.id)), 8000);
+        }
+      ).subscribe();
+      return () => { document.documentElement.removeAttribute("data-theme"); subscription.unsubscribe(); channel.unsubscribe(); };
     }
     setLoginLoading(false);
     return () => document.documentElement.removeAttribute("data-theme");
@@ -206,8 +202,6 @@ export default function BrunoPainel() {
     setSelecionados(new Set()); carregar();
   }
 
-  const totalPHQ9 = respostas.filter((r) => r.tipo === "phq9").length;
-  const totalGAD7 = respostas.filter((r) => r.tipo === "gad7").length;
 
   if (loginLoading && !auth) {
     return <div className="flex min-h-screen items-center justify-center" data-theme="c"><AppAurora /><p className="relative z-10 text-[var(--c-muted)]">Carregando...</p></div>;
@@ -298,25 +292,6 @@ export default function BrunoPainel() {
 
             {tab === "respostas" && (
               <>
-                <motion.div variants={fadeUp} className="mb-8 grid grid-cols-3 gap-4">
-                  <div className="glass-card relative overflow-hidden rounded-2xl p-5 text-center">
-                    <span className="absolute left-0 top-0 h-full w-1.5 bg-[var(--c-accent)]" aria-hidden="true" />
-                    <BarChart3 size={20} className="mx-auto mb-2 text-[var(--c-accent)]" />
-                    <p className="text-3xl font-bold text-[var(--c-text)]"><CountUp value={respostas.length} /></p>
-                    <p className="text-xs text-[var(--c-muted)]">Total</p>
-                  </div>
-                  <div className="glass-card relative overflow-hidden rounded-2xl p-5 text-center">
-                    <span className="absolute left-0 top-0 h-full w-1.5" style={{ background: "#B05D3A" }} aria-hidden="true" />
-                    <p className="text-3xl font-bold" style={{ color: "#B05D3A" }}><CountUp value={totalPHQ9} /></p>
-                    <p className="text-xs text-[var(--c-muted)]">PHQ-9</p>
-                  </div>
-                  <div className="glass-card relative overflow-hidden rounded-2xl p-5 text-center">
-                    <span className="absolute left-0 top-0 h-full w-1.5" style={{ background: "#4A6B47" }} aria-hidden="true" />
-                    <p className="text-3xl font-bold" style={{ color: "#4A6B47" }}><CountUp value={totalGAD7} /></p>
-                    <p className="text-xs text-[var(--c-muted)]">GAD-7</p>
-                  </div>
-                </motion.div>
-
                 <motion.div variants={fadeUp} className="mb-6 flex items-center justify-between">
                   <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Respostas</h2>
                   <div className="flex gap-2">
@@ -735,6 +710,26 @@ export default function BrunoPainel() {
           </motion.div>
         </div>
       </main>
+
+      {/* Notificações realtime */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2" style={{ maxWidth: 320 }}>
+        <AnimatePresence>
+          {notificacoes.map((n) => (
+            <motion.div key={n.id} initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, x: 80, scale: 0.9 }} transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="glass-card flex items-center gap-3 rounded-2xl p-4 shadow-lg" style={{ borderLeft: `3px solid var(--c-accent)` }}>
+              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[var(--c-accent)]/15">
+                <Bell size={14} className="text-[var(--c-accent)]" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-[var(--c-text)] truncate">{n.nome} respondeu</p>
+                <p className="text-[10px] text-[var(--c-muted)]">{n.tipo.toUpperCase()} · {n.tempo}</p>
+              </div>
+              <button onClick={() => { setNotificacoes((prev) => prev.filter((x) => x.id !== n.id)); setTab("respostas"); carregar(); }}
+                className="ml-auto flex-shrink-0 text-[10px] font-medium text-[var(--c-accent)] hover:underline">Ver</button>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
