@@ -56,6 +56,7 @@ export default function BrunoPainel() {
   const [tab, setTab] = useState<"respostas" | "blog">("respostas");
   const [respostaAberta, setRespostaAberta] = useState<Resposta | null>(null);
   const [historicoAberto, setHistoricoAberto] = useState<Resposta[]>([]);
+  const [parecerAvulso, setParecerAvulso] = useState(false);
   const [respostas, setRespostas] = useState<Resposta[]>([]);
   const [loading, setLoading] = useState(false);
   const [exportando, setExportando] = useState(false);
@@ -285,9 +286,17 @@ export default function BrunoPainel() {
     setConsideracoes("");
   }
 
+  function abrirParecerAvulso() {
+    setRespostaAberta(null);
+    setHistoricoAberto([]);
+    setParecerAvulso(true);
+    resetParecer();
+  }
+
   function fecharDashboard() {
     setRespostaAberta(null);
     setHistoricoAberto([]);
+    setParecerAvulso(false);
     resetParecer();
   }
 
@@ -315,11 +324,16 @@ export default function BrunoPainel() {
         <div className="mx-auto max-w-5xl">
           <motion.div variants={stagger.container} initial="hidden" animate="visible">
 
-            {tab === "respostas" && !respostaAberta && (
+            {tab === "respostas" && !respostaAberta && !parecerAvulso && (
               <>
                 <motion.div variants={fadeUp} className="mb-6 flex items-center justify-between">
                   <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Respostas</h2>
                   <div className="flex gap-2">
+                    <button onClick={abrirParecerAvulso}
+                      className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white"
+                      style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
+                      <Plus size={14} /> Novo Parecer
+                    </button>
                     <button onClick={carregar} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]"><RefreshCw size={15} /></button>
                     <motion.button whileTap={{ scale: 0.96 }} onClick={exportar} disabled={!selecionados.size || exportando}
                       className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white transition-opacity disabled:opacity-40"
@@ -376,14 +390,14 @@ export default function BrunoPainel() {
             )}
 
             {/* ===== DASHBOARD / RELATÓRIO ===== */}
-            {tab === "respostas" && respostaAberta && (
+            {tab === "respostas" && (respostaAberta || parecerAvulso) && (
               <>
                 <motion.div variants={fadeUp} className="mb-6 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <button onClick={fecharDashboard} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]">
                       <X size={15} />
                     </button>
-                    <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{respostaAberta.nome}</h2>
+                    <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{respostaAberta ? respostaAberta.nome : "Novo Parecer"}</h2>
                   </div>
                   <motion.button whileTap={{ scale: 0.96 }} onClick={exportarParecer} disabled={!parecerTestes.length}
                     className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white transition-opacity disabled:opacity-40"
@@ -393,7 +407,7 @@ export default function BrunoPainel() {
                 </motion.div>
 
                 {/* Dados + Score visual */}
-                <div className="mb-6 grid gap-4 md:grid-cols-3">
+                <div className={`mb-6 grid gap-4 ${respostaAberta ? "md:grid-cols-3" : ""}`}>
                   <motion.div variants={fadeUp} className="glass-card rounded-2xl p-5">
                     <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Paciente</p>
                     <div className="space-y-2">
@@ -410,7 +424,7 @@ export default function BrunoPainel() {
                     </div>
                   </motion.div>
 
-                  <motion.div variants={fadeUp} className="glass-card rounded-2xl p-5">
+                  {respostaAberta && <motion.div variants={fadeUp} className="glass-card rounded-2xl p-5">
                     <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Resultado Atual</p>
                     {(() => {
                       const cor = respostaAberta.tipo === "phq9" ? "#B05D3A" : respostaAberta.tipo === "gad7" ? "#4A6B47" : "var(--c-accent)";
@@ -430,9 +444,9 @@ export default function BrunoPainel() {
                         </div>
                       );
                     })()}
-                  </motion.div>
+                  </motion.div>}
 
-                  <motion.div variants={fadeUp} className="glass-card rounded-2xl p-5">
+                  {respostaAberta && <motion.div variants={fadeUp} className="glass-card rounded-2xl p-5">
                     <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Histórico ({historicoAberto.length})</p>
                     {historicoAberto.length <= 1 ? (
                       <p className="py-4 text-center text-xs text-[var(--c-muted)]">Primeira resposta deste paciente.</p>
@@ -441,7 +455,7 @@ export default function BrunoPainel() {
                         {historicoAberto.map((h) => {
                           const hcor = h.tipo === "phq9" ? "#B05D3A" : h.tipo === "gad7" ? "#4A6B47" : "var(--c-accent)";
                           return (
-                            <div key={h.id} className={`flex items-center justify-between rounded-lg px-3 py-2 text-xs ${h.id === respostaAberta.id ? "bg-[var(--c-accent)]/10 font-semibold" : "hover:bg-[var(--c-surface)]/40"}`}
+                            <div key={h.id} className={`flex items-center justify-between rounded-lg px-3 py-2 text-xs ${h.id === respostaAberta!.id ? "bg-[var(--c-accent)]/10 font-semibold" : "hover:bg-[var(--c-surface)]/40"}`}
                               onClick={() => abrirDashboard(h)} style={{ cursor: "pointer" }}>
                               <div className="flex items-center gap-2">
                                 <span className="rounded px-1.5 py-0.5 text-[9px] font-bold uppercase" style={{ background: hcor + "1A", color: hcor }}>{h.tipo}</span>
@@ -453,10 +467,11 @@ export default function BrunoPainel() {
                         })}
                       </div>
                     )}
-                  </motion.div>
+                  </motion.div>}
                 </div>
 
                 {/* Detalhes das respostas individuais */}
+                {respostaAberta && (
                 <motion.div variants={fadeUp} className="glass-card mb-6 rounded-2xl p-5">
                   <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Respostas Detalhadas</p>
                   <div className="grid gap-2 md:grid-cols-2">
@@ -477,6 +492,7 @@ export default function BrunoPainel() {
                     })}
                   </div>
                 </motion.div>
+                )}
 
                 {/* Parecer — instrumentos + texto + síntese */}
                 <motion.div variants={fadeUp} className="glass-card mb-6 rounded-2xl p-6">
