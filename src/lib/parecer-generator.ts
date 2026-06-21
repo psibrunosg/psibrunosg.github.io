@@ -3,8 +3,12 @@ import {
   classificarPorFaixa, classificarG36, classificarNeoT, calcularTScoreNeoFFI,
   classificarAtencao, teadiSP, tealtSP,
   phq9Faixas, gad7Faixas, baiFaixas, bdiFaixas, bhsFaixas, asrsFaixas,
-  neoDominioNomes, type NeoFFIDominio, type NeoSexo, type G36Escolaridade, type TesteId,
+  neoDominioNomes, neoFacetasNomes, neoFacetasPorDominio,
+  type NeoFFIDominio, type NeoSexo, type G36Escolaridade, type TesteId,
 } from "@/content/normative-tables";
+import {
+  templatesPorTeste, templatesNeoDominio, templatesNeoFaceta, templatesNeoFFIDominio,
+} from "@/content/parecer-templates";
 
 export interface DadosPaciente {
   nome: string;
@@ -19,76 +23,142 @@ export interface ResultadoTeste {
   nome: string;
   dados: Record<string, string | number>;
   resultado?: { classificacao: string; detalhes: string };
+  texto?: string;
+  textoEditado?: boolean;
+}
+
+function gerarTextoInterpretativo(testeId: string, classificacao: string, dados: Record<string, string | number>): string {
+  if (testeId === "neo-pi") {
+    const partes: string[] = [];
+    const dominios: NeoFFIDominio[] = ["N", "E", "O", "A", "C"];
+    for (const dom of dominios) {
+      const tScore = Number(dados[dom] ?? 0);
+      if (!tScore) continue;
+      const cl = classificarNeoT(tScore);
+      const tpl = templatesNeoDominio[dom]?.[cl];
+      if (tpl) partes.push(tpl);
+      for (const fac of neoFacetasPorDominio[dom]) {
+        const ft = Number(dados[fac] ?? 0);
+        if (!ft) continue;
+        const fcl = classificarNeoT(ft);
+        const ftpl = templatesNeoFaceta[fac]?.[fcl];
+        if (ftpl) partes.push(`  ${fac} (${neoFacetasNomes[fac]}): ${ftpl}`);
+      }
+    }
+    return partes.join("\n") || "Preencha os escores T para gerar o texto interpretativo.";
+  }
+
+  if (testeId === "neo-ffi") {
+    const partes: string[] = [];
+    const sexo = (dados.sexo as NeoSexo) || "combinado";
+    const dominios: NeoFFIDominio[] = ["N", "E", "O", "A", "C"];
+    for (const dom of dominios) {
+      const bruto = Number(dados[dom] ?? 0);
+      if (!bruto) continue;
+      const t = calcularTScoreNeoFFI(dom, bruto, sexo);
+      const cl = classificarNeoT(t);
+      const tpl = templatesNeoFFIDominio[dom]?.[cl];
+      if (tpl) partes.push(tpl);
+    }
+    return partes.join("\n") || "Preencha os escores brutos para gerar o texto interpretativo.";
+  }
+
+  return templatesPorTeste[testeId]?.[classificacao] ?? "";
 }
 
 export function processarTeste(t: ResultadoTeste): ResultadoTeste {
   const d = t.dados;
   const escore = Number(d.escore ?? 0);
+  let resultado: { classificacao: string; detalhes: string };
 
   switch (t.testeId) {
     case "phq9": {
       const r = classificarPorFaixa(escore, phq9Faixas);
-      return { ...t, resultado: { classificacao: r.classificacao, detalhes: `Escore total: ${escore}/27. ${r.descricao}` } };
+      resultado = { classificacao: r.classificacao, detalhes: `Escore total: ${escore}/27. ${r.descricao}` };
+      break;
     }
     case "gad7": {
       const r = classificarPorFaixa(escore, gad7Faixas);
-      return { ...t, resultado: { classificacao: r.classificacao, detalhes: `Escore total: ${escore}/21. ${r.descricao}` } };
+      resultado = { classificacao: r.classificacao, detalhes: `Escore total: ${escore}/21. ${r.descricao}` };
+      break;
     }
     case "bai": {
       const r = classificarPorFaixa(escore, baiFaixas);
-      return { ...t, resultado: { classificacao: r.classificacao, detalhes: `Escore total: ${escore}/63. ${r.descricao}` } };
+      resultado = { classificacao: r.classificacao, detalhes: `Escore total: ${escore}/63. ${r.descricao}` };
+      break;
     }
     case "bdi": {
       const r = classificarPorFaixa(escore, bdiFaixas);
-      return { ...t, resultado: { classificacao: r.classificacao, detalhes: `Escore total: ${escore}/63. ${r.descricao}` } };
+      resultado = { classificacao: r.classificacao, detalhes: `Escore total: ${escore}/63. ${r.descricao}` };
+      break;
     }
     case "bhs": {
       const r = classificarPorFaixa(escore, bhsFaixas);
-      return { ...t, resultado: { classificacao: r.classificacao, detalhes: `Escore total: ${escore}/20. ${r.descricao}` } };
+      resultado = { classificacao: r.classificacao, detalhes: `Escore total: ${escore}/20. ${r.descricao}` };
+      break;
     }
     case "asrs": {
       const r = classificarPorFaixa(escore, asrsFaixas);
-      return { ...t, resultado: { classificacao: r.classificacao, detalhes: `Escore total: ${escore}. ${r.descricao}` } };
+      resultado = { classificacao: r.classificacao, detalhes: `Escore total: ${escore}. ${r.descricao}` };
+      break;
     }
     case "g36": {
       const esc = (d.escolaridade as G36Escolaridade) || "geral";
       const r = classificarG36(escore, esc);
-      return { ...t, resultado: { classificacao: r.classificacao, detalhes: `Acertos: ${escore}/36. Percentil: ${r.percentil}. Classificação: ${r.classificacao}.` } };
+      resultado = { classificacao: r.classificacao, detalhes: `Acertos: ${escore}/36. Percentil: ${r.percentil}. Classificação: ${r.classificacao}.` };
+      break;
     }
     case "neo-ffi": {
       const sexo = (d.sexo as NeoSexo) || "combinado";
       const dominios: NeoFFIDominio[] = ["N", "E", "O", "A", "C"];
       const linhas = dominios.map((dom) => {
         const bruto = Number(d[dom] ?? 0);
-        const t = calcularTScoreNeoFFI(dom, bruto, sexo);
-        const cl = classificarNeoT(t);
-        return `${neoDominioNomes[dom]}: bruto=${bruto}, T=${t} (${cl})`;
-      });
-      return { ...t, resultado: { classificacao: "Ver detalhes", detalhes: linhas.join("\n") } };
+        if (!bruto) return null;
+        const tVal = calcularTScoreNeoFFI(dom, bruto, sexo);
+        const cl = classificarNeoT(tVal);
+        return `${neoDominioNomes[dom]}: bruto=${bruto}, T=${tVal} (${cl})`;
+      }).filter(Boolean);
+      resultado = { classificacao: "Ver detalhes", detalhes: linhas.join("\n") };
+      break;
     }
     case "neo-pi": {
       const dominios: NeoFFIDominio[] = ["N", "E", "O", "A", "C"];
-      const linhas = dominios.map((dom) => {
-        const tScore = Number(d[dom] ?? 50);
+      const linhas: string[] = [];
+      for (const dom of dominios) {
+        const tScore = Number(d[dom] ?? 0);
+        if (!tScore) continue;
         const cl = classificarNeoT(tScore);
-        return `${neoDominioNomes[dom]}: T=${tScore} (${cl})`;
-      });
-      if (d.facetas) {
-        linhas.push("", "Facetas informadas: " + String(d.facetas));
+        linhas.push(`${neoDominioNomes[dom]} (${dom}): T=${tScore} — ${cl}`);
+        for (const fac of neoFacetasPorDominio[dom]) {
+          const ft = Number(d[fac] ?? 0);
+          if (!ft) continue;
+          const fcl = classificarNeoT(ft);
+          linhas.push(`  ${fac} ${neoFacetasNomes[fac]}: T=${ft} — ${fcl}`);
+        }
       }
-      return { ...t, resultado: { classificacao: "Ver detalhes", detalhes: linhas.join("\n") } };
+      resultado = { classificacao: "Ver detalhes", detalhes: linhas.join("\n") || "Preencha os escores T." };
+      break;
     }
     case "teadi": {
       const r = classificarAtencao(escore, teadiSP);
-      return { ...t, resultado: { classificacao: r.classificacao, detalhes: `Pontuação: ${escore}. Percentil: ${r.percentil}. Classificação: ${r.classificacao}. (Normas SP)` } };
+      resultado = { classificacao: r.classificacao, detalhes: `Pontuação: ${escore}. Percentil: ${r.percentil}. Classificação: ${r.classificacao}. (Normas SP)` };
+      break;
     }
     case "tealt": {
       const r = classificarAtencao(escore, tealtSP);
-      return { ...t, resultado: { classificacao: r.classificacao, detalhes: `Pontuação: ${escore}. Percentil: ${r.percentil}. Classificação: ${r.classificacao}. (Normas SP)` } };
+      resultado = { classificacao: r.classificacao, detalhes: `Pontuação: ${escore}. Percentil: ${r.percentil}. Classificação: ${r.classificacao}. (Normas SP)` };
+      break;
     }
     default:
-      return { ...t, resultado: { classificacao: "N/A", detalhes: `Escore: ${escore}` } };
+      resultado = { classificacao: "N/A", detalhes: `Escore: ${escore}` };
   }
+
+  const textoAuto = gerarTextoInterpretativo(t.testeId, resultado.classificacao, d);
+  return {
+    ...t,
+    resultado,
+    texto: t.textoEditado ? t.texto : textoAuto,
+  };
 }
 
 export function gerarParecerPDF(paciente: DadosPaciente, testes: ResultadoTeste[], sintese: string, consideracoes: string): jsPDF {
@@ -148,7 +218,16 @@ export function gerarParecerPDF(paciente: DadosPaciente, testes: ResultadoTeste[
         addLine(dl);
       }
     }
-    addSpace(3);
+    if (t.texto) {
+      addSpace(2);
+      addLine("Interpretação:", 9, true, [80, 80, 80]);
+      addSpace(1);
+      const textoLines = t.texto.split("\n");
+      for (const tl of textoLines) {
+        addLine(tl, 9, false, [60, 60, 60]);
+      }
+    }
+    addSpace(4);
   }
   addSeparator();
 

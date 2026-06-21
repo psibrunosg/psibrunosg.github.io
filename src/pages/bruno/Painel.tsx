@@ -1,12 +1,14 @@
 ﻿import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Download, Trash2, Lock, BarChart3, FileText, ExternalLink, RefreshCw, Plus, Save, Eye, EyeOff, Edit3, X } from "lucide-react";
+import { Download, Trash2, Lock, BarChart3, FileText, ExternalLink, RefreshCw, Plus, Save, Eye, EyeOff, Edit3, X, Bold, Italic, Heading2, List, RotateCcw } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import JSZip from "jszip";
 import { supabase, listarPostsBlog, salvarPostBlog, atualizarPostBlog, deletarPostBlog, type BlogPostDB } from "@/lib/supabase";
 import { gerarPDF } from "@/lib/pdf-generator";
 import { processarTeste, gerarParecerPDF, type DadosPaciente, type ResultadoTeste } from "@/lib/parecer-generator";
-import { testesDisponiveis, type TesteId } from "@/content/normative-tables";
+import { testesDisponiveis, neoFacetasPorDominio, neoFacetasNomes, neoDominioNomes, type TesteId, type NeoFFIDominio } from "@/content/normative-tables";
 import { posts as staticPosts } from "@/content/posts-loader";
 import { fadeUp, stagger } from "@/lib/motion";
 import { AppAurora } from "@/components/ui/AppAurora";
@@ -294,28 +296,27 @@ export default function BrunoPainel() {
         <div className="mx-auto max-w-5xl">
           <motion.div variants={stagger.container} initial="hidden" animate="visible">
 
-            {/* STATS */}
-            <motion.div variants={fadeUp} className="mb-8 grid grid-cols-3 gap-4">
-              <div className="glass-card relative overflow-hidden rounded-2xl p-5 text-center">
-                <span className="absolute left-0 top-0 h-full w-1.5 bg-[var(--c-accent)]" aria-hidden="true" />
-                <BarChart3 size={20} className="mx-auto mb-2 text-[var(--c-accent)]" />
-                <p className="text-3xl font-bold text-[var(--c-text)]"><CountUp value={respostas.length} /></p>
-                <p className="text-xs text-[var(--c-muted)]">Total</p>
-              </div>
-              <div className="glass-card relative overflow-hidden rounded-2xl p-5 text-center">
-                <span className="absolute left-0 top-0 h-full w-1.5" style={{ background: "#B05D3A" }} aria-hidden="true" />
-                <p className="text-3xl font-bold" style={{ color: "#B05D3A" }}><CountUp value={totalPHQ9} /></p>
-                <p className="text-xs text-[var(--c-muted)]">PHQ-9</p>
-              </div>
-              <div className="glass-card relative overflow-hidden rounded-2xl p-5 text-center">
-                <span className="absolute left-0 top-0 h-full w-1.5" style={{ background: "#4A6B47" }} aria-hidden="true" />
-                <p className="text-3xl font-bold" style={{ color: "#4A6B47" }}><CountUp value={totalGAD7} /></p>
-                <p className="text-xs text-[var(--c-muted)]">GAD-7</p>
-              </div>
-            </motion.div>
-
             {tab === "respostas" && (
               <>
+                <motion.div variants={fadeUp} className="mb-8 grid grid-cols-3 gap-4">
+                  <div className="glass-card relative overflow-hidden rounded-2xl p-5 text-center">
+                    <span className="absolute left-0 top-0 h-full w-1.5 bg-[var(--c-accent)]" aria-hidden="true" />
+                    <BarChart3 size={20} className="mx-auto mb-2 text-[var(--c-accent)]" />
+                    <p className="text-3xl font-bold text-[var(--c-text)]"><CountUp value={respostas.length} /></p>
+                    <p className="text-xs text-[var(--c-muted)]">Total</p>
+                  </div>
+                  <div className="glass-card relative overflow-hidden rounded-2xl p-5 text-center">
+                    <span className="absolute left-0 top-0 h-full w-1.5" style={{ background: "#B05D3A" }} aria-hidden="true" />
+                    <p className="text-3xl font-bold" style={{ color: "#B05D3A" }}><CountUp value={totalPHQ9} /></p>
+                    <p className="text-xs text-[var(--c-muted)]">PHQ-9</p>
+                  </div>
+                  <div className="glass-card relative overflow-hidden rounded-2xl p-5 text-center">
+                    <span className="absolute left-0 top-0 h-full w-1.5" style={{ background: "#4A6B47" }} aria-hidden="true" />
+                    <p className="text-3xl font-bold" style={{ color: "#4A6B47" }}><CountUp value={totalGAD7} /></p>
+                    <p className="text-xs text-[var(--c-muted)]">GAD-7</p>
+                  </div>
+                </motion.div>
+
                 <motion.div variants={fadeUp} className="mb-6 flex items-center justify-between">
                   <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Respostas</h2>
                   <div className="flex gap-2">
@@ -395,44 +396,106 @@ export default function BrunoPainel() {
                 </motion.div>
 
                 {(editando || blogForm.titulo) ? (
-                  <motion.div variants={fadeUp} className="glass-card rounded-2xl p-6">
-                    <div className="grid gap-4 md:grid-cols-2">
+                  <motion.div variants={fadeUp} className="space-y-4">
+                    <div className="glass-card rounded-2xl p-6">
+                      <p className="mb-4 text-xs font-medium uppercase tracking-wider text-[var(--c-accent)]">Metadados</p>
                       <div className="space-y-3">
-                        <input value={blogForm.titulo.trim() ? blogForm.titulo : ""} onChange={(e) => setBlogForm({ ...blogForm, titulo: e.target.value, slug: editando ? blogForm.slug : gerarSlug(e.target.value) })}
-                          placeholder="Titulo" className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
-                        <input value={blogForm.slug} onChange={(e) => setBlogForm({ ...blogForm, slug: e.target.value })}
-                          placeholder="slug-do-post" className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-xs text-[var(--c-muted)] focus:border-[var(--c-accent)] focus:outline-none" />
-                        <input value={blogForm.subtitulo} onChange={(e) => setBlogForm({ ...blogForm, subtitulo: e.target.value })}
-                          placeholder="Subtitulo" className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
-                        <div className="grid grid-cols-2 gap-3">
-                          <input value={blogForm.categoria} onChange={(e) => setBlogForm({ ...blogForm, categoria: e.target.value })}
-                            placeholder="Categoria" className="rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
-                          <input value={blogForm.tempo_leitura} onChange={(e) => setBlogForm({ ...blogForm, tempo_leitura: e.target.value })}
-                            placeholder="Tempo leitura" className="rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
+                        <div>
+                          <label className="mb-1 block text-[11px] font-medium text-[var(--c-muted)]">Título</label>
+                          <input value={blogForm.titulo.trim() ? blogForm.titulo : ""} onChange={(e) => setBlogForm({ ...blogForm, titulo: e.target.value, slug: editando ? blogForm.slug : gerarSlug(e.target.value) })}
+                            className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
                         </div>
-                        <input value={blogForm.tags} onChange={(e) => setBlogForm({ ...blogForm, tags: e.target.value })}
-                          placeholder="Tags (separadas por virgula)" className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
-                        <textarea value={blogForm.resumo} onChange={(e) => setBlogForm({ ...blogForm, resumo: e.target.value })} rows={2}
-                          placeholder="Resumo (exibido no card do blog)" className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none resize-none" />
-                      </div>
-                      <div>
-                        <textarea value={blogForm.conteudo} onChange={(e) => setBlogForm({ ...blogForm, conteudo: e.target.value })} rows={14}
-                          placeholder="Conteudo em Markdown..." className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-sm text-[var(--c-text)] font-mono focus:border-[var(--c-accent)] focus:outline-none resize-none" />
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="mb-1 block text-[11px] font-medium text-[var(--c-muted)]">Slug</label>
+                            <input value={blogForm.slug} onChange={(e) => setBlogForm({ ...blogForm, slug: e.target.value })}
+                              className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-xs text-[var(--c-muted)] focus:border-[var(--c-accent)] focus:outline-none" />
+                          </div>
+                          <div>
+                            <label className="mb-1 block text-[11px] font-medium text-[var(--c-muted)]">Subtítulo</label>
+                            <input value={blogForm.subtitulo} onChange={(e) => setBlogForm({ ...blogForm, subtitulo: e.target.value })}
+                              className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-3">
+                          <div>
+                            <label className="mb-1 block text-[11px] font-medium text-[var(--c-muted)]">Categoria</label>
+                            <input value={blogForm.categoria} onChange={(e) => setBlogForm({ ...blogForm, categoria: e.target.value })}
+                              className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
+                          </div>
+                          <div>
+                            <label className="mb-1 block text-[11px] font-medium text-[var(--c-muted)]">Tempo leitura</label>
+                            <input value={blogForm.tempo_leitura} onChange={(e) => setBlogForm({ ...blogForm, tempo_leitura: e.target.value })}
+                              className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
+                          </div>
+                          <div>
+                            <label className="mb-1 block text-[11px] font-medium text-[var(--c-muted)]">Tags (vírgula)</label>
+                            <input value={blogForm.tags} onChange={(e) => setBlogForm({ ...blogForm, tags: e.target.value })}
+                              className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-[11px] font-medium text-[var(--c-muted)]">Resumo (exibido no card)</label>
+                          <textarea value={blogForm.resumo} onChange={(e) => setBlogForm({ ...blogForm, resumo: e.target.value })} rows={2}
+                            className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none resize-none" />
+                        </div>
                       </div>
                     </div>
 
-                    {blogMsg && <p className={`mt-3 text-xs ${blogMsg.startsWith("Erro") ? "text-red-500" : "text-green-600"}`}>{blogMsg}</p>}
+                    <div className="glass-card rounded-2xl p-6">
+                      <div className="mb-3 flex items-center justify-between">
+                        <p className="text-xs font-medium uppercase tracking-wider text-[var(--c-accent)]">Conteúdo</p>
+                        <div className="flex gap-1">
+                          {[
+                            { icon: Bold, insert: "**", wrap: true, title: "Negrito" },
+                            { icon: Italic, insert: "_", wrap: true, title: "Itálico" },
+                            { icon: Heading2, insert: "## ", wrap: false, title: "Título" },
+                            { icon: List, insert: "- ", wrap: false, title: "Lista" },
+                          ].map(({ icon: Icon, insert, wrap, title }) => (
+                            <button key={title} title={title} onClick={() => {
+                              const ta = document.getElementById("blog-content") as HTMLTextAreaElement;
+                              if (!ta) return;
+                              const start = ta.selectionStart; const end = ta.selectionEnd;
+                              const sel = blogForm.conteudo.substring(start, end);
+                              const replacement = wrap ? `${insert}${sel || "texto"}${insert}` : `${insert}${sel || ""}`;
+                              const newVal = blogForm.conteudo.substring(0, start) + replacement + blogForm.conteudo.substring(end);
+                              setBlogForm({ ...blogForm, conteudo: newVal });
+                              setTimeout(() => { ta.focus(); ta.selectionStart = ta.selectionEnd = start + replacement.length; }, 0);
+                            }}
+                              className="rounded-lg border border-[var(--c-border)] p-1.5 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)] hover:border-[var(--c-accent)]">
+                              <Icon size={14} />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <textarea id="blog-content" value={blogForm.conteudo} onChange={(e) => setBlogForm({ ...blogForm, conteudo: e.target.value })} rows={18}
+                          placeholder="Escreva em Markdown..."
+                          className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-sm text-[var(--c-text)] font-mono leading-relaxed focus:border-[var(--c-accent)] focus:outline-none resize-none" />
+                        <div className="overflow-y-auto rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/40 px-5 py-4" style={{ maxHeight: "460px" }}>
+                          <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--c-muted)]">Preview</p>
+                          <div className="prose prose-sm max-w-none text-[var(--c-text)]">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{blogForm.conteudo || "*Comece a escrever...*"}</ReactMarkdown>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
-                    <div className="mt-4 flex items-center justify-between">
+                    {blogMsg && <p className={`text-xs ${blogMsg.startsWith("Erro") ? "text-red-500" : "text-green-600"}`}>{blogMsg}</p>}
+
+                    <div className="flex items-center justify-between">
                       <label className="flex items-center gap-2 text-sm text-[var(--c-muted)] cursor-pointer">
                         <input type="checkbox" checked={blogForm.publicado} onChange={(e) => setBlogForm({ ...blogForm, publicado: e.target.checked })} className="accent-[var(--c-accent)]" />
                         Publicar
                       </label>
-                      <motion.button whileTap={{ scale: 0.96 }} onClick={salvarBlog} disabled={blogSaving}
-                        className="flex items-center gap-1.5 rounded-full px-5 py-2.5 text-xs font-semibold text-white transition-opacity disabled:opacity-50"
-                        style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
-                        <Save size={14} /> {blogSaving ? "Salvando..." : editando ? "Atualizar" : "Salvar"}
-                      </motion.button>
+                      <div className="flex gap-2">
+                        <button onClick={resetBlogForm} className="rounded-full border border-[var(--c-border)] px-4 py-2.5 text-xs font-semibold text-[var(--c-muted)] transition-colors hover:text-[var(--c-text)]">Cancelar</button>
+                        <motion.button whileTap={{ scale: 0.96 }} onClick={salvarBlog} disabled={blogSaving}
+                          className="flex items-center gap-1.5 rounded-full px-5 py-2.5 text-xs font-semibold text-white transition-opacity disabled:opacity-50"
+                          style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
+                          <Save size={14} /> {blogSaving ? "Salvando..." : editando ? "Atualizar" : "Salvar"}
+                        </motion.button>
+                      </div>
                     </div>
                   </motion.div>
                 ) : (
@@ -579,15 +642,29 @@ export default function BrunoPainel() {
                             </div>
                           </div>
                         ) : (t.testeId === "neo-pi") ? (
-                          <div className="space-y-2">
-                            <p className="text-[10px] text-[var(--c-muted)]">Insira os escores T por domínio</p>
-                            <div className="grid grid-cols-5 gap-2">
-                              {(["N", "E", "O", "A", "C"] as const).map((dom) => (
-                                <input key={dom} type="number" placeholder={`T ${dom}`} value={t.dados[dom] ?? ""}
-                                  onChange={(e) => atualizarDadosTeste(idx, dom, Number(e.target.value))}
-                                  className="rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-xs text-[var(--c-text)] focus:outline-none" />
-                              ))}
-                            </div>
+                          <div className="space-y-3">
+                            <p className="text-[10px] text-[var(--c-muted)]">Escores T por domínio e faceta (facetas opcionais)</p>
+                            {(["N", "E", "O", "A", "C"] as const).map((dom) => (
+                              <div key={dom} className="rounded-lg border border-[var(--c-border)]/50 p-3">
+                                <div className="mb-2 flex items-center gap-2">
+                                  <span className="text-[10px] font-bold text-[var(--c-accent)]">{dom}</span>
+                                  <span className="text-[10px] text-[var(--c-muted)]">{neoDominioNomes[dom]}</span>
+                                  <input type="number" placeholder="T" value={t.dados[dom] ?? ""}
+                                    onChange={(e) => atualizarDadosTeste(idx, dom, Number(e.target.value))}
+                                    className="ml-auto w-16 rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-2 py-1 text-center text-xs text-[var(--c-text)] focus:outline-none" />
+                                </div>
+                                <div className="grid grid-cols-3 gap-1.5">
+                                  {neoFacetasPorDominio[dom as NeoFFIDominio].map((fac) => (
+                                    <div key={fac} className="flex items-center gap-1">
+                                      <span className="w-7 text-[9px] font-medium text-[var(--c-muted)]">{fac}</span>
+                                      <input type="number" placeholder={neoFacetasNomes[fac]?.substring(0, 8)} value={t.dados[fac] ?? ""}
+                                        onChange={(e) => atualizarDadosTeste(idx, fac, Number(e.target.value))}
+                                        className="w-full rounded border border-[var(--c-border)]/50 bg-[var(--c-bg)]/40 px-2 py-1 text-[10px] text-[var(--c-text)] focus:outline-none" title={neoFacetasNomes[fac]} />
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
                           </div>
                         ) : (t.testeId === "g36") ? (
                           <div className="grid grid-cols-2 gap-2">
@@ -608,9 +685,32 @@ export default function BrunoPainel() {
                         )}
 
                         {t.resultado && (
-                          <div className="mt-3 rounded-lg bg-[var(--c-surface)] p-3">
-                            <p className="mb-1 text-xs font-semibold text-[var(--c-accent)]">{t.resultado.classificacao}</p>
-                            <p className="whitespace-pre-line text-xs text-[var(--c-muted)]">{t.resultado.detalhes}</p>
+                          <div className="mt-3 space-y-2">
+                            <div className="rounded-lg bg-[var(--c-surface)] p-3">
+                              <p className="mb-1 text-xs font-semibold text-[var(--c-accent)]">{t.resultado.classificacao}</p>
+                              <p className="whitespace-pre-line text-xs text-[var(--c-muted)]">{t.resultado.detalhes}</p>
+                            </div>
+                            <div>
+                              <div className="mb-1 flex items-center justify-between">
+                                <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--c-muted)]">Texto interpretativo</span>
+                                {t.textoEditado && (
+                                  <button onClick={() => {
+                                    const copia = [...parecerTestes];
+                                    copia[idx] = { ...copia[idx], textoEditado: false, texto: undefined };
+                                    copia[idx] = processarTeste(copia[idx]);
+                                    setParecerTestes(copia);
+                                  }} className="flex items-center gap-1 text-[10px] text-[var(--c-accent)] hover:underline" title="Regenerar texto automático">
+                                    <RotateCcw size={10} /> Regenerar
+                                  </button>
+                                )}
+                              </div>
+                              <textarea value={t.texto ?? ""} onChange={(e) => {
+                                const copia = [...parecerTestes];
+                                copia[idx] = { ...copia[idx], texto: e.target.value, textoEditado: true };
+                                setParecerTestes(copia);
+                              }} rows={4}
+                                className="w-full rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-xs leading-relaxed text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none resize-y" />
+                            </div>
                           </div>
                         )}
                       </div>

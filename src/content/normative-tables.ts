@@ -145,6 +145,14 @@ export const neoFacetasNomes: Record<string, string> = {
   C1: "Competência", C2: "Ordem", C3: "Senso do dever", C4: "Esforço por realizações", C5: "Autodisciplina", C6: "Ponderação",
 };
 
+export const neoFacetasPorDominio: Record<NeoFFIDominio, string[]> = {
+  N: ["N1", "N2", "N3", "N4", "N5", "N6"],
+  E: ["E1", "E2", "E3", "E4", "E5", "E6"],
+  O: ["O1", "O2", "O3", "O4", "O5", "O6"],
+  A: ["A1", "A2", "A3", "A4", "A5", "A6"],
+  C: ["C1", "C2", "C3", "C4", "C5", "C6"],
+};
+
 // ============================================================
 // TEADI (Atenção Dividida) — Normas SP (N=715)
 // Tabela 60: população geral de São Paulo
