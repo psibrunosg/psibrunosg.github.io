@@ -1,7 +1,7 @@
 ﻿import { jsPDF } from "jspdf";
 
 interface ResultadoPDF {
-  tipo: "PHQ-9" | "GAD-7";
+  tipo: string;
   nome: string;
   pontuacao: number;
   nivel: string;

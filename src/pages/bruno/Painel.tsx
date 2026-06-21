@@ -2,44 +2,84 @@
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Download, Trash2, Lock, FileText, ExternalLink, RefreshCw, Plus, Save, Eye, EyeOff, Edit3, X, Bold, Italic, Heading2, List, RotateCcw, Bell } from "lucide-react";
+import jsPDF from "jspdf";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import JSZip from "jszip";
 import { supabase, listarPostsBlog, salvarPostBlog, atualizarPostBlog, deletarPostBlog, type BlogPostDB } from "@/lib/supabase";
 import { gerarPDF } from "@/lib/pdf-generator";
 import { processarTeste, gerarParecerPDF, type DadosPaciente, type ResultadoTeste } from "@/lib/parecer-generator";
-import { testesDisponiveis, neoFacetasPorDominio, neoFacetasNomes, neoDominioNomes, type TesteId, type NeoFFIDominio } from "@/content/normative-tables";
+import {
+  testesDisponiveis, neoFacetasPorDominio, neoFacetasNomes, neoDominioNomes,
+  classificarPorFaixa, phq9Faixas, gad7Faixas, baiFaixas, bdiFaixas, bhsFaixas, asrsFaixas,
+  type TesteId, type NeoFFIDominio,
+} from "@/content/normative-tables";
+import { escalas } from "@/content/escalas";
+import { escalasGerais } from "@/content/escalas-gerais";
+import type { BDIItem } from "@/content/escalas-gerais";
+import { exercicios, type Exercicio } from "@/content/exercicios";
 import { posts as staticPosts } from "@/content/posts-loader";
 import { fadeUp, stagger } from "@/lib/motion";
 import { AppAurora } from "@/components/ui/AppAurora";
 
 
-const perguntasPHQ9 = [
-  "Pouco interesse ou prazer em fazer as coisas",
-  "Se sentir para baixo, deprimido(a) ou sem perspectiva",
-  "Dificuldade para adormecer ou permanecer dormindo",
-  "Se sentir cansado(a) ou com pouca energia",
-  "Falta de apetite ou comer demais",
-  "Se sentir mal consigo mesmo(a)",
-  "Dificuldade para se concentrar",
-  "Falar ou se mover mais devagar do que o habitual",
-  "Pensar em se machucar ou que seria melhor estar morto(a)",
-];
-const perguntasGAD7 = [
-  "Se sentir nervoso(a), ansioso(a) ou no limite",
-  "Nao conseguir parar ou controlar a preocupacao",
-  "Se preocupar muito com diversas coisas",
-  "Dificuldade para relaxar",
-  "Ficar tao agitado(a) que se torna dificil ficar parado(a)",
-  "Ficar facilmente irritado(a) ou irritavel",
-  "Sentir medo como se algo horrivel pudesse acontecer",
-];
+const allScaleConfigs: Record<string, { itens: (string | BDIItem)[]; opcoes?: { label: string; valor: number }[] }> = {};
+for (const [k, v] of Object.entries(escalas)) {
+  allScaleConfigs[k] = { itens: v.itens, opcoes: v.opcoes };
+}
+for (const [k, v] of Object.entries(escalasGerais)) {
+  allScaleConfigs[k] = { itens: v.itens as (string | BDIItem)[], opcoes: v.opcoes };
+}
+allScaleConfigs["phq9"] = {
+  itens: [
+    "Pouco interesse ou prazer em fazer as coisas",
+    "Se sentir para baixo, deprimido(a) ou sem perspectiva",
+    "Dificuldade para adormecer ou permanecer dormindo",
+    "Se sentir cansado(a) ou com pouca energia",
+    "Falta de apetite ou comer demais",
+    "Se sentir mal consigo mesmo(a)",
+    "Dificuldade para se concentrar",
+    "Falar ou se mover mais devagar do que o habitual",
+    "Pensar em se machucar ou que seria melhor estar morto(a)",
+  ],
+  opcoes: [{ label: "Nenhuma vez", valor: 0 }, { label: "Varios dias", valor: 1 }, { label: "Mais da metade", valor: 2 }, { label: "Quase todos", valor: 3 }],
+};
+allScaleConfigs["gad7"] = {
+  itens: [
+    "Se sentir nervoso(a), ansioso(a) ou no limite",
+    "Nao conseguir parar ou controlar a preocupacao",
+    "Se preocupar muito com diversas coisas",
+    "Dificuldade para relaxar",
+    "Ficar tao agitado(a) que se torna dificil ficar parado(a)",
+    "Ficar facilmente irritado(a) ou irritavel",
+    "Sentir medo como se algo horrivel pudesse acontecer",
+  ],
+  opcoes: [{ label: "Nenhuma vez", valor: 0 }, { label: "Varios dias", valor: 1 }, { label: "Mais da metade", valor: 2 }, { label: "Quase todos", valor: 3 }],
+};
+
+function getItemText(item: string | BDIItem, index: number): string {
+  if (typeof item === "string") return item;
+  return item.opcoes?.map((o) => o.texto).join(" / ") || `Item ${index + 1}`;
+}
+
+function getOptionLabel(tipo: string, valor: number): string | null {
+  const cfg = allScaleConfigs[tipo];
+  if (!cfg?.opcoes) return null;
+  return cfg.opcoes.find((o) => o.valor === valor)?.label ?? null;
+}
+
+const faixasPorTipo: Record<string, readonly { readonly min: number; readonly max: number; readonly classificacao: string; readonly descricao: string }[]> = {
+  phq9: phq9Faixas, gad7: gad7Faixas, bai: baiFaixas, bdi: bdiFaixas, bhs: bhsFaixas, asrs: asrsFaixas,
+};
 
 function classNivel(tipo: string, s: number) {
-  if (tipo === "phq9") {
-    if (s <= 4) return "Minima"; if (s <= 9) return "Leve"; if (s <= 14) return "Moderada"; if (s <= 19) return "Mod. grave"; return "Grave";
-  }
-  if (s <= 4) return "Minima"; if (s <= 9) return "Leve"; if (s <= 14) return "Moderada"; return "Grave";
+  const faixas = faixasPorTipo[tipo];
+  if (faixas) return classificarPorFaixa(s, faixas).classificacao;
+  if (["ysq", "ypi"].includes(tipo)) return s > 3.5 ? "Esquemas ativos" : "Sem ativação";
+  if (tipo === "yci") return s > 0 ? `${s} defesa${s > 1 ? "s" : ""}` : "Nenhuma";
+  if (["neoffir", "neopir"].includes(tipo)) return "Ver perfil";
+  if (["ebep", "less"].includes(tipo)) return "Ver domínios";
+  return `Score: ${s}`;
 }
 
 interface Notificacao { id: number; tipo: string; nome: string; tempo: string; }
@@ -53,7 +93,7 @@ export default function BrunoPainel() {
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [loginLoading, setLoginLoading] = useState(true);
-  const [tab, setTab] = useState<"respostas" | "blog">("respostas");
+  const [tab, setTab] = useState<"respostas" | "blog" | "exercicios">("respostas");
   const [respostaAberta, setRespostaAberta] = useState<Resposta | null>(null);
   const [historicoAberto, setHistoricoAberto] = useState<Resposta[]>([]);
   const [parecerAvulso, setParecerAvulso] = useState(false);
@@ -75,6 +115,46 @@ export default function BrunoPainel() {
   const [consideracoes, setConsideracoes] = useState("");
   const [addTesteId, setAddTesteId] = useState<TesteId>("phq9");
   const [notificacoes, setNotificacoes] = useState<Notificacao[]>([]);
+  const [exercicioAberto, setExercicioAberto] = useState<Exercicio | null>(null);
+  const [filtroPublico, setFiltroPublico] = useState<"todos" | "adulto" | "infantojuvenil">("todos");
+  const [hiddenExercicios, setHiddenExercicios] = useState<Set<string>>(() => {
+    try { return new Set(JSON.parse(localStorage.getItem("hidden_exercicios") ?? "[]")); } catch { return new Set(); }
+  });
+
+  function toggleHideExercicio(id: string) {
+    setHiddenExercicios((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      localStorage.setItem("hidden_exercicios", JSON.stringify([...next]));
+      return next;
+    });
+  }
+
+  function exportarExercicioPDF(ex: Exercicio) {
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const W = 180; const ML = 15; let y = 20;
+    function txt(text: string, size = 10, bold = false, color: [number, number, number] = [40, 40, 40]) {
+      doc.setFontSize(size); doc.setFont("helvetica", bold ? "bold" : "normal"); doc.setTextColor(...color);
+      for (const line of doc.splitTextToSize(text, W)) {
+        if (y > 275) { doc.addPage(); y = 20; }
+        doc.text(line, ML, y); y += size * 0.45;
+      }
+    }
+    txt(ex.titulo, 16, true, [30, 30, 30]); y += 4;
+    txt(`${ex.abordagem} | ${ex.categoria}`, 9, false, [120, 120, 120]); y += 2;
+    txt(`Tempo estimado: ${ex.tempoEstimado}`, 9, false, [120, 120, 120]); y += 6;
+    doc.setDrawColor(200, 200, 200); doc.line(ML, y, ML + W, y); y += 6;
+    txt("OBJETIVO", 11, true); y += 2;
+    txt(ex.objetivo); y += 6;
+    txt("INSTRUÇÕES", 11, true); y += 2;
+    ex.instrucoes.forEach((inst, i) => { txt(`${i + 1}. ${inst}`); y += 2; }); y += 4;
+    if (ex.exemplo) { txt("EXEMPLO", 11, true); y += 2; txt(ex.exemplo); y += 6; }
+    doc.setDrawColor(200, 200, 200); doc.line(ML, y, ML + W, y); y += 6;
+    txt("REFERÊNCIA", 10, true, [100, 100, 100]); y += 2;
+    txt(ex.referencia, 9, false, [100, 100, 100]); y += 8;
+    txt("Bruno SG — Psicólogo CRP 07/44472", 9, true, [120, 120, 120]);
+    doc.save(`exercicio_${ex.id}.pdf`);
+  }
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "c");
@@ -188,10 +268,12 @@ export default function BrunoPainel() {
     setExportando(true);
     const zip = new JSZip();
     for (const r of items) {
-      const perguntas = r.tipo === "phq9" ? perguntasPHQ9 : perguntasGAD7;
+      const cfg = allScaleConfigs[r.tipo];
+      const perguntas = cfg?.itens?.map((item, i) => getItemText(item, i)) ?? r.respostas.map((_, i) => `Item ${i + 1}`);
       const dt = new Date(r.criado_em).toLocaleDateString("pt-BR");
-      const doc = gerarPDF({ tipo: r.tipo === "phq9" ? "PHQ-9" : "GAD-7", nome: r.nome, pontuacao: r.pontuacao, nivel: classNivel(r.tipo, r.pontuacao), respostas: r.respostas, perguntas, data: dt });
-      zip.file(r.tipo.toUpperCase() + "_" + r.nome.replace(/\s+/g, "_") + "_" + dt.replace(/\//g, "-") + ".pdf", doc.output("arraybuffer"));
+      const sigla = testesDisponiveis.find((t) => t.id === r.tipo)?.sigla ?? r.tipo.toUpperCase();
+      const doc = gerarPDF({ tipo: sigla, nome: r.nome, pontuacao: r.pontuacao, nivel: classNivel(r.tipo, r.pontuacao), respostas: r.respostas, perguntas, data: dt });
+      zip.file(sigla + "_" + r.nome.replace(/\s+/g, "_") + "_" + dt.replace(/\//g, "-") + ".pdf", doc.output("arraybuffer"));
     }
     const blob = await zip.generateAsync({ type: "blob" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
@@ -300,7 +382,7 @@ export default function BrunoPainel() {
     resetParecer();
   }
 
-  const tabBtn = (id: "respostas" | "blog") =>
+  const tabBtn = (id: "respostas" | "blog" | "exercicios") =>
     "px-4 py-1.5 rounded-full text-xs font-semibold transition-all " + (tab === id ? "text-white shadow-[0_8px_20px_-8px_var(--c-accent)]" : "text-[var(--c-muted)] hover:text-[var(--c-text)]");
 
   return (
@@ -315,6 +397,7 @@ export default function BrunoPainel() {
           </div>
           <div className="flex gap-1">
             <button onClick={() => { setTab("respostas"); fecharDashboard(); }} className={tabBtn("respostas")} style={tab === "respostas" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Respostas</button>
+            <button onClick={() => setTab("exercicios")} className={tabBtn("exercicios")} style={tab === "exercicios" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Exercícios</button>
             <button onClick={() => setTab("blog")} className={tabBtn("blog")} style={tab === "blog" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Blog</button>
           </div>
         </div>
@@ -427,9 +510,11 @@ export default function BrunoPainel() {
                   {respostaAberta && <motion.div variants={fadeUp} className="glass-card rounded-2xl p-5">
                     <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Resultado Atual</p>
                     {(() => {
-                      const cor = respostaAberta.tipo === "phq9" ? "#B05D3A" : respostaAberta.tipo === "gad7" ? "#4A6B47" : "var(--c-accent)";
+                      const corMap: Record<string, string> = { phq9: "#B05D3A", gad7: "#4A6B47", bai: "#5B7DB1", bdi: "#7B5EA7", bhs: "#8B6F47", asrs: "#4A8B6B" };
+                      const cor = corMap[respostaAberta.tipo] ?? "var(--c-accent)";
                       const nivel = classNivel(respostaAberta.tipo, respostaAberta.pontuacao);
-                      const max = respostaAberta.tipo === "phq9" ? 27 : respostaAberta.tipo === "gad7" ? 21 : 63;
+                      const maxMap: Record<string, number> = { phq9: 27, gad7: 21, bai: 63, bdi: 63, bhs: 20, asrs: 72 };
+                      const max = maxMap[respostaAberta.tipo] ?? respostaAberta.pontuacao;
                       const pct = Math.min(100, (respostaAberta.pontuacao / max) * 100);
                       return (
                         <div className="text-center">
@@ -476,15 +561,19 @@ export default function BrunoPainel() {
                   <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Respostas Detalhadas</p>
                   <div className="grid gap-2 md:grid-cols-2">
                     {respostaAberta.respostas.map((val, i) => {
-                      const perguntas = respostaAberta.tipo === "phq9" ? perguntasPHQ9 : respostaAberta.tipo === "gad7" ? perguntasGAD7 : [];
-                      const labels = ["Nenhuma vez", "Varios dias", "Mais da metade", "Quase todos"];
+                      const cfg = allScaleConfigs[respostaAberta.tipo];
+                      const itemRaw = cfg?.itens?.[i];
+                      const pergunta = itemRaw ? getItemText(itemRaw, i) : `Item ${i + 1}`;
+                      const optLabel = getOptionLabel(respostaAberta.tipo, val);
+                      const maxOp = cfg?.opcoes ? Math.max(...cfg.opcoes.map((o) => o.valor)) : 3;
+                      const ratio = maxOp > 0 ? val / maxOp : 0;
                       return (
                         <div key={i} className="flex items-start gap-3 rounded-lg p-2 hover:bg-[var(--c-surface)]/30">
                           <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-[var(--c-accent)]/10 text-[10px] font-bold text-[var(--c-accent)]">{i + 1}</span>
                           <div className="min-w-0">
-                            <p className="text-xs text-[var(--c-text)]">{perguntas[i] ?? `Item ${i + 1}`}</p>
-                            <p className="text-[10px] font-medium" style={{ color: val >= 3 ? "#c53030" : val >= 2 ? "#d69e2e" : val >= 1 ? "#38a169" : "var(--c-muted)" }}>
-                              {labels[val] ?? val} ({val})
+                            <p className="text-xs text-[var(--c-text)]">{pergunta}</p>
+                            <p className="text-[10px] font-medium" style={{ color: ratio >= 0.75 ? "#c53030" : ratio >= 0.5 ? "#d69e2e" : ratio > 0 ? "#38a169" : "var(--c-muted)" }}>
+                              {optLabel ? `${optLabel} (${val})` : `${val}`}
                             </p>
                           </div>
                         </div>
@@ -621,6 +710,104 @@ export default function BrunoPainel() {
                       placeholder="Considerações finais"
                       className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none resize-none" />
                   </motion.div>
+                )}
+              </>
+            )}
+
+            {tab === "exercicios" && (
+              <>
+                {exercicioAberto ? (
+                  <motion.div variants={fadeUp}>
+                    <div className="mb-6 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <button onClick={() => setExercicioAberto(null)} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]"><X size={15} /></button>
+                        <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{exercicioAberto.titulo}</h2>
+                      </div>
+                      <motion.button whileTap={{ scale: 0.96 }} onClick={() => exportarExercicioPDF(exercicioAberto)}
+                        className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white"
+                        style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
+                        <Download size={14} /> Salvar PDF
+                      </motion.button>
+                    </div>
+
+                    <div className="glass-card mb-4 rounded-2xl p-6">
+                      <div className="mb-4 flex flex-wrap gap-2">
+                        <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${exercicioAberto.publico === "infantojuvenil" ? "bg-purple-100 text-purple-600" : "bg-[var(--c-accent)]/10 text-[var(--c-accent)]"}`}>
+                          {exercicioAberto.publico === "infantojuvenil" ? "Infantojuvenil" : exercicioAberto.abordagem}
+                        </span>
+                        <span className="rounded-full bg-[var(--c-surface)] px-3 py-1 text-[10px] font-medium text-[var(--c-muted)]">{exercicioAberto.categoria}</span>
+                        <span className="rounded-full bg-[var(--c-surface)] px-3 py-1 text-[10px] font-medium text-[var(--c-muted)]">⏱ {exercicioAberto.tempoEstimado}</span>
+                      </div>
+                      <p className="mb-4 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Objetivo</p>
+                      <p className="mb-6 leading-relaxed text-sm text-[var(--c-text)]">{exercicioAberto.objetivo}</p>
+                      <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Instruções</p>
+                      <ol className="mb-6 space-y-3">
+                        {exercicioAberto.instrucoes.map((inst, i) => (
+                          <li key={i} className="flex gap-3 text-sm leading-relaxed text-[var(--c-text)]">
+                            <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-[var(--c-accent)]/10 text-[10px] font-bold text-[var(--c-accent)]">{i + 1}</span>
+                            <span>{inst}</span>
+                          </li>
+                        ))}
+                      </ol>
+                      {exercicioAberto.exemplo && (
+                        <>
+                          <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Exemplo</p>
+                          <div className="mb-6 rounded-xl bg-[var(--c-surface)] p-4 text-sm italic leading-relaxed text-[var(--c-muted)]">{exercicioAberto.exemplo}</div>
+                        </>
+                      )}
+                      <div className="rounded-xl border border-[var(--c-border)] p-4">
+                        <p className="mb-1 text-[10px] font-medium uppercase tracking-wider text-[var(--c-muted)]">Referência</p>
+                        <p className="text-xs leading-relaxed text-[var(--c-muted)]">{exercicioAberto.referencia}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <>
+                    <motion.div variants={fadeUp} className="mb-6 flex items-center justify-between flex-wrap gap-3">
+                      <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Exercícios Terapêuticos</h2>
+                      <div className="flex items-center gap-2">
+                        {(["todos", "adulto", "infantojuvenil"] as const).map((f) => (
+                          <button key={f} onClick={() => setFiltroPublico(f)}
+                            className={"rounded-full px-3 py-1 text-[10px] font-semibold transition-all " + (filtroPublico === f ? "text-white shadow" : "text-[var(--c-muted)] border border-[var(--c-border)] hover:text-[var(--c-text)]")}
+                            style={filtroPublico === f ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>
+                            {f === "todos" ? "Todos" : f === "adulto" ? "Adulto" : "Infantojuvenil"}
+                          </button>
+                        ))}
+                        {hiddenExercicios.size > 0 && (
+                          <button onClick={() => { setHiddenExercicios(new Set()); localStorage.removeItem("hidden_exercicios"); }}
+                            className="flex items-center gap-1 text-xs text-[var(--c-muted)] hover:text-[var(--c-accent)]">
+                            <RotateCcw size={12} /> Restaurar ({hiddenExercicios.size})
+                          </button>
+                        )}
+                      </div>
+                    </motion.div>
+                    <motion.div variants={fadeUp} className="grid gap-3 md:grid-cols-2">
+                      {exercicios.filter((e) => !hiddenExercicios.has(e.id) && (filtroPublico === "todos" || e.publico === filtroPublico)).map((ex) => (
+                        <div key={ex.id} className="glass-card rounded-2xl p-5 transition-colors hover:border-[var(--c-accent)]/30 cursor-pointer" onClick={() => setExercicioAberto(ex)}>
+                          <div className="mb-3 flex items-start justify-between">
+                            <div>
+                              <h3 className="text-sm font-semibold text-[var(--c-text)]">{ex.titulo}</h3>
+                              <div className="mt-1 flex flex-wrap gap-1.5">
+                                <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${ex.publico === "infantojuvenil" ? "bg-purple-100 text-purple-600" : "bg-[var(--c-accent)]/10 text-[var(--c-accent)]"}`}>
+                                  {ex.publico === "infantojuvenil" ? "Infantojuvenil" : ex.abordagem}
+                                </span>
+                                <span className="rounded-full bg-[var(--c-surface)] px-2 py-0.5 text-[9px] font-medium text-[var(--c-muted)]">{ex.tempoEstimado}</span>
+                              </div>
+                            </div>
+                            <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                              <button onClick={() => exportarExercicioPDF(ex)} className="rounded-full border border-[var(--c-border)] p-1.5 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]" title="Salvar PDF">
+                                <Download size={12} />
+                              </button>
+                              <button onClick={() => toggleHideExercicio(ex.id)} className="rounded-full border border-red-200 p-1.5 text-red-400 transition-colors hover:text-red-600" title="Remover">
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
+                          </div>
+                          <p className="text-xs leading-relaxed text-[var(--c-muted)] line-clamp-2">{ex.objetivo}</p>
+                        </div>
+                      ))}
+                    </motion.div>
+                  </>
                 )}
               </>
             )}

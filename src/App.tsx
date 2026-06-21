@@ -7,6 +7,7 @@ import PHQ9 from "./pages/paciente/PHQ9";
 import GAD7 from "./pages/paciente/GAD7";
 import Escala from "./pages/paciente/Escala";
 import BrunoPainel from "./pages/bruno/Painel";
+import Exercicios from "./pages/Exercicios";
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
         <Route path="/" element={<VariantC />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:slug" element={<BlogPost />} />
+        <Route path="/exercicios" element={<Exercicios />} />
         <Route path="/paciente" element={<PacienteHub />} />
         <Route path="/paciente/phq9" element={<PHQ9 />} />
         <Route path="/paciente/gad7" element={<GAD7 />} />
