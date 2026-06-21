@@ -53,7 +53,9 @@ export default function BrunoPainel() {
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [loginLoading, setLoginLoading] = useState(true);
-  const [tab, setTab] = useState<"respostas" | "blog" | "pareceres">("respostas");
+  const [tab, setTab] = useState<"respostas" | "blog">("respostas");
+  const [respostaAberta, setRespostaAberta] = useState<Resposta | null>(null);
+  const [historicoAberto, setHistoricoAberto] = useState<Resposta[]>([]);
   const [respostas, setRespostas] = useState<Resposta[]>([]);
   const [loading, setLoading] = useState(false);
   const [exportando, setExportando] = useState(false);
@@ -265,7 +267,31 @@ export default function BrunoPainel() {
     setConsideracoes("");
   }
 
-  const tabBtn = (id: "respostas" | "blog" | "pareceres") =>
+  function abrirDashboard(r: Resposta) {
+    setRespostaAberta(r);
+    const hist = respostas.filter((x) => x.nome.toLowerCase() === r.nome.toLowerCase());
+    setHistoricoAberto(hist);
+    setPaciente({ nome: r.nome, idade: r.nascimento ?? "", dataAvaliacao: new Date(r.criado_em).toLocaleDateString("pt-BR"), escolaridade: "" });
+    const testeInfo = testesDisponiveis.find((t) => t.id === r.tipo);
+    if (testeInfo) {
+      const novoTeste: ResultadoTeste = { testeId: testeInfo.id, sigla: testeInfo.sigla, nome: testeInfo.nome, dados: { escore: r.pontuacao } };
+      const outros = hist.filter((x) => x.id !== r.id && testesDisponiveis.some((t) => t.id === x.tipo)).map((x) => {
+        const info = testesDisponiveis.find((t) => t.id === x.tipo)!;
+        return processarTeste({ testeId: info.id, sigla: info.sigla, nome: info.nome, dados: { escore: x.pontuacao } });
+      });
+      setParecerTestes([processarTeste(novoTeste), ...outros]);
+    }
+    setSintese("");
+    setConsideracoes("");
+  }
+
+  function fecharDashboard() {
+    setRespostaAberta(null);
+    setHistoricoAberto([]);
+    resetParecer();
+  }
+
+  const tabBtn = (id: "respostas" | "blog") =>
     "px-4 py-1.5 rounded-full text-xs font-semibold transition-all " + (tab === id ? "text-white shadow-[0_8px_20px_-8px_var(--c-accent)]" : "text-[var(--c-muted)] hover:text-[var(--c-text)]");
 
   return (
@@ -279,9 +305,8 @@ export default function BrunoPainel() {
             <button onClick={logout} className="rounded-full border border-[var(--c-border)] px-3 py-1 text-[10px] text-[var(--c-muted)] transition-colors hover:text-red-500 hover:border-red-300">Sair</button>
           </div>
           <div className="flex gap-1">
-            <button onClick={() => setTab("respostas")} className={tabBtn("respostas")} style={tab === "respostas" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Respostas</button>
+            <button onClick={() => { setTab("respostas"); fecharDashboard(); }} className={tabBtn("respostas")} style={tab === "respostas" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Respostas</button>
             <button onClick={() => setTab("blog")} className={tabBtn("blog")} style={tab === "blog" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Blog</button>
-            <button onClick={() => setTab("pareceres")} className={tabBtn("pareceres")} style={tab === "pareceres" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Pareceres</button>
           </div>
         </div>
       </header>
@@ -290,7 +315,7 @@ export default function BrunoPainel() {
         <div className="mx-auto max-w-5xl">
           <motion.div variants={stagger.container} initial="hidden" animate="visible">
 
-            {tab === "respostas" && (
+            {tab === "respostas" && !respostaAberta && (
               <>
                 <motion.div variants={fadeUp} className="mb-6 flex items-center justify-between">
                   <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Respostas</h2>
@@ -330,8 +355,8 @@ export default function BrunoPainel() {
                         {respostas.map((r) => {
                           const cor = r.tipo === "phq9" ? "#B05D3A" : r.tipo === "gad7" ? "#4A6B47" : "var(--c-accent)";
                           return (
-                            <tr key={r.id} className="border-b border-[var(--c-border)]/60 transition-colors hover:bg-[var(--c-surface)]/40">
-                              <td className="px-4 py-3"><input type="checkbox" checked={selecionados.has(r.id)} onChange={() => toggle(r.id)} /></td>
+                            <tr key={r.id} className="border-b border-[var(--c-border)]/60 transition-colors hover:bg-[var(--c-surface)]/40 cursor-pointer" onClick={() => abrirDashboard(r)}>
+                              <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={selecionados.has(r.id)} onChange={() => toggle(r.id)} /></td>
                               <td className="px-4 py-3">
                                 <span className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider" style={{ background: cor + "1A", color: cor }}>{r.tipo.toUpperCase()}</span>
                               </td>
@@ -345,6 +370,240 @@ export default function BrunoPainel() {
                         })}
                       </tbody>
                     </table>
+                  </motion.div>
+                )}
+              </>
+            )}
+
+            {/* ===== DASHBOARD / RELATÓRIO ===== */}
+            {tab === "respostas" && respostaAberta && (
+              <>
+                <motion.div variants={fadeUp} className="mb-6 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <button onClick={fecharDashboard} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]">
+                      <X size={15} />
+                    </button>
+                    <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{respostaAberta.nome}</h2>
+                  </div>
+                  <motion.button whileTap={{ scale: 0.96 }} onClick={exportarParecer} disabled={!parecerTestes.length}
+                    className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white transition-opacity disabled:opacity-40"
+                    style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
+                    <Download size={14} /> Gerar Parecer PDF
+                  </motion.button>
+                </motion.div>
+
+                {/* Dados + Score visual */}
+                <div className="mb-6 grid gap-4 md:grid-cols-3">
+                  <motion.div variants={fadeUp} className="glass-card rounded-2xl p-5">
+                    <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Paciente</p>
+                    <div className="space-y-2">
+                      <input value={paciente.nome} onChange={(e) => setPaciente({ ...paciente, nome: e.target.value })}
+                        className="w-full rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-sm font-medium text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
+                      <div className="grid grid-cols-2 gap-2">
+                        <input value={paciente.idade} onChange={(e) => setPaciente({ ...paciente, idade: e.target.value })} placeholder="Idade"
+                          className="rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-1.5 text-xs text-[var(--c-text)] focus:outline-none" />
+                        <input value={paciente.dataAvaliacao} onChange={(e) => setPaciente({ ...paciente, dataAvaliacao: e.target.value })} placeholder="Data"
+                          className="rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-1.5 text-xs text-[var(--c-text)] focus:outline-none" />
+                      </div>
+                      <input value={paciente.escolaridade} onChange={(e) => setPaciente({ ...paciente, escolaridade: e.target.value })} placeholder="Escolaridade"
+                        className="w-full rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-1.5 text-xs text-[var(--c-text)] focus:outline-none" />
+                    </div>
+                  </motion.div>
+
+                  <motion.div variants={fadeUp} className="glass-card rounded-2xl p-5">
+                    <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Resultado Atual</p>
+                    {(() => {
+                      const cor = respostaAberta.tipo === "phq9" ? "#B05D3A" : respostaAberta.tipo === "gad7" ? "#4A6B47" : "var(--c-accent)";
+                      const nivel = classNivel(respostaAberta.tipo, respostaAberta.pontuacao);
+                      const max = respostaAberta.tipo === "phq9" ? 27 : respostaAberta.tipo === "gad7" ? 21 : 63;
+                      const pct = Math.min(100, (respostaAberta.pontuacao / max) * 100);
+                      return (
+                        <div className="text-center">
+                          <span className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider" style={{ background: cor + "1A", color: cor }}>{respostaAberta.tipo.toUpperCase()}</span>
+                          <p className="mt-3 text-4xl font-bold" style={{ color: cor }}>{respostaAberta.pontuacao}</p>
+                          <p className="text-xs text-[var(--c-muted)]">de {max} pontos</p>
+                          <div className="mx-auto mt-3 h-2 w-full overflow-hidden rounded-full bg-[var(--c-border)]">
+                            <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, ease: "easeOut" }}
+                              className="h-full rounded-full" style={{ background: cor }} />
+                          </div>
+                          <p className="mt-2 text-sm font-semibold" style={{ color: cor }}>{nivel}</p>
+                        </div>
+                      );
+                    })()}
+                  </motion.div>
+
+                  <motion.div variants={fadeUp} className="glass-card rounded-2xl p-5">
+                    <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Histórico ({historicoAberto.length})</p>
+                    {historicoAberto.length <= 1 ? (
+                      <p className="py-4 text-center text-xs text-[var(--c-muted)]">Primeira resposta deste paciente.</p>
+                    ) : (
+                      <div className="max-h-40 space-y-1.5 overflow-y-auto">
+                        {historicoAberto.map((h) => {
+                          const hcor = h.tipo === "phq9" ? "#B05D3A" : h.tipo === "gad7" ? "#4A6B47" : "var(--c-accent)";
+                          return (
+                            <div key={h.id} className={`flex items-center justify-between rounded-lg px-3 py-2 text-xs ${h.id === respostaAberta.id ? "bg-[var(--c-accent)]/10 font-semibold" : "hover:bg-[var(--c-surface)]/40"}`}
+                              onClick={() => abrirDashboard(h)} style={{ cursor: "pointer" }}>
+                              <div className="flex items-center gap-2">
+                                <span className="rounded px-1.5 py-0.5 text-[9px] font-bold uppercase" style={{ background: hcor + "1A", color: hcor }}>{h.tipo}</span>
+                                <span className="text-[var(--c-muted)]">{new Date(h.criado_em).toLocaleDateString("pt-BR")}</span>
+                              </div>
+                              <span className="font-medium text-[var(--c-text)]">{h.pontuacao}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </motion.div>
+                </div>
+
+                {/* Detalhes das respostas individuais */}
+                <motion.div variants={fadeUp} className="glass-card mb-6 rounded-2xl p-5">
+                  <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Respostas Detalhadas</p>
+                  <div className="grid gap-2 md:grid-cols-2">
+                    {respostaAberta.respostas.map((val, i) => {
+                      const perguntas = respostaAberta.tipo === "phq9" ? perguntasPHQ9 : respostaAberta.tipo === "gad7" ? perguntasGAD7 : [];
+                      const labels = ["Nenhuma vez", "Varios dias", "Mais da metade", "Quase todos"];
+                      return (
+                        <div key={i} className="flex items-start gap-3 rounded-lg p-2 hover:bg-[var(--c-surface)]/30">
+                          <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-[var(--c-accent)]/10 text-[10px] font-bold text-[var(--c-accent)]">{i + 1}</span>
+                          <div className="min-w-0">
+                            <p className="text-xs text-[var(--c-text)]">{perguntas[i] ?? `Item ${i + 1}`}</p>
+                            <p className="text-[10px] font-medium" style={{ color: val >= 3 ? "#c53030" : val >= 2 ? "#d69e2e" : val >= 1 ? "#38a169" : "var(--c-muted)" }}>
+                              {labels[val] ?? val} ({val})
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+
+                {/* Parecer — instrumentos + texto + síntese */}
+                <motion.div variants={fadeUp} className="glass-card mb-6 rounded-2xl p-6">
+                  <div className="mb-4 flex items-center justify-between">
+                    <p className="text-xs font-medium uppercase tracking-wider text-[var(--c-accent)]">Parecer — Instrumentos ({parecerTestes.length})</p>
+                    <div className="flex gap-2">
+                      <select value={addTesteId} onChange={(e) => setAddTesteId(e.target.value as TesteId)}
+                        className="rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-xs text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none">
+                        {testesDisponiveis.map((t) => <option key={t.id} value={t.id}>{t.sigla}</option>)}
+                      </select>
+                      <button onClick={adicionarTeste}
+                        className="flex items-center gap-1 rounded-full border border-[var(--c-accent)] px-3 py-1.5 text-xs font-semibold text-[var(--c-accent)] transition-colors hover:bg-[var(--c-accent)]/10">
+                        <Plus size={13} /> Adicionar
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    {parecerTestes.map((t, idx) => (
+                      <div key={idx} className="rounded-xl border border-[var(--c-border)] p-4">
+                        <div className="mb-3 flex items-center justify-between">
+                          <span className="text-sm font-semibold text-[var(--c-text)]">{t.sigla} — {t.nome}</span>
+                          <button onClick={() => removerTeste(idx)} className="text-red-400 transition-colors hover:text-red-600"><X size={14} /></button>
+                        </div>
+
+                        {(t.testeId === "neo-ffi") ? (
+                          <div className="space-y-2">
+                            <div className="grid grid-cols-3 gap-2">
+                              <select value={String(t.dados.sexo ?? "combinado")} onChange={(e) => atualizarDadosTeste(idx, "sexo", e.target.value)}
+                                className="col-span-3 rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-xs text-[var(--c-text)] focus:outline-none">
+                                <option value="combinado">Norma combinada</option>
+                                <option value="masculino">Masculino</option>
+                                <option value="feminino">Feminino</option>
+                              </select>
+                              {(["N", "E", "O", "A", "C"] as const).map((dom) => (
+                                <input key={dom} type="number" placeholder={dom} value={t.dados[dom] ?? ""}
+                                  onChange={(e) => atualizarDadosTeste(idx, dom, Number(e.target.value))}
+                                  className="rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-xs text-[var(--c-text)] focus:outline-none" />
+                              ))}
+                            </div>
+                          </div>
+                        ) : (t.testeId === "neo-pi") ? (
+                          <div className="space-y-3">
+                            <p className="text-[10px] text-[var(--c-muted)]">Escores T por domínio e faceta (facetas opcionais)</p>
+                            {(["N", "E", "O", "A", "C"] as const).map((dom) => (
+                              <div key={dom} className="rounded-lg border border-[var(--c-border)]/50 p-3">
+                                <div className="mb-2 flex items-center gap-2">
+                                  <span className="text-[10px] font-bold text-[var(--c-accent)]">{dom}</span>
+                                  <span className="text-[10px] text-[var(--c-muted)]">{neoDominioNomes[dom]}</span>
+                                  <input type="number" placeholder="T" value={t.dados[dom] ?? ""}
+                                    onChange={(e) => atualizarDadosTeste(idx, dom, Number(e.target.value))}
+                                    className="ml-auto w-16 rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-2 py-1 text-center text-xs text-[var(--c-text)] focus:outline-none" />
+                                </div>
+                                <div className="grid grid-cols-3 gap-1.5">
+                                  {neoFacetasPorDominio[dom as NeoFFIDominio].map((fac) => (
+                                    <div key={fac} className="flex items-center gap-1">
+                                      <span className="w-7 text-[9px] font-medium text-[var(--c-muted)]">{fac}</span>
+                                      <input type="number" placeholder={neoFacetasNomes[fac]?.substring(0, 8)} value={t.dados[fac] ?? ""}
+                                        onChange={(e) => atualizarDadosTeste(idx, fac, Number(e.target.value))}
+                                        className="w-full rounded border border-[var(--c-border)]/50 bg-[var(--c-bg)]/40 px-2 py-1 text-[10px] text-[var(--c-text)] focus:outline-none" title={neoFacetasNomes[fac]} />
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (t.testeId === "g36") ? (
+                          <div className="grid grid-cols-2 gap-2">
+                            <input type="number" placeholder="Acertos (0-36)" value={t.dados.escore ?? ""}
+                              onChange={(e) => atualizarDadosTeste(idx, "escore", Number(e.target.value))}
+                              className="rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-xs text-[var(--c-text)] focus:outline-none" />
+                            <select value={String(t.dados.escolaridade ?? "geral")} onChange={(e) => atualizarDadosTeste(idx, "escolaridade", e.target.value)}
+                              className="rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-xs text-[var(--c-text)] focus:outline-none">
+                              <option value="geral">Geral</option>
+                              <option value="ensMedio">Ensino Médio</option>
+                              <option value="superior">Superior</option>
+                            </select>
+                          </div>
+                        ) : (
+                          <input type="number" placeholder="Escore total" value={t.dados.escore ?? ""}
+                            onChange={(e) => atualizarDadosTeste(idx, "escore", Number(e.target.value))}
+                            className="w-full rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-xs text-[var(--c-text)] focus:outline-none" />
+                        )}
+
+                        {t.resultado && (
+                          <div className="mt-3 space-y-2">
+                            <div className="rounded-lg bg-[var(--c-surface)] p-3">
+                              <p className="mb-1 text-xs font-semibold text-[var(--c-accent)]">{t.resultado.classificacao}</p>
+                              <p className="whitespace-pre-line text-xs text-[var(--c-muted)]">{t.resultado.detalhes}</p>
+                            </div>
+                            <div>
+                              <div className="mb-1 flex items-center justify-between">
+                                <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--c-muted)]">Texto interpretativo</span>
+                                {t.textoEditado && (
+                                  <button onClick={() => {
+                                    const copia = [...parecerTestes];
+                                    copia[idx] = { ...copia[idx], textoEditado: false, texto: undefined };
+                                    copia[idx] = processarTeste(copia[idx]);
+                                    setParecerTestes(copia);
+                                  }} className="flex items-center gap-1 text-[10px] text-[var(--c-accent)] hover:underline" title="Regenerar texto automático">
+                                    <RotateCcw size={10} /> Regenerar
+                                  </button>
+                                )}
+                              </div>
+                              <textarea value={t.texto ?? ""} onChange={(e) => {
+                                const copia = [...parecerTestes];
+                                copia[idx] = { ...copia[idx], texto: e.target.value, textoEditado: true };
+                                setParecerTestes(copia);
+                              }} rows={4}
+                                className="w-full rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-xs leading-relaxed text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none resize-y" />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+
+                {parecerTestes.length > 0 && (
+                  <motion.div variants={fadeUp} className="glass-card mb-6 rounded-2xl p-6">
+                    <p className="mb-3 text-xs font-medium uppercase tracking-wider text-[var(--c-accent)]">Síntese e Considerações</p>
+                    <textarea value={sintese} onChange={(e) => setSintese(e.target.value)} rows={4}
+                      placeholder="Síntese dos resultados (campo livre — será incluído no parecer)"
+                      className="mb-3 w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none resize-none" />
+                    <textarea value={consideracoes} onChange={(e) => setConsideracoes(e.target.value)} rows={3}
+                      placeholder="Considerações finais"
+                      className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none resize-none" />
                   </motion.div>
                 )}
               </>
@@ -539,170 +798,6 @@ export default function BrunoPainel() {
                       </motion.div>
                     )}
                   </>
-                )}
-              </>
-            )}
-
-            {tab === "pareceres" && (
-              <>
-                <motion.div variants={fadeUp} className="mb-6 flex items-center justify-between">
-                  <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Gerar Parecer</h2>
-                  <div className="flex gap-2">
-                    {parecerTestes.length > 0 && (
-                      <button onClick={resetParecer} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]" title="Limpar tudo"><X size={15} /></button>
-                    )}
-                    <motion.button whileTap={{ scale: 0.96 }} onClick={exportarParecer} disabled={!parecerTestes.length || !paciente.nome}
-                      className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white transition-opacity disabled:opacity-40"
-                      style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
-                      <Download size={14} /> Exportar PDF
-                    </motion.button>
-                  </div>
-                </motion.div>
-
-                <motion.div variants={fadeUp} className="glass-card mb-6 rounded-2xl p-6">
-                  <p className="mb-3 text-xs font-medium uppercase tracking-wider text-[var(--c-accent)]">Dados do Paciente</p>
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <input value={paciente.nome} onChange={(e) => setPaciente({ ...paciente, nome: e.target.value })}
-                      placeholder="Nome completo" className="rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
-                    <input value={paciente.idade} onChange={(e) => setPaciente({ ...paciente, idade: e.target.value })}
-                      placeholder="Idade" className="rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
-                    <input value={paciente.dataAvaliacao} onChange={(e) => setPaciente({ ...paciente, dataAvaliacao: e.target.value })}
-                      placeholder="Data da avaliação" className="rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
-                    <input value={paciente.escolaridade} onChange={(e) => setPaciente({ ...paciente, escolaridade: e.target.value })}
-                      placeholder="Escolaridade" className="rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
-                  </div>
-                </motion.div>
-
-                <motion.div variants={fadeUp} className="glass-card mb-6 rounded-2xl p-6">
-                  <div className="mb-4 flex items-center justify-between">
-                    <p className="text-xs font-medium uppercase tracking-wider text-[var(--c-accent)]">Instrumentos ({parecerTestes.length})</p>
-                    <div className="flex gap-2">
-                      <select value={addTesteId} onChange={(e) => setAddTesteId(e.target.value as TesteId)}
-                        className="rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-xs text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none">
-                        {testesDisponiveis.map((t) => <option key={t.id} value={t.id}>{t.sigla}</option>)}
-                      </select>
-                      <button onClick={adicionarTeste}
-                        className="flex items-center gap-1 rounded-full border border-[var(--c-accent)] px-3 py-1.5 text-xs font-semibold text-[var(--c-accent)] transition-colors hover:bg-[var(--c-accent)]/10">
-                        <Plus size={13} /> Adicionar
-                      </button>
-                    </div>
-                  </div>
-
-                  {parecerTestes.length === 0 && (
-                    <p className="py-8 text-center text-sm text-[var(--c-muted)]">Nenhum instrumento adicionado. Selecione acima e clique em Adicionar.</p>
-                  )}
-
-                  <div className="space-y-4">
-                    {parecerTestes.map((t, idx) => (
-                      <div key={idx} className="rounded-xl border border-[var(--c-border)] p-4">
-                        <div className="mb-3 flex items-center justify-between">
-                          <span className="text-sm font-semibold text-[var(--c-text)]">{t.sigla} — {t.nome}</span>
-                          <button onClick={() => removerTeste(idx)} className="text-red-400 transition-colors hover:text-red-600"><X size={14} /></button>
-                        </div>
-
-                        {(t.testeId === "neo-ffi") ? (
-                          <div className="space-y-2">
-                            <div className="grid grid-cols-3 gap-2">
-                              <select value={String(t.dados.sexo ?? "combinado")} onChange={(e) => atualizarDadosTeste(idx, "sexo", e.target.value)}
-                                className="col-span-3 rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-xs text-[var(--c-text)] focus:outline-none">
-                                <option value="combinado">Norma combinada</option>
-                                <option value="masculino">Masculino</option>
-                                <option value="feminino">Feminino</option>
-                              </select>
-                              {(["N", "E", "O", "A", "C"] as const).map((dom) => (
-                                <input key={dom} type="number" placeholder={dom} value={t.dados[dom] ?? ""}
-                                  onChange={(e) => atualizarDadosTeste(idx, dom, Number(e.target.value))}
-                                  className="rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-xs text-[var(--c-text)] focus:outline-none" />
-                              ))}
-                            </div>
-                          </div>
-                        ) : (t.testeId === "neo-pi") ? (
-                          <div className="space-y-3">
-                            <p className="text-[10px] text-[var(--c-muted)]">Escores T por domínio e faceta (facetas opcionais)</p>
-                            {(["N", "E", "O", "A", "C"] as const).map((dom) => (
-                              <div key={dom} className="rounded-lg border border-[var(--c-border)]/50 p-3">
-                                <div className="mb-2 flex items-center gap-2">
-                                  <span className="text-[10px] font-bold text-[var(--c-accent)]">{dom}</span>
-                                  <span className="text-[10px] text-[var(--c-muted)]">{neoDominioNomes[dom]}</span>
-                                  <input type="number" placeholder="T" value={t.dados[dom] ?? ""}
-                                    onChange={(e) => atualizarDadosTeste(idx, dom, Number(e.target.value))}
-                                    className="ml-auto w-16 rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-2 py-1 text-center text-xs text-[var(--c-text)] focus:outline-none" />
-                                </div>
-                                <div className="grid grid-cols-3 gap-1.5">
-                                  {neoFacetasPorDominio[dom as NeoFFIDominio].map((fac) => (
-                                    <div key={fac} className="flex items-center gap-1">
-                                      <span className="w-7 text-[9px] font-medium text-[var(--c-muted)]">{fac}</span>
-                                      <input type="number" placeholder={neoFacetasNomes[fac]?.substring(0, 8)} value={t.dados[fac] ?? ""}
-                                        onChange={(e) => atualizarDadosTeste(idx, fac, Number(e.target.value))}
-                                        className="w-full rounded border border-[var(--c-border)]/50 bg-[var(--c-bg)]/40 px-2 py-1 text-[10px] text-[var(--c-text)] focus:outline-none" title={neoFacetasNomes[fac]} />
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (t.testeId === "g36") ? (
-                          <div className="grid grid-cols-2 gap-2">
-                            <input type="number" placeholder="Acertos (0-36)" value={t.dados.escore ?? ""}
-                              onChange={(e) => atualizarDadosTeste(idx, "escore", Number(e.target.value))}
-                              className="rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-xs text-[var(--c-text)] focus:outline-none" />
-                            <select value={String(t.dados.escolaridade ?? "geral")} onChange={(e) => atualizarDadosTeste(idx, "escolaridade", e.target.value)}
-                              className="rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-xs text-[var(--c-text)] focus:outline-none">
-                              <option value="geral">Geral</option>
-                              <option value="ensMedio">Ensino Médio</option>
-                              <option value="superior">Superior</option>
-                            </select>
-                          </div>
-                        ) : (
-                          <input type="number" placeholder="Escore total" value={t.dados.escore ?? ""}
-                            onChange={(e) => atualizarDadosTeste(idx, "escore", Number(e.target.value))}
-                            className="w-full rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-xs text-[var(--c-text)] focus:outline-none" />
-                        )}
-
-                        {t.resultado && (
-                          <div className="mt-3 space-y-2">
-                            <div className="rounded-lg bg-[var(--c-surface)] p-3">
-                              <p className="mb-1 text-xs font-semibold text-[var(--c-accent)]">{t.resultado.classificacao}</p>
-                              <p className="whitespace-pre-line text-xs text-[var(--c-muted)]">{t.resultado.detalhes}</p>
-                            </div>
-                            <div>
-                              <div className="mb-1 flex items-center justify-between">
-                                <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--c-muted)]">Texto interpretativo</span>
-                                {t.textoEditado && (
-                                  <button onClick={() => {
-                                    const copia = [...parecerTestes];
-                                    copia[idx] = { ...copia[idx], textoEditado: false, texto: undefined };
-                                    copia[idx] = processarTeste(copia[idx]);
-                                    setParecerTestes(copia);
-                                  }} className="flex items-center gap-1 text-[10px] text-[var(--c-accent)] hover:underline" title="Regenerar texto automático">
-                                    <RotateCcw size={10} /> Regenerar
-                                  </button>
-                                )}
-                              </div>
-                              <textarea value={t.texto ?? ""} onChange={(e) => {
-                                const copia = [...parecerTestes];
-                                copia[idx] = { ...copia[idx], texto: e.target.value, textoEditado: true };
-                                setParecerTestes(copia);
-                              }} rows={4}
-                                className="w-full rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-xs leading-relaxed text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none resize-y" />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-
-                {parecerTestes.length > 0 && (
-                  <motion.div variants={fadeUp} className="glass-card mb-6 rounded-2xl p-6">
-                    <p className="mb-3 text-xs font-medium uppercase tracking-wider text-[var(--c-accent)]">Síntese e Considerações</p>
-                    <textarea value={sintese} onChange={(e) => setSintese(e.target.value)} rows={4}
-                      placeholder="Síntese dos resultados (campo livre — será incluído no parecer)"
-                      className="mb-3 w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none resize-none" />
-                    <textarea value={consideracoes} onChange={(e) => setConsideracoes(e.target.value)} rows={3}
-                      placeholder="Considerações finais"
-                      className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none resize-none" />
-                  </motion.div>
                 )}
               </>
             )}
