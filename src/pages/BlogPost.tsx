@@ -1,10 +1,10 @@
 ﻿import { useParams, Link, Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Clock } from "lucide-react";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { getPost } from "@/content/posts-loader";
+import { getPost, loadDynamicPosts, isDynamicLoaded, type BlogPost as BlogPostType } from "@/content/posts-loader";
 import { FloatingNav } from "@/components/ui/FloatingNav";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
 import { SkipLink } from "@/components/shared/SkipLink";
@@ -20,14 +20,27 @@ const navItems = [
 
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
-  const post = slug ? getPost(slug) : undefined;
+  const [post, setPost] = useState<BlogPostType | undefined>(() => slug ? getPost(slug) : undefined);
+  const [loading, setLoading] = useState(!post);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "c");
-    if (post) document.title = post.titulo + " | Bruno SG Psicologo";
+    if (post) {
+      document.title = post.titulo + " | Bruno SG Psicologo";
+      setLoading(false);
+    } else if (slug && !isDynamicLoaded()) {
+      loadDynamicPosts().then(() => {
+        const found = getPost(slug);
+        setPost(found);
+        setLoading(false);
+      });
+    } else {
+      setLoading(false);
+    }
     return () => document.documentElement.removeAttribute("data-theme");
-  }, [post]);
+  }, [slug, post]);
 
+  if (loading) return <div className="flex min-h-screen items-center justify-center bg-[var(--c-bg)]"><p className="text-[var(--c-muted)]">Carregando...</p></div>;
   if (!post) return <Navigate to="/blog" replace />;
 
   return (

@@ -1,15 +1,16 @@
 ﻿import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Download, Trash2, Lock, BarChart3, FileText, PenLine, ExternalLink, RefreshCw } from "lucide-react";
+import { Download, Trash2, Lock, BarChart3, FileText, ExternalLink, RefreshCw, Plus, Save, Eye, EyeOff, Edit3, X } from "lucide-react";
 import JSZip from "jszip";
-import { supabase } from "@/lib/supabase";
+import { supabase, listarPostsBlog, salvarPostBlog, atualizarPostBlog, deletarPostBlog, type BlogPostDB } from "@/lib/supabase";
 import { gerarPDF } from "@/lib/pdf-generator";
-import { posts } from "@/content/posts-loader";
+import { processarTeste, gerarParecerPDF, type DadosPaciente, type ResultadoTeste } from "@/lib/parecer-generator";
+import { testesDisponiveis, type TesteId } from "@/content/normative-tables";
+import { posts as staticPosts } from "@/content/posts-loader";
 import { fadeUp, stagger } from "@/lib/motion";
 import { AppAurora } from "@/components/ui/AppAurora";
 
-const SENHA = "bspsi2024";
 
 const perguntasPHQ9 = [
   "Pouco interesse ou prazer em fazer as coisas",
@@ -60,17 +61,43 @@ interface Resposta { id: number; tipo: string; nome: string; telefone?: string; 
 
 export default function BrunoPainel() {
   const [auth, setAuth] = useState(false);
+  const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [erro, setErro] = useState(false);
-  const [tab, setTab] = useState<"respostas" | "blog">("respostas");
+  const [erro, setErro] = useState("");
+  const [loginLoading, setLoginLoading] = useState(true);
+  const [tab, setTab] = useState<"respostas" | "blog" | "pareceres">("respostas");
   const [respostas, setRespostas] = useState<Resposta[]>([]);
   const [loading, setLoading] = useState(false);
   const [exportando, setExportando] = useState(false);
   const [selecionados, setSelecionados] = useState<Set<number>>(new Set());
 
+  const [blogPosts, setBlogPosts] = useState<BlogPostDB[]>([]);
+  const [blogLoading, setBlogLoading] = useState(false);
+  const [editando, setEditando] = useState<BlogPostDB | null>(null);
+  const [blogForm, setBlogForm] = useState({ slug: "", titulo: "", subtitulo: "", categoria: "Geral", tempo_leitura: "5 min", resumo: "", tags: "", conteudo: "", publicado: false });
+  const [blogSaving, setBlogSaving] = useState(false);
+  const [blogMsg, setBlogMsg] = useState("");
+
+  const [paciente, setPaciente] = useState<DadosPaciente>({ nome: "", idade: "", dataAvaliacao: new Date().toLocaleDateString("pt-BR"), escolaridade: "" });
+  const [parecerTestes, setParecerTestes] = useState<ResultadoTeste[]>([]);
+  const [sintese, setSintese] = useState("");
+  const [consideracoes, setConsideracoes] = useState("");
+  const [addTesteId, setAddTesteId] = useState<TesteId>("phq9");
+
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "c");
     document.title = "Painel | Bruno SG";
+    if (supabase) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) { setAuth(true); carregar(); carregarBlog(); }
+        setLoginLoading(false);
+      });
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        setAuth(!!session);
+      });
+      return () => { document.documentElement.removeAttribute("data-theme"); subscription.unsubscribe(); };
+    }
+    setLoginLoading(false);
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -82,8 +109,73 @@ export default function BrunoPainel() {
     setLoading(false);
   }
 
-  function login() {
-    if (senha === SENHA) { setAuth(true); setErro(false); carregar(); } else setErro(true);
+  async function carregarBlog() {
+    setBlogLoading(true);
+    const data = await listarPostsBlog();
+    setBlogPosts(data);
+    setBlogLoading(false);
+  }
+
+  function resetBlogForm() {
+    setBlogForm({ slug: "", titulo: "", subtitulo: "", categoria: "Geral", tempo_leitura: "5 min", resumo: "", tags: "", conteudo: "", publicado: false });
+    setEditando(null);
+    setBlogMsg("");
+  }
+
+  function editarPost(p: BlogPostDB) {
+    setEditando(p);
+    setBlogForm({ slug: p.slug, titulo: p.titulo, subtitulo: p.subtitulo, categoria: p.categoria, tempo_leitura: p.tempo_leitura, resumo: p.resumo, tags: p.tags.join(", "), conteudo: p.conteudo, publicado: p.publicado });
+    setBlogMsg("");
+  }
+
+  function gerarSlug(titulo: string) {
+    return titulo.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  }
+
+  async function salvarBlog() {
+    if (!blogForm.titulo.trim() || !blogForm.conteudo.trim()) { setBlogMsg("Titulo e conteudo obrigatorios"); return; }
+    setBlogSaving(true);
+    const slug = blogForm.slug || gerarSlug(blogForm.titulo);
+    const payload = { slug, titulo: blogForm.titulo, subtitulo: blogForm.subtitulo, categoria: blogForm.categoria, tempo_leitura: blogForm.tempo_leitura, resumo: blogForm.resumo, tags: blogForm.tags.split(",").map((t) => t.trim()).filter(Boolean), conteudo: blogForm.conteudo, publicado: blogForm.publicado };
+
+    if (editando) {
+      const { error } = await atualizarPostBlog(editando.id!, payload);
+      setBlogMsg(error ? "Erro: " + error.message : "Post atualizado!");
+    } else {
+      const { error } = await salvarPostBlog(payload);
+      setBlogMsg(error ? "Erro: " + error.message : "Post criado!");
+    }
+    setBlogSaving(false);
+    carregarBlog();
+  }
+
+  async function deletarPost(id: number) {
+    if (!confirm("Deletar este post?")) return;
+    await deletarPostBlog(id);
+    if (editando?.id === id) resetBlogForm();
+    carregarBlog();
+  }
+
+  async function togglePublicado(p: BlogPostDB) {
+    await atualizarPostBlog(p.id!, { publicado: !p.publicado });
+    carregarBlog();
+  }
+
+  async function login() {
+    if (!supabase) { setErro("Supabase não configurado"); return; }
+    setLoginLoading(true);
+    setErro("");
+    const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
+    if (error) { setErro("Email ou senha incorretos"); setLoginLoading(false); return; }
+    setAuth(true);
+    setLoginLoading(false);
+    carregar();
+    carregarBlog();
+  }
+
+  async function logout() {
+    if (supabase) await supabase.auth.signOut();
+    setAuth(false);
   }
 
   function toggle(id: number) { const n = new Set(selecionados); if (n.has(id)) n.delete(id); else n.add(id); setSelecionados(n); }
@@ -115,6 +207,10 @@ export default function BrunoPainel() {
   const totalPHQ9 = respostas.filter((r) => r.tipo === "phq9").length;
   const totalGAD7 = respostas.filter((r) => r.tipo === "gad7").length;
 
+  if (loginLoading && !auth) {
+    return <div className="flex min-h-screen items-center justify-center" data-theme="c"><AppAurora /><p className="relative z-10 text-[var(--c-muted)]">Carregando...</p></div>;
+  }
+
   if (!auth) {
     return (
       <div className="relative flex min-h-screen items-center justify-center px-6" data-theme="c">
@@ -127,20 +223,53 @@ export default function BrunoPainel() {
           </motion.div>
           <h1 className="mb-1 text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Painel Bruno SG</h1>
           <p className="mb-6 text-xs text-[var(--c-muted)]">Acesso restrito ao psicologo</p>
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email" className="mb-3 w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors focus:border-[var(--c-accent)] focus:outline-none" />
           <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") login(); }}
             placeholder="Senha" className="mb-3 w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors focus:border-[var(--c-accent)] focus:outline-none" />
-          {erro && <p className="mb-3 text-xs text-red-500">Senha incorreta</p>}
-          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={login}
-            className="w-full rounded-full px-6 py-3 font-medium text-white"
+          {erro && <p className="mb-3 text-xs text-red-500">{erro}</p>}
+          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={login} disabled={loginLoading}
+            className="w-full rounded-full px-6 py-3 font-medium text-white disabled:opacity-50"
             style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))", boxShadow: "0 12px 30px -10px var(--c-accent)" }}>
-            Entrar
+            {loginLoading ? "Entrando..." : "Entrar"}
           </motion.button>
         </motion.div>
       </div>
     );
   }
 
-  const tabBtn = (id: "respostas" | "blog") =>
+  function adicionarTeste() {
+    const info = testesDisponiveis.find((t) => t.id === addTesteId);
+    if (!info) return;
+    const novo: ResultadoTeste = { testeId: info.id, sigla: info.sigla, nome: info.nome, dados: {} };
+    setParecerTestes([...parecerTestes, novo]);
+  }
+
+  function atualizarDadosTeste(idx: number, key: string, value: string | number) {
+    const copia = [...parecerTestes];
+    copia[idx] = { ...copia[idx], dados: { ...copia[idx].dados, [key]: value } };
+    copia[idx] = processarTeste(copia[idx]);
+    setParecerTestes(copia);
+  }
+
+  function removerTeste(idx: number) {
+    setParecerTestes(parecerTestes.filter((_, i) => i !== idx));
+  }
+
+  function exportarParecer() {
+    const processados = parecerTestes.map(processarTeste);
+    const doc = gerarParecerPDF(paciente, processados, sintese, consideracoes);
+    doc.save(`parecer_${paciente.nome.replace(/\s+/g, "_") || "paciente"}_${new Date().toISOString().slice(0, 10)}.pdf`);
+  }
+
+  function resetParecer() {
+    setPaciente({ nome: "", idade: "", dataAvaliacao: new Date().toLocaleDateString("pt-BR"), escolaridade: "" });
+    setParecerTestes([]);
+    setSintese("");
+    setConsideracoes("");
+  }
+
+  const tabBtn = (id: "respostas" | "blog" | "pareceres") =>
     "px-4 py-1.5 rounded-full text-xs font-semibold transition-all " + (tab === id ? "text-white shadow-[0_8px_20px_-8px_var(--c-accent)]" : "text-[var(--c-muted)] hover:text-[var(--c-text)]");
 
   return (
@@ -149,10 +278,14 @@ export default function BrunoPainel() {
 
       <header className="fixed left-0 right-0 top-0 z-50 px-6 py-4 glass-panel">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <Link to="/" className="text-sm font-semibold text-[var(--c-text)] transition-colors hover:text-[var(--c-accent)]">Bruno SG</Link>
+          <div className="flex items-center gap-3">
+            <Link to="/" className="text-sm font-semibold text-[var(--c-text)] transition-colors hover:text-[var(--c-accent)]">Bruno SG</Link>
+            <button onClick={logout} className="rounded-full border border-[var(--c-border)] px-3 py-1 text-[10px] text-[var(--c-muted)] transition-colors hover:text-red-500 hover:border-red-300">Sair</button>
+          </div>
           <div className="flex gap-1">
             <button onClick={() => setTab("respostas")} className={tabBtn("respostas")} style={tab === "respostas" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Respostas</button>
             <button onClick={() => setTab("blog")} className={tabBtn("blog")} style={tab === "blog" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Blog</button>
+            <button onClick={() => setTab("pareceres")} className={tabBtn("pareceres")} style={tab === "pareceres" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Pareceres</button>
           </div>
         </div>
       </header>
@@ -244,44 +377,258 @@ export default function BrunoPainel() {
             {tab === "blog" && (
               <>
                 <motion.div variants={fadeUp} className="mb-6 flex items-center justify-between">
-                  <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Posts do Blog</h2>
-                  <a href="/admin/" target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white"
-                    style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
-                    <PenLine size={14} /> Novo post (CMS)
-                  </a>
+                  <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>
+                    {editando ? "Editar post" : blogForm.titulo ? "Novo post" : "Posts do Blog"}
+                  </h2>
+                  <div className="flex gap-2">
+                    {(editando || blogForm.titulo) && (
+                      <button onClick={resetBlogForm} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]"><X size={15} /></button>
+                    )}
+                    {!editando && !blogForm.titulo && (
+                      <button onClick={() => setBlogForm({ ...blogForm, titulo: " " })}
+                        className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white"
+                        style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
+                        <Plus size={14} /> Novo post
+                      </button>
+                    )}
+                  </div>
                 </motion.div>
 
-                <motion.div variants={fadeUp} className="space-y-3">
-                  {posts.map((p) => (
-                    <div key={p.slug} className="glass-card flex items-center justify-between rounded-2xl p-5">
-                      <div className="flex items-start gap-4">
-                        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-[var(--c-accent)]/12">
-                          <FileText size={17} className="text-[var(--c-accent)]" />
+                {(editando || blogForm.titulo) ? (
+                  <motion.div variants={fadeUp} className="glass-card rounded-2xl p-6">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-3">
+                        <input value={blogForm.titulo.trim() ? blogForm.titulo : ""} onChange={(e) => setBlogForm({ ...blogForm, titulo: e.target.value, slug: editando ? blogForm.slug : gerarSlug(e.target.value) })}
+                          placeholder="Titulo" className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
+                        <input value={blogForm.slug} onChange={(e) => setBlogForm({ ...blogForm, slug: e.target.value })}
+                          placeholder="slug-do-post" className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-xs text-[var(--c-muted)] focus:border-[var(--c-accent)] focus:outline-none" />
+                        <input value={blogForm.subtitulo} onChange={(e) => setBlogForm({ ...blogForm, subtitulo: e.target.value })}
+                          placeholder="Subtitulo" className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
+                        <div className="grid grid-cols-2 gap-3">
+                          <input value={blogForm.categoria} onChange={(e) => setBlogForm({ ...blogForm, categoria: e.target.value })}
+                            placeholder="Categoria" className="rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
+                          <input value={blogForm.tempo_leitura} onChange={(e) => setBlogForm({ ...blogForm, tempo_leitura: e.target.value })}
+                            placeholder="Tempo leitura" className="rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
                         </div>
-                        <div>
-                          <h3 className="text-sm font-semibold text-[var(--c-text)]">{p.titulo}</h3>
-                          <div className="mt-1 flex items-center gap-2">
-                            <span className="text-xs font-medium text-[var(--c-accent)]">{p.categoria}</span>
-                            <span className="text-xs text-[var(--c-muted)]">{p.tempoLeitura}</span>
-                          </div>
-                        </div>
+                        <input value={blogForm.tags} onChange={(e) => setBlogForm({ ...blogForm, tags: e.target.value })}
+                          placeholder="Tags (separadas por virgula)" className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
+                        <textarea value={blogForm.resumo} onChange={(e) => setBlogForm({ ...blogForm, resumo: e.target.value })} rows={2}
+                          placeholder="Resumo (exibido no card do blog)" className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none resize-none" />
                       </div>
-                      <Link to={"/blog/" + p.slug} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]" title="Ver post">
-                        <ExternalLink size={14} />
-                      </Link>
+                      <div>
+                        <textarea value={blogForm.conteudo} onChange={(e) => setBlogForm({ ...blogForm, conteudo: e.target.value })} rows={14}
+                          placeholder="Conteudo em Markdown..." className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-sm text-[var(--c-text)] font-mono focus:border-[var(--c-accent)] focus:outline-none resize-none" />
+                      </div>
                     </div>
-                  ))}
+
+                    {blogMsg && <p className={`mt-3 text-xs ${blogMsg.startsWith("Erro") ? "text-red-500" : "text-green-600"}`}>{blogMsg}</p>}
+
+                    <div className="mt-4 flex items-center justify-between">
+                      <label className="flex items-center gap-2 text-sm text-[var(--c-muted)] cursor-pointer">
+                        <input type="checkbox" checked={blogForm.publicado} onChange={(e) => setBlogForm({ ...blogForm, publicado: e.target.checked })} className="accent-[var(--c-accent)]" />
+                        Publicar
+                      </label>
+                      <motion.button whileTap={{ scale: 0.96 }} onClick={salvarBlog} disabled={blogSaving}
+                        className="flex items-center gap-1.5 rounded-full px-5 py-2.5 text-xs font-semibold text-white transition-opacity disabled:opacity-50"
+                        style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
+                        <Save size={14} /> {blogSaving ? "Salvando..." : editando ? "Atualizar" : "Salvar"}
+                      </motion.button>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <>
+                    {blogLoading ? (
+                      <p className="py-12 text-center text-[var(--c-muted)]">Carregando...</p>
+                    ) : (
+                      <motion.div variants={fadeUp} className="space-y-3">
+                        {blogPosts.length > 0 && (
+                          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-[var(--c-accent)]">Supabase ({blogPosts.length})</p>
+                        )}
+                        {blogPosts.map((p) => (
+                          <div key={"db-" + p.id} className="glass-card flex items-center justify-between rounded-2xl p-5">
+                            <div className="flex items-start gap-4">
+                              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-[var(--c-accent)]/12">
+                                <FileText size={17} className="text-[var(--c-accent)]" />
+                              </div>
+                              <div>
+                                <h3 className="text-sm font-semibold text-[var(--c-text)]">{p.titulo}</h3>
+                                <div className="mt-1 flex items-center gap-2">
+                                  <span className="text-xs font-medium text-[var(--c-accent)]">{p.categoria}</span>
+                                  <span className="text-xs text-[var(--c-muted)]">{p.tempo_leitura}</span>
+                                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${p.publicado ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
+                                    {p.publicado ? "Publicado" : "Rascunho"}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex gap-1">
+                              <button onClick={() => togglePublicado(p)} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]" title={p.publicado ? "Despublicar" : "Publicar"}>
+                                {p.publicado ? <EyeOff size={14} /> : <Eye size={14} />}
+                              </button>
+                              <button onClick={() => editarPost(p)} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]" title="Editar">
+                                <Edit3 size={14} />
+                              </button>
+                              <button onClick={() => deletarPost(p.id!)} className="rounded-full border border-red-200 p-2 text-red-400 transition-colors hover:text-red-600" title="Deletar">
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+
+                        {staticPosts.length > 0 && (
+                          <p className="mb-2 mt-6 text-xs font-medium uppercase tracking-wider text-[var(--c-muted)]">Estaticos ({staticPosts.length})</p>
+                        )}
+                        {staticPosts.map((p) => (
+                          <div key={"static-" + p.slug} className="glass-card flex items-center justify-between rounded-2xl p-5 opacity-70">
+                            <div className="flex items-start gap-4">
+                              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-[var(--c-surface)]">
+                                <FileText size={17} className="text-[var(--c-muted)]" />
+                              </div>
+                              <div>
+                                <h3 className="text-sm font-semibold text-[var(--c-text)]">{p.titulo}</h3>
+                                <div className="mt-1 flex items-center gap-2">
+                                  <span className="text-xs font-medium text-[var(--c-accent)]">{p.categoria}</span>
+                                  <span className="text-xs text-[var(--c-muted)]">{p.tempoLeitura}</span>
+                                  <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold uppercase text-gray-500">JSON</span>
+                                </div>
+                              </div>
+                            </div>
+                            <Link to={"/blog/" + p.slug} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]" title="Ver post">
+                              <ExternalLink size={14} />
+                            </Link>
+                          </div>
+                        ))}
+                      </motion.div>
+                    )}
+                  </>
+                )}
+              </>
+            )}
+
+            {tab === "pareceres" && (
+              <>
+                <motion.div variants={fadeUp} className="mb-6 flex items-center justify-between">
+                  <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Gerar Parecer</h2>
+                  <div className="flex gap-2">
+                    {parecerTestes.length > 0 && (
+                      <button onClick={resetParecer} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]" title="Limpar tudo"><X size={15} /></button>
+                    )}
+                    <motion.button whileTap={{ scale: 0.96 }} onClick={exportarParecer} disabled={!parecerTestes.length || !paciente.nome}
+                      className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white transition-opacity disabled:opacity-40"
+                      style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
+                      <Download size={14} /> Exportar PDF
+                    </motion.button>
+                  </div>
                 </motion.div>
 
-                <motion.div variants={fadeUp} className="glass-card mt-8 rounded-2xl p-6 text-sm text-[var(--c-muted)]">
-                  <strong className="mb-2 block text-[var(--c-text)]">Como criar posts</strong>
-                  <ol className="list-decimal space-y-1 pl-4">
-                    <li>Clique em "Novo post (CMS)" acima para abrir o editor visual</li>
-                    <li>Ou edite diretamente em <code className="rounded bg-[var(--c-bg)] px-1.5 py-0.5 text-xs">src/content/blog/*.json</code> no GitHub</li>
-                    <li>Commit na main, deploy automatico em ~3 min</li>
-                  </ol>
+                <motion.div variants={fadeUp} className="glass-card mb-6 rounded-2xl p-6">
+                  <p className="mb-3 text-xs font-medium uppercase tracking-wider text-[var(--c-accent)]">Dados do Paciente</p>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <input value={paciente.nome} onChange={(e) => setPaciente({ ...paciente, nome: e.target.value })}
+                      placeholder="Nome completo" className="rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
+                    <input value={paciente.idade} onChange={(e) => setPaciente({ ...paciente, idade: e.target.value })}
+                      placeholder="Idade" className="rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
+                    <input value={paciente.dataAvaliacao} onChange={(e) => setPaciente({ ...paciente, dataAvaliacao: e.target.value })}
+                      placeholder="Data da avaliação" className="rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
+                    <input value={paciente.escolaridade} onChange={(e) => setPaciente({ ...paciente, escolaridade: e.target.value })}
+                      placeholder="Escolaridade" className="rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
+                  </div>
                 </motion.div>
+
+                <motion.div variants={fadeUp} className="glass-card mb-6 rounded-2xl p-6">
+                  <div className="mb-4 flex items-center justify-between">
+                    <p className="text-xs font-medium uppercase tracking-wider text-[var(--c-accent)]">Instrumentos ({parecerTestes.length})</p>
+                    <div className="flex gap-2">
+                      <select value={addTesteId} onChange={(e) => setAddTesteId(e.target.value as TesteId)}
+                        className="rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-xs text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none">
+                        {testesDisponiveis.map((t) => <option key={t.id} value={t.id}>{t.sigla}</option>)}
+                      </select>
+                      <button onClick={adicionarTeste}
+                        className="flex items-center gap-1 rounded-full border border-[var(--c-accent)] px-3 py-1.5 text-xs font-semibold text-[var(--c-accent)] transition-colors hover:bg-[var(--c-accent)]/10">
+                        <Plus size={13} /> Adicionar
+                      </button>
+                    </div>
+                  </div>
+
+                  {parecerTestes.length === 0 && (
+                    <p className="py-8 text-center text-sm text-[var(--c-muted)]">Nenhum instrumento adicionado. Selecione acima e clique em Adicionar.</p>
+                  )}
+
+                  <div className="space-y-4">
+                    {parecerTestes.map((t, idx) => (
+                      <div key={idx} className="rounded-xl border border-[var(--c-border)] p-4">
+                        <div className="mb-3 flex items-center justify-between">
+                          <span className="text-sm font-semibold text-[var(--c-text)]">{t.sigla} — {t.nome}</span>
+                          <button onClick={() => removerTeste(idx)} className="text-red-400 transition-colors hover:text-red-600"><X size={14} /></button>
+                        </div>
+
+                        {(t.testeId === "neo-ffi") ? (
+                          <div className="space-y-2">
+                            <div className="grid grid-cols-3 gap-2">
+                              <select value={String(t.dados.sexo ?? "combinado")} onChange={(e) => atualizarDadosTeste(idx, "sexo", e.target.value)}
+                                className="col-span-3 rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-xs text-[var(--c-text)] focus:outline-none">
+                                <option value="combinado">Norma combinada</option>
+                                <option value="masculino">Masculino</option>
+                                <option value="feminino">Feminino</option>
+                              </select>
+                              {(["N", "E", "O", "A", "C"] as const).map((dom) => (
+                                <input key={dom} type="number" placeholder={dom} value={t.dados[dom] ?? ""}
+                                  onChange={(e) => atualizarDadosTeste(idx, dom, Number(e.target.value))}
+                                  className="rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-xs text-[var(--c-text)] focus:outline-none" />
+                              ))}
+                            </div>
+                          </div>
+                        ) : (t.testeId === "neo-pi") ? (
+                          <div className="space-y-2">
+                            <p className="text-[10px] text-[var(--c-muted)]">Insira os escores T por domínio</p>
+                            <div className="grid grid-cols-5 gap-2">
+                              {(["N", "E", "O", "A", "C"] as const).map((dom) => (
+                                <input key={dom} type="number" placeholder={`T ${dom}`} value={t.dados[dom] ?? ""}
+                                  onChange={(e) => atualizarDadosTeste(idx, dom, Number(e.target.value))}
+                                  className="rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-xs text-[var(--c-text)] focus:outline-none" />
+                              ))}
+                            </div>
+                          </div>
+                        ) : (t.testeId === "g36") ? (
+                          <div className="grid grid-cols-2 gap-2">
+                            <input type="number" placeholder="Acertos (0-36)" value={t.dados.escore ?? ""}
+                              onChange={(e) => atualizarDadosTeste(idx, "escore", Number(e.target.value))}
+                              className="rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-xs text-[var(--c-text)] focus:outline-none" />
+                            <select value={String(t.dados.escolaridade ?? "geral")} onChange={(e) => atualizarDadosTeste(idx, "escolaridade", e.target.value)}
+                              className="rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-xs text-[var(--c-text)] focus:outline-none">
+                              <option value="geral">Geral</option>
+                              <option value="ensMedio">Ensino Médio</option>
+                              <option value="superior">Superior</option>
+                            </select>
+                          </div>
+                        ) : (
+                          <input type="number" placeholder="Escore total" value={t.dados.escore ?? ""}
+                            onChange={(e) => atualizarDadosTeste(idx, "escore", Number(e.target.value))}
+                            className="w-full rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-xs text-[var(--c-text)] focus:outline-none" />
+                        )}
+
+                        {t.resultado && (
+                          <div className="mt-3 rounded-lg bg-[var(--c-surface)] p-3">
+                            <p className="mb-1 text-xs font-semibold text-[var(--c-accent)]">{t.resultado.classificacao}</p>
+                            <p className="whitespace-pre-line text-xs text-[var(--c-muted)]">{t.resultado.detalhes}</p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+
+                {parecerTestes.length > 0 && (
+                  <motion.div variants={fadeUp} className="glass-card mb-6 rounded-2xl p-6">
+                    <p className="mb-3 text-xs font-medium uppercase tracking-wider text-[var(--c-accent)]">Síntese e Considerações</p>
+                    <textarea value={sintese} onChange={(e) => setSintese(e.target.value)} rows={4}
+                      placeholder="Síntese dos resultados (campo livre — será incluído no parecer)"
+                      className="mb-3 w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none resize-none" />
+                    <textarea value={consideracoes} onChange={(e) => setConsideracoes(e.target.value)} rows={3}
+                      placeholder="Considerações finais"
+                      className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none resize-none" />
+                  </motion.div>
+                )}
               </>
             )}
 

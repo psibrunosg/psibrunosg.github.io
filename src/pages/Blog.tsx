@@ -1,8 +1,8 @@
 ﻿import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Clock, ArrowRight } from "lucide-react";
-import { useEffect } from "react";
-import { posts } from "@/content/posts-loader";
+import { useState, useEffect } from "react";
+import { getAllPosts, loadDynamicPosts, isDynamicLoaded, type BlogPost } from "@/content/posts-loader";
 import { FloatingNav } from "@/components/ui/FloatingNav";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
 import { SkipLink } from "@/components/shared/SkipLink";
@@ -22,9 +22,14 @@ const categoriaCor: Record<string, string> = {
 };
 
 export default function Blog() {
+  const [allPosts, setAllPosts] = useState<BlogPost[]>(getAllPosts());
+
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "c");
     document.title = "Blog | Bruno SG Psicologo | Saude Mental TCC Pelotas";
+    if (!isDynamicLoaded()) {
+      loadDynamicPosts().then(() => setAllPosts(getAllPosts()));
+    }
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -60,7 +65,7 @@ export default function Blog() {
             </motion.p>
 
             <div className="grid md:grid-cols-2 gap-6">
-              {posts.map((post, i) => {
+              {allPosts.map((post, i) => {
                 const cor = categoriaCor[post.categoria] ?? "var(--c-accent)";
                 return (
                   <motion.article
