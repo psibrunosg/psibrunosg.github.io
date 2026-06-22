@@ -6,6 +6,7 @@ import jsPDF from "jspdf";
 import { anexos } from "@/content/anexos";
 import { exercicios } from "@/content/exercicios";
 import { AppAurora } from "@/components/ui/AppAurora";
+import { temas, corExercicio } from "@/content/temas-exercicios";
 
 interface UnifiedExercise {
   id: string;
@@ -36,12 +37,6 @@ const allExercises: UnifiedExercise[] = [
 
 const esquemasTe = [...new Set(anexos.filter((a) => a.fonte === "te").map((a) => a.esquema!))];
 
-const MONSTERS = [
-  "monster-bolacristal", "monster-culpa", "monster-detetive", "monster-dramatizador",
-  "monster-etiquetadora", "monster-filtro", "monster-generalizador", "monster-leitor",
-  "monster-perfeccionista", "monster-pretoebranco", "monster-vampiro", "monster-zarolho",
-];
-
 function getCompleted(): Set<string> {
   try {
     const raw = localStorage.getItem("exercicios-completados");
@@ -62,81 +57,6 @@ function getResponses(id: string): Record<number, string> {
 
 function saveResponses(id: string, data: Record<number, string>) {
   localStorage.setItem(`exercicio-${id}`, JSON.stringify(data));
-}
-
-function FloatingMonsters({ count = 6, infantil = false }: { count?: number; infantil?: boolean }) {
-  const monsters = useMemo(() => {
-    const picked: { src: string; x: number; y: number; size: number; delay: number; dur: number; rot: number }[] = [];
-    const used = new Set<number>();
-    for (let i = 0; i < count; i++) {
-      let idx = Math.floor(Math.random() * MONSTERS.length);
-      while (used.has(idx) && used.size < MONSTERS.length) idx = (idx + 1) % MONSTERS.length;
-      used.add(idx);
-      picked.push({
-        src: `/img/${MONSTERS[idx]}.png`,
-        x: 5 + Math.random() * 85,
-        y: 5 + Math.random() * 80,
-        size: infantil ? 60 + Math.random() * 50 : 40 + Math.random() * 30,
-        delay: Math.random() * 4,
-        dur: 6 + Math.random() * 8,
-        rot: -15 + Math.random() * 30,
-      });
-    }
-    return picked;
-  }, [count, infantil]);
-
-  return (
-    <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
-      {monsters.map((m, i) => (
-        <motion.img
-          key={i}
-          src={m.src}
-          alt=""
-          draggable={false}
-          className="absolute select-none"
-          style={{
-            left: `${m.x}%`, top: `${m.y}%`, width: m.size, height: m.size,
-            objectFit: "contain", opacity: infantil ? 0.25 : 0.12, filter: "saturate(0.8)",
-          }}
-          initial={{ y: 0, rotate: 0, scale: 0.8 }}
-          animate={{
-            y: [0, -20, 0, 15, 0],
-            rotate: [0, m.rot, 0, -m.rot * 0.5, 0],
-            scale: [0.8, 1, 0.9, 1.05, 0.8],
-          }}
-          transition={{
-            duration: m.dur, repeat: Infinity, ease: "easeInOut", delay: m.delay,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
-function ConfettiEffect() {
-  const particles = useMemo(() =>
-    Array.from({ length: 30 }, (_, i) => ({
-      id: i,
-      x: 20 + Math.random() * 60,
-      color: ["#B05D3A", "#4A6B47", "#7A4A8C", "#3A6B8C", "#FFD700", "#FF6B6B"][Math.floor(Math.random() * 6)],
-      delay: Math.random() * 0.5,
-      size: 6 + Math.random() * 8,
-    })), []);
-
-  return (
-    <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden" aria-hidden="true">
-      {particles.map((p) => (
-        <motion.div
-          key={p.id}
-          className="absolute rounded-full"
-          style={{ left: `${p.x}%`, width: p.size, height: p.size, background: p.color }}
-          initial={{ top: "40%", opacity: 1, scale: 1 }}
-          animate={{ top: "110%", opacity: 0, scale: 0.3, rotate: 360 + Math.random() * 720 }}
-          transition={{ duration: 1.5 + Math.random(), delay: p.delay, ease: "easeIn" }}
-        />
-      ))}
-    </div>
-  );
 }
 
 function ExerciseTimer({ tempoEstimado }: { tempoEstimado?: string }) {
@@ -215,9 +135,9 @@ function exportFilledPDF(a: UnifiedExercise, responses: Record<number, string>) 
 
 function ExerciseDetail({ exercise, onClose }: { exercise: UnifiedExercise; onClose: () => void }) {
   const [responses, setResponses] = useState<Record<number, string>>(() => getResponses(exercise.id));
-  const [showConfetti, setShowConfetti] = useState(false);
   const [completed, setCompletedState] = useState(() => getCompleted().has(exercise.id));
   const isInfantil = exercise.publico === "infantojuvenil";
+  const { cor, corBg, tema } = corExercicio(exercise.numero, exercise.esquema);
 
   const filledCount = Object.values(responses).filter((v) => v.trim().length > 0).length;
   const totalSteps = exercise.instrucoes.length;
@@ -236,8 +156,6 @@ function ExerciseDetail({ exercise, onClose }: { exercise: UnifiedExercise; onCl
     ids.add(exercise.id);
     setCompleted(ids);
     setCompletedState(true);
-    setShowConfetti(true);
-    setTimeout(() => setShowConfetti(false), 2500);
   }
 
   function resetExercise() {
@@ -260,9 +178,6 @@ function ExerciseDetail({ exercise, onClose }: { exercise: UnifiedExercise; onCl
 
   return (
     <motion.div key="detail" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
-      {showConfetti && <ConfettiEffect />}
-      {isInfantil && <FloatingMonsters count={8} infantil />}
-
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <button onClick={onClose} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]"><X size={15} /></button>
@@ -284,25 +199,28 @@ function ExerciseDetail({ exercise, onClose }: { exercise: UnifiedExercise; onCl
       {/* Progress bar */}
       <div className="mb-4">
         <div className="mb-1.5 flex items-center justify-between">
-          <span className="text-[10px] font-medium text-[var(--c-muted)]">{isInfantil ? "Sua aventura" : "Progresso"}</span>
-          <span className="text-[10px] font-bold text-[var(--c-accent)]">{filledCount}/{totalSteps} passos · {progressPct}%</span>
+          <span className="text-[10px] font-medium text-[var(--c-muted)]">{isInfantil ? "Sua jornada" : "Progresso"}</span>
+          <span className="text-[10px] font-bold" style={{ color: cor }}>{filledCount}/{totalSteps} passos · {progressPct}%</span>
         </div>
         <div className="h-2.5 overflow-hidden rounded-full bg-[var(--c-border)]">
           <motion.div
             className="h-full rounded-full"
-            style={{ background: progressPct === 100 ? "linear-gradient(90deg, #4A6B47, #6B8C3A)" : "linear-gradient(90deg, var(--c-accent), var(--c-accent-lt))" }}
+            style={{ background: progressPct === 100 ? "linear-gradient(90deg, #4A6B47, #6B8C3A)" : `linear-gradient(90deg, ${cor}, ${cor}AA)` }}
             animate={{ width: `${progressPct}%` }}
             transition={{ duration: 0.5, ease: "easeOut" }}
           />
         </div>
       </div>
 
-      <div className="glass-card rounded-2xl p-6">
+      <div className="glass-card overflow-hidden rounded-2xl p-6" style={{ borderTop: `3px solid ${cor}` }}>
         <div className="mb-5 flex flex-wrap gap-2">
-          <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${exercise.fonte === "te" ? "bg-emerald-100 text-emerald-700" : isInfantil ? "bg-purple-100 text-purple-600" : exercise.fonte === "curado" ? "bg-amber-100 text-amber-700" : "bg-blue-100 text-blue-700"}`}>
-            {exercise.fonte === "te" ? "Terapia do Esquema" : isInfantil ? "Infantojuvenil" : exercise.fonte === "curado" ? "Exercicio Curado" : "TCC"}
+          <span className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider" style={{ background: corBg, color: cor }}>
+            {tema.label}
           </span>
-          {exercise.esquema && <span className="rounded-full bg-[var(--c-surface)] px-3 py-1 text-[10px] font-medium text-[var(--c-muted)]">{exercise.esquema}</span>}
+          {exercise.esquema && <span className="rounded-full px-3 py-1 text-[10px] font-medium" style={{ background: corBg, color: cor }}>{exercise.esquema}</span>}
+          <span className="rounded-full bg-[var(--c-surface)] px-3 py-1 text-[10px] font-medium text-[var(--c-muted)]">
+            {exercise.fonte === "te" ? "Terapia do Esquema" : isInfantil ? "Infantojuvenil" : exercise.fonte === "curado" ? "Curado" : "TCC"}
+          </span>
           {completed && (
             <span className="flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-[10px] font-bold text-green-700">
               <Check size={10} /> Concluido
@@ -408,6 +326,7 @@ function ExerciseDetail({ exercise, onClose }: { exercise: UnifiedExercise; onCl
 export default function Exercicios() {
   const [filtro, setFiltro] = useState<"todos" | "te" | "tcc" | "curado" | "infantojuvenil">("todos");
   const [esquemaFiltro, setEsquemaFiltro] = useState<string>("todos");
+  const [objetivoFiltro, setObjetivoFiltro] = useState<string>("todos");
   const [busca, setBusca] = useState("");
   const [aberto, setAberto] = useState<UnifiedExercise | null>(null);
   const [completedIds, setCompletedIds] = useState<Set<string>>(() => getCompleted());
@@ -427,12 +346,13 @@ export default function Exercicios() {
     else if (filtro === "curado") list = list.filter((a) => a.fonte === "curado");
     else if (filtro === "infantojuvenil") list = list.filter((a) => a.publico === "infantojuvenil");
     if (esquemaFiltro !== "todos") list = list.filter((a) => a.esquema === esquemaFiltro);
+    if (objetivoFiltro !== "todos") list = list.filter((a) => corExercicio(a.numero, a.esquema).tema.id === objetivoFiltro);
     if (busca.trim()) {
       const q = busca.toLowerCase();
       list = list.filter((a) => a.titulo.toLowerCase().includes(q) || a.esquema?.toLowerCase().includes(q) || a.publico?.toLowerCase().includes(q) || a.instrucoes.some((i) => i.toLowerCase().includes(q)));
     }
     return list;
-  }, [filtro, esquemaFiltro, busca]);
+  }, [filtro, esquemaFiltro, objetivoFiltro, busca]);
 
   const teCount = allExercises.filter((a) => a.fonte === "te").length;
   const tccCount = allExercises.filter((a) => a.fonte === "tcc").length;
@@ -443,7 +363,6 @@ export default function Exercicios() {
   return (
     <div className="relative min-h-screen" data-theme="c">
       <AppAurora />
-      {isInfantilFilter && !aberto && <FloatingMonsters count={10} infantil />}
 
       <header className="fixed left-0 right-0 top-0 z-50 px-6 py-4 glass-panel">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
@@ -494,7 +413,7 @@ export default function Exercicios() {
                 <div className="mb-6 space-y-3">
                   <div className="flex flex-wrap items-center gap-2">
                     {([["todos", `Todos (${allExercises.length})`], ["curado", `Curados (${curadoCount})`], ["te", `Terapia do Esquema (${teCount})`], ["tcc", `TCC (${tccCount})`], ["infantojuvenil", `Infantojuvenil (${infantoCount})`]] as const).map(([id, label]) => (
-                      <button key={id} onClick={() => { setFiltro(id); setEsquemaFiltro("todos"); }}
+                      <button key={id} onClick={() => { setFiltro(id); setEsquemaFiltro("todos"); setObjetivoFiltro("todos"); }}
                         className={"rounded-full px-3 py-1.5 text-xs font-semibold transition-all " + (filtro === id ? "text-white shadow" : "text-[var(--c-muted)] border border-[var(--c-border)] hover:text-[var(--c-text)]")}
                         style={filtro === id ? { background: id === "infantojuvenil" ? "linear-gradient(120deg, #7A4A8C, #A06BC0)" : "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>
                         {label}
@@ -511,6 +430,25 @@ export default function Exercicios() {
                     </div>
                   )}
 
+                  {/* Filtro por objetivo (cor) */}
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="mr-1 text-[10px] font-bold uppercase tracking-wider text-[var(--c-muted)]">Objetivo:</span>
+                    <button onClick={() => setObjetivoFiltro("todos")}
+                      className={`rounded-full px-2.5 py-1 text-[10px] font-semibold transition-colors ${objetivoFiltro === "todos" ? "bg-[var(--c-accent)] text-white" : "border border-[var(--c-border)] text-[var(--c-muted)] hover:text-[var(--c-text)]"}`}>
+                      Todos
+                    </button>
+                    {Object.values(temas).map((t) => (
+                      <button key={t.id} onClick={() => setObjetivoFiltro(t.id)}
+                        className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold transition-all"
+                        style={objetivoFiltro === t.id
+                          ? { background: t.cor, color: "#fff" }
+                          : { background: t.corBg, color: t.cor }}>
+                        <span className="h-2 w-2 rounded-full" style={{ background: objetivoFiltro === t.id ? "#fff" : t.cor }} />
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+
                   <div className="relative">
                     <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--c-muted)]" />
                     <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder={isInfantilFilter ? "Buscar aventura..." : "Buscar exercicio..."}
@@ -524,15 +462,17 @@ export default function Exercicios() {
                   {filtered.map((a, i) => {
                     const done = completedIds.has(a.id);
                     const hasDraft = (() => { try { const r = localStorage.getItem(`exercicio-${a.id}`); return r && Object.values(JSON.parse(r)).some((v: unknown) => typeof v === "string" && (v as string).trim()); } catch { return false; } })();
+                    const { cor, corBg, tema } = corExercicio(a.numero, a.esquema);
                     return (
                       <motion.div key={a.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i * 0.02, 0.3) }}
-                        className={`glass-card cursor-pointer rounded-2xl p-4 transition-all hover:border-[var(--c-accent)]/30 ${done ? "ring-2 ring-green-300/50" : ""}`}
+                        whileHover={{ y: -4 }}
+                        className="glass-card relative cursor-pointer overflow-hidden rounded-2xl p-4 pl-5 transition-shadow hover:shadow-[0_14px_36px_-16px_rgba(58,42,31,0.35)]"
                         onClick={() => setAberto(a)}
-                        style={done ? { background: "color-mix(in oklab, #4A6B47 5%, transparent)" } : undefined}
+                        style={{ borderLeft: `4px solid ${cor}`, background: done ? "color-mix(in oklab, #4A6B47 5%, transparent)" : undefined }}
                       >
                         <div className="mb-2 flex items-start justify-between gap-2">
                           <div className="min-w-0">
-                            <p className="text-[9px] font-bold uppercase tracking-wider text-[var(--c-muted)]">{a.numero}</p>
+                            <p className="text-[9px] font-bold uppercase tracking-wider" style={{ color: cor }}>{tema.label}</p>
                             <h3 className="text-sm font-semibold leading-snug text-[var(--c-text)]">{a.titulo}</h3>
                           </div>
                           <div className="flex flex-shrink-0 items-center gap-1">
@@ -541,10 +481,10 @@ export default function Exercicios() {
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-1">
-                          <span className={`rounded-full px-2 py-0.5 text-[8px] font-bold uppercase ${a.fonte === "te" ? "bg-emerald-100 text-emerald-700" : a.publico === "infantojuvenil" ? "bg-purple-100 text-purple-600" : a.fonte === "curado" ? "bg-amber-100 text-amber-700" : "bg-blue-100 text-blue-700"}`}>
-                            {a.fonte === "te" ? "TE" : a.publico === "infantojuvenil" ? "Infantojuvenil" : a.fonte === "curado" ? "Curado" : "TCC"}
+                          {a.esquema && <span className="rounded-full px-2 py-0.5 text-[8px] font-bold uppercase" style={{ background: corBg, color: cor }}>{a.esquema}</span>}
+                          <span className="rounded-full bg-[var(--c-surface)] px-2 py-0.5 text-[8px] font-medium text-[var(--c-muted)]">
+                            {a.fonte === "te" ? "TE" : a.publico === "infantojuvenil" ? "Infantil" : a.fonte === "curado" ? "Curado" : "TCC"}
                           </span>
-                          {a.esquema && <span className="rounded-full bg-[var(--c-surface)] px-2 py-0.5 text-[8px] font-medium text-[var(--c-muted)]">{a.esquema}</span>}
                           {a.tempoEstimado && <span className="rounded-full bg-[var(--c-surface)] px-2 py-0.5 text-[8px] font-medium text-[var(--c-muted)]">{a.tempoEstimado}</span>}
                         </div>
                       </motion.div>
