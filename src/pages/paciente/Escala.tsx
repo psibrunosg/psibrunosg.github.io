@@ -77,11 +77,14 @@ export default function Escala() {
   const [respostas, setRespostas] = useState<(number | null)[]>([]);
   const [atual, setAtual] = useState(0);
 
-  const total = useMemo(() => {
+  const rodadas = !config ? [] : (!isEscalaGeral(config) && config.rodadas) ? config.rodadas : [];
+  const numRodadas = rodadas.length || 1;
+  const itensBase = useMemo(() => {
     if (!config) return 0;
     if (isEscalaGeral(config)) return Array.isArray(config.itens) ? config.itens.length : 0;
     return config.itens.length;
   }, [config]);
+  const total = itensBase * numRodadas;
 
   useEffect(() => {
     if (total > 0) setRespostas(Array(total).fill(null));
@@ -154,21 +157,25 @@ export default function Escala() {
     setRascunho(null);
   }
 
+  const rodadaAtual = numRodadas > 1 ? Math.floor(atual / itensBase) : 0;
+  const itemIndex = numRodadas > 1 ? atual % itensBase : atual;
+  const rodadaLabel = rodadas[rodadaAtual] ?? "";
+
   function getCurrentItemText(): string {
     if (!config) return "";
     if (isEscalaGeral(config)) {
-      const item = config.itens[atual];
+      const item = config.itens[itemIndex];
       if (typeof item === "string") return item;
-      return `Item ${atual + 1}`;
+      return `Item ${itemIndex + 1}`;
     }
-    return (config as EscalaConfig).itens[atual];
+    return (config as EscalaConfig).itens[itemIndex];
   }
 
   function getCurrentOptions(): { label: string; valor: number }[] {
     if (!config) return [];
     if (isEscalaGeral(config)) {
       if (config.tipo === "likert-statements") {
-        const item = config.itens[atual];
+        const item = config.itens[itemIndex];
         if (isBDIItem(item)) return item.opcoes.map((o) => ({ label: o.texto, valor: o.valor }));
       }
       if (config.tipo === "binary") return [{ label: "Certo", valor: 1 }, { label: "Errado", valor: 0 }];
@@ -287,6 +294,15 @@ export default function Escala() {
                   <motion.div className="h-full rounded-full" style={{ background: "linear-gradient(90deg, var(--c-accent), var(--c-accent-lt))" }} animate={{ width: pct + "%" }} transition={{ duration: 0.4, ease: "easeOut" }} />
                 </div>
 
+                {rodadaLabel && (
+                  <div className="mb-3 rounded-xl p-3 text-center" style={{ background: "color-mix(in oklab, var(--c-accent) 10%, transparent)", border: "1px solid color-mix(in oklab, var(--c-accent) 25%, transparent)" }}>
+                    <p className="text-xs font-bold uppercase tracking-wider text-[var(--c-accent)]">
+                      Pensando no seu {rodadaLabel} {rodadaAtual === 0 ? "(figura paterna)" : "(figura materna)"}
+                    </p>
+                    <p className="text-[10px] text-[var(--c-muted)]">Rodada {rodadaAtual + 1} de {numRodadas} · Pergunta {itemIndex + 1} de {itensBase}</p>
+                  </div>
+                )}
+
                 <div className="glass-card mb-5 rounded-2xl p-6">
                   {!isBDI ? (
                     <h2 className="text-xl font-semibold leading-snug text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{getCurrentItemText()}</h2>
@@ -383,44 +399,70 @@ function ResultadoGeral({ config, respostas }: { config: EscalaGeralConfig; resp
   );
 }
 
-function ResultadoSchemaAvg({ config, respostas }: { config: EscalaConfig; respostas: number[] }) {
-  const { schemas } = useMemo(() => computeSchemaAvg(config, respostas), [config, respostas]);
+function SchemaRodadaBlock({ label, schemas, color }: { label: string; schemas: SchemaResult[]; color: string }) {
   const ativos = schemas.filter((s) => s.media > 3.5);
-  const dominioGroups = useMemo(() => {
+  const groups = useMemo(() => {
     const map = new Map<string, SchemaResult[]>();
-    for (const s of schemas) {
-      const arr = map.get(s.dominio) ?? [];
-      arr.push(s);
-      map.set(s.dominio, arr);
-    }
+    for (const s of schemas) { const arr = map.get(s.dominio) ?? []; arr.push(s); map.set(s.dominio, arr); }
     return map;
   }, [schemas]);
 
   return (
-    <motion.div key="resultado" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-      <ScoreRing value={ativos.length} max={schemas.length} caption="Ativos" />
-      <span className="mb-1 block text-xs font-bold uppercase tracking-widest text-[var(--c-accent)]">
-        {ativos.length === 0 ? "Nenhum esquema ativado" : `${ativos.length} esquema${ativos.length > 1 ? "s" : ""} ativo${ativos.length > 1 ? "s" : ""}`}
-      </span>
-      <h2 className="mb-3 text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Respostas registradas</h2>
-      <p className="mx-auto mb-7 max-w-sm leading-relaxed text-[var(--c-muted)]">Esquemas com media acima de 3.5 sao considerados ativos. Converse com seu psicologo sobre estes resultados.</p>
-
-      <div className="mb-8 space-y-4 text-left">
-        {Array.from(dominioGroups.entries()).map(([domNome, esquemas]) => (
+    <div className="mb-6">
+      <div className="mb-3 flex items-center gap-2">
+        <span className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider" style={{ background: color + "1A", color }}>{label}</span>
+        <span className="text-xs text-[var(--c-muted)]">{ativos.length} ativo{ativos.length !== 1 ? "s" : ""} de {schemas.length}</span>
+      </div>
+      <div className="space-y-3">
+        {Array.from(groups.entries()).map(([domNome, esquemas]) => (
           <div key={domNome} className="glass-card rounded-xl p-4">
             <h3 className="mb-3 text-sm font-semibold text-[var(--c-text)]">{domNome}</h3>
             <div className="space-y-2.5">
               {esquemas.map((e, i) => (
                 <div key={e.id}>
                   <div className="mb-1 flex justify-between text-xs">
-                    <span className={e.media > 3.5 ? "font-bold text-[var(--c-accent)]" : "text-[var(--c-muted)]"}>{e.nome}</span>
-                    <span className={e.media > 3.5 ? "font-bold text-[var(--c-accent)]" : "text-[var(--c-muted)]"}>{e.media.toFixed(1)}</span>
+                    <span className={e.media > 3.5 ? "font-bold" : "text-[var(--c-muted)]"} style={e.media > 3.5 ? { color } : undefined}>{e.nome}</span>
+                    <span className={e.media > 3.5 ? "font-bold" : "text-[var(--c-muted)]"} style={e.media > 3.5 ? { color } : undefined}>{e.media.toFixed(1)}</span>
                   </div>
-                  <AnimatedBar pct={(e.media / 6) * 100} color={e.media > 3.5 ? "var(--c-accent)" : "var(--c-muted)"} delay={i * 0.05} />
+                  <AnimatedBar pct={(e.media / 6) * 100} color={e.media > 3.5 ? color : "var(--c-muted)"} delay={i * 0.05} />
                 </div>
               ))}
             </div>
           </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ResultadoSchemaAvg({ config, respostas }: { config: EscalaConfig; respostas: number[] }) {
+  const hasRodadas = config.rodadas && config.rodadas.length > 1;
+  const itensBase = config.itens.length;
+
+  const rodadasData = useMemo(() => {
+    if (!hasRodadas) return [{ label: "", schemas: computeSchemaAvg(config, respostas).schemas }];
+    return config.rodadas!.map((label, i) => {
+      const slice = respostas.slice(i * itensBase, (i + 1) * itensBase);
+      return { label, schemas: computeSchemaAvg(config, slice).schemas };
+    });
+  }, [config, respostas, hasRodadas, itensBase]);
+
+  const totalAtivos = rodadasData.reduce((acc, r) => acc + r.schemas.filter((s) => s.media > 3.5).length, 0);
+  const totalSchemas = rodadasData.reduce((acc, r) => acc + r.schemas.length, 0);
+  const rodadaCores = ["#B05D3A", "#3A6B8C", "#6B3A8C", "#4A6B47"];
+
+  return (
+    <motion.div key="resultado" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
+      <ScoreRing value={totalAtivos} max={totalSchemas} caption="Ativos" />
+      <span className="mb-1 block text-xs font-bold uppercase tracking-widest text-[var(--c-accent)]">
+        {totalAtivos === 0 ? "Nenhum esquema ativado" : `${totalAtivos} esquema${totalAtivos > 1 ? "s" : ""} ativo${totalAtivos > 1 ? "s" : ""}`}
+      </span>
+      <h2 className="mb-3 text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Respostas registradas</h2>
+      <p className="mx-auto mb-7 max-w-sm leading-relaxed text-[var(--c-muted)]">Esquemas com media acima de 3.5 sao considerados ativos. Converse com seu psicologo sobre estes resultados.</p>
+
+      <div className="mb-8 text-left">
+        {rodadasData.map((rd, i) => (
+          <SchemaRodadaBlock key={rd.label || i} label={rd.label || "Resultado"} schemas={rd.schemas} color={rodadaCores[i % rodadaCores.length]} />
         ))}
       </div>
 

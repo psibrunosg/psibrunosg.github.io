@@ -13,6 +13,7 @@ export interface EscalaConfig {
   opcoes: { label: string; valor: number }[];
   dominios?: EscalaDominio[];
   scoring: "schema-avg" | "threshold";
+  rodadas?: string[];
 }
 
 const opcoes6 = [
@@ -181,7 +182,8 @@ export const ypi: EscalaConfig = {
   sigla: "YPI",
   nome: "Inventario Parental de Young",
   instrucoes:
-    "Leia cada afirmacao e avalie o quanto ela descreve as atitudes dos seus pais enquanto voce crescia. 1 = Completamente Falso ate 6 = Descreve Perfeitamente.",
+    "Leia cada afirmacao e avalie o quanto ela descreve as atitudes dos seus pais enquanto voce crescia. Voce respondera as mesmas 72 perguntas duas vezes: primeiro pensando no seu PAI (ou figura paterna), depois na sua MAE (ou figura materna). 1 = Completamente Falso ate 6 = Descreve Perfeitamente.",
+  rodadas: ["Pai", "Mae"],
   opcoes: opcoes6,
   scoring: "schema-avg",
   dominios: [
