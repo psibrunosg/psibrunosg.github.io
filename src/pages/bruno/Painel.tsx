@@ -17,7 +17,6 @@ import {
 import { escalas } from "@/content/escalas";
 import { escalasGerais } from "@/content/escalas-gerais";
 import type { BDIItem } from "@/content/escalas-gerais";
-import { exercicios, type Exercicio } from "@/content/exercicios";
 import { ferramentas, type FerramentaTerapeuta } from "@/content/ferramentas-terapeuta";
 import { posts as staticPosts } from "@/content/posts-loader";
 import { fadeUp, stagger } from "@/lib/motion";
@@ -94,7 +93,7 @@ export default function BrunoPainel() {
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [loginLoading, setLoginLoading] = useState(true);
-  const [tab, setTab] = useState<"respostas" | "blog" | "exercicios" | "ferramentas">("respostas");
+  const [tab, setTab] = useState<"respostas" | "blog" | "ferramentas">("respostas");
   const [respostaAberta, setRespostaAberta] = useState<Resposta | null>(null);
   const [historicoAberto, setHistoricoAberto] = useState<Resposta[]>([]);
   const [parecerAvulso, setParecerAvulso] = useState(false);
@@ -118,46 +117,6 @@ export default function BrunoPainel() {
   const [notificacoes, setNotificacoes] = useState<Notificacao[]>([]);
   const [ferramentaAberta, setFerramentaAberta] = useState<FerramentaTerapeuta | null>(null);
   const [ferramentaDados, setFerramentaDados] = useState<Record<string, string>>({});
-  const [exercicioAberto, setExercicioAberto] = useState<Exercicio | null>(null);
-  const [filtroPublico, setFiltroPublico] = useState<"todos" | "adulto" | "infantojuvenil">("todos");
-  const [hiddenExercicios, setHiddenExercicios] = useState<Set<string>>(() => {
-    try { return new Set(JSON.parse(localStorage.getItem("hidden_exercicios") ?? "[]")); } catch { return new Set(); }
-  });
-
-  function toggleHideExercicio(id: string) {
-    setHiddenExercicios((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      localStorage.setItem("hidden_exercicios", JSON.stringify([...next]));
-      return next;
-    });
-  }
-
-  function exportarExercicioPDF(ex: Exercicio) {
-    const doc = new jsPDF({ unit: "mm", format: "a4" });
-    const W = 180; const ML = 15; let y = 20;
-    function txt(text: string, size = 10, bold = false, color: [number, number, number] = [40, 40, 40]) {
-      doc.setFontSize(size); doc.setFont("helvetica", bold ? "bold" : "normal"); doc.setTextColor(...color);
-      for (const line of doc.splitTextToSize(text, W)) {
-        if (y > 275) { doc.addPage(); y = 20; }
-        doc.text(line, ML, y); y += size * 0.45;
-      }
-    }
-    txt(ex.titulo, 16, true, [30, 30, 30]); y += 4;
-    txt(`${ex.abordagem} | ${ex.categoria}`, 9, false, [120, 120, 120]); y += 2;
-    txt(`Tempo estimado: ${ex.tempoEstimado}`, 9, false, [120, 120, 120]); y += 6;
-    doc.setDrawColor(200, 200, 200); doc.line(ML, y, ML + W, y); y += 6;
-    txt("OBJETIVO", 11, true); y += 2;
-    txt(ex.objetivo); y += 6;
-    txt("INSTRUÇÕES", 11, true); y += 2;
-    ex.instrucoes.forEach((inst, i) => { txt(`${i + 1}. ${inst}`); y += 2; }); y += 4;
-    if (ex.exemplo) { txt("EXEMPLO", 11, true); y += 2; txt(ex.exemplo); y += 6; }
-    doc.setDrawColor(200, 200, 200); doc.line(ML, y, ML + W, y); y += 6;
-    txt("REFERÊNCIA", 10, true, [100, 100, 100]); y += 2;
-    txt(ex.referencia, 9, false, [100, 100, 100]); y += 8;
-    txt("Bruno SG — Psicólogo CRP 07/44472", 9, true, [120, 120, 120]);
-    doc.save(`exercicio_${ex.id}.pdf`);
-  }
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "c");
@@ -406,7 +365,7 @@ export default function BrunoPainel() {
     doc.save(`${f.id}_${new Date().toISOString().slice(0, 10)}.pdf`);
   }
 
-  const tabBtn = (id: "respostas" | "blog" | "exercicios" | "ferramentas") =>
+  const tabBtn = (id: "respostas" | "blog" | "ferramentas") =>
     "px-4 py-1.5 rounded-full text-xs font-semibold transition-all " + (tab === id ? "text-white shadow-[0_8px_20px_-8px_var(--c-accent)]" : "text-[var(--c-muted)] hover:text-[var(--c-text)]");
 
   return (
@@ -421,7 +380,6 @@ export default function BrunoPainel() {
           </div>
           <div className="flex gap-1">
             <button onClick={() => { setTab("respostas"); fecharDashboard(); }} className={tabBtn("respostas")} style={tab === "respostas" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Respostas</button>
-            <button onClick={() => setTab("exercicios")} className={tabBtn("exercicios")} style={tab === "exercicios" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Exercícios</button>
             <button onClick={() => { setTab("ferramentas"); setFerramentaAberta(null); }} className={tabBtn("ferramentas")} style={tab === "ferramentas" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Ferramentas</button>
             <button onClick={() => setTab("blog")} className={tabBtn("blog")} style={tab === "blog" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Blog</button>
           </div>
@@ -791,104 +749,6 @@ export default function BrunoPainel() {
                             <span className="rounded-full bg-[var(--c-accent)]/10 px-2 py-0.5 text-[9px] font-bold uppercase text-[var(--c-accent)]">{f.categoria}</span>
                             <span className="text-[9px] text-[var(--c-muted)]">{f.campos.length} campos</span>
                           </div>
-                        </div>
-                      ))}
-                    </motion.div>
-                  </>
-                )}
-              </>
-            )}
-
-            {tab === "exercicios" && (
-              <>
-                {exercicioAberto ? (
-                  <motion.div variants={fadeUp}>
-                    <div className="mb-6 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <button onClick={() => setExercicioAberto(null)} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]"><X size={15} /></button>
-                        <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{exercicioAberto.titulo}</h2>
-                      </div>
-                      <motion.button whileTap={{ scale: 0.96 }} onClick={() => exportarExercicioPDF(exercicioAberto)}
-                        className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white"
-                        style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
-                        <Download size={14} /> Salvar PDF
-                      </motion.button>
-                    </div>
-
-                    <div className="glass-card mb-4 rounded-2xl p-6">
-                      <div className="mb-4 flex flex-wrap gap-2">
-                        <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${exercicioAberto.publico === "infantojuvenil" ? "bg-purple-100 text-purple-600" : "bg-[var(--c-accent)]/10 text-[var(--c-accent)]"}`}>
-                          {exercicioAberto.publico === "infantojuvenil" ? "Infantojuvenil" : exercicioAberto.abordagem}
-                        </span>
-                        <span className="rounded-full bg-[var(--c-surface)] px-3 py-1 text-[10px] font-medium text-[var(--c-muted)]">{exercicioAberto.categoria}</span>
-                        <span className="rounded-full bg-[var(--c-surface)] px-3 py-1 text-[10px] font-medium text-[var(--c-muted)]">⏱ {exercicioAberto.tempoEstimado}</span>
-                      </div>
-                      <p className="mb-4 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Objetivo</p>
-                      <p className="mb-6 leading-relaxed text-sm text-[var(--c-text)]">{exercicioAberto.objetivo}</p>
-                      <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Instruções</p>
-                      <ol className="mb-6 space-y-3">
-                        {exercicioAberto.instrucoes.map((inst, i) => (
-                          <li key={i} className="flex gap-3 text-sm leading-relaxed text-[var(--c-text)]">
-                            <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-[var(--c-accent)]/10 text-[10px] font-bold text-[var(--c-accent)]">{i + 1}</span>
-                            <span>{inst}</span>
-                          </li>
-                        ))}
-                      </ol>
-                      {exercicioAberto.exemplo && (
-                        <>
-                          <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Exemplo</p>
-                          <div className="mb-6 rounded-xl bg-[var(--c-surface)] p-4 text-sm italic leading-relaxed text-[var(--c-muted)]">{exercicioAberto.exemplo}</div>
-                        </>
-                      )}
-                      <div className="rounded-xl border border-[var(--c-border)] p-4">
-                        <p className="mb-1 text-[10px] font-medium uppercase tracking-wider text-[var(--c-muted)]">Referência</p>
-                        <p className="text-xs leading-relaxed text-[var(--c-muted)]">{exercicioAberto.referencia}</p>
-                      </div>
-                    </div>
-                  </motion.div>
-                ) : (
-                  <>
-                    <motion.div variants={fadeUp} className="mb-6 flex items-center justify-between flex-wrap gap-3">
-                      <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Exercícios Terapêuticos</h2>
-                      <div className="flex items-center gap-2">
-                        {(["todos", "adulto", "infantojuvenil"] as const).map((f) => (
-                          <button key={f} onClick={() => setFiltroPublico(f)}
-                            className={"rounded-full px-3 py-1 text-[10px] font-semibold transition-all " + (filtroPublico === f ? "text-white shadow" : "text-[var(--c-muted)] border border-[var(--c-border)] hover:text-[var(--c-text)]")}
-                            style={filtroPublico === f ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>
-                            {f === "todos" ? "Todos" : f === "adulto" ? "Adulto" : "Infantojuvenil"}
-                          </button>
-                        ))}
-                        {hiddenExercicios.size > 0 && (
-                          <button onClick={() => { setHiddenExercicios(new Set()); localStorage.removeItem("hidden_exercicios"); }}
-                            className="flex items-center gap-1 text-xs text-[var(--c-muted)] hover:text-[var(--c-accent)]">
-                            <RotateCcw size={12} /> Restaurar ({hiddenExercicios.size})
-                          </button>
-                        )}
-                      </div>
-                    </motion.div>
-                    <motion.div variants={fadeUp} className="grid gap-3 md:grid-cols-2">
-                      {exercicios.filter((e) => !hiddenExercicios.has(e.id) && (filtroPublico === "todos" || e.publico === filtroPublico)).map((ex) => (
-                        <div key={ex.id} className="glass-card rounded-2xl p-5 transition-colors hover:border-[var(--c-accent)]/30 cursor-pointer" onClick={() => setExercicioAberto(ex)}>
-                          <div className="mb-3 flex items-start justify-between">
-                            <div>
-                              <h3 className="text-sm font-semibold text-[var(--c-text)]">{ex.titulo}</h3>
-                              <div className="mt-1 flex flex-wrap gap-1.5">
-                                <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${ex.publico === "infantojuvenil" ? "bg-purple-100 text-purple-600" : "bg-[var(--c-accent)]/10 text-[var(--c-accent)]"}`}>
-                                  {ex.publico === "infantojuvenil" ? "Infantojuvenil" : ex.abordagem}
-                                </span>
-                                <span className="rounded-full bg-[var(--c-surface)] px-2 py-0.5 text-[9px] font-medium text-[var(--c-muted)]">{ex.tempoEstimado}</span>
-                              </div>
-                            </div>
-                            <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                              <button onClick={() => exportarExercicioPDF(ex)} className="rounded-full border border-[var(--c-border)] p-1.5 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]" title="Salvar PDF">
-                                <Download size={12} />
-                              </button>
-                              <button onClick={() => toggleHideExercicio(ex.id)} className="rounded-full border border-red-200 p-1.5 text-red-400 transition-colors hover:text-red-600" title="Remover">
-                                <Trash2 size={12} />
-                              </button>
-                            </div>
-                          </div>
-                          <p className="text-xs leading-relaxed text-[var(--c-muted)] line-clamp-2">{ex.objetivo}</p>
                         </div>
                       ))}
                     </motion.div>
