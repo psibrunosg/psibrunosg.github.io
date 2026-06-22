@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /bruno/
+
+Sitemap: https://psibrunosg.github.io/sitemap.xml

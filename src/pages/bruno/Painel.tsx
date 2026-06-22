@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, Trash2, Lock, FileText, ExternalLink, RefreshCw, Plus, Save, Eye, EyeOff, Edit3, X, Bold, Italic, Heading2, List, RotateCcw, Bell } from "lucide-react";
+import { Download, Trash2, Lock, FileText, ExternalLink, RefreshCw, Plus, Save, Eye, EyeOff, Edit3, X, Bold, Italic, Heading2, List, RotateCcw, Bell, AlertTriangle } from "lucide-react";
 import jsPDF from "jspdf";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -21,6 +21,7 @@ import { ferramentas, type FerramentaTerapeuta } from "@/content/ferramentas-ter
 import { posts as staticPosts } from "@/content/posts-loader";
 import { fadeUp, stagger } from "@/lib/motion";
 import { AppAurora } from "@/components/ui/AppAurora";
+import { detectarRiscos, type RespostaRegistro as Resposta } from "@/lib/scoring";
 
 
 const allScaleConfigs: Record<string, { itens: (string | BDIItem)[]; opcoes?: { label: string; valor: number }[] }> = {};
@@ -84,8 +85,41 @@ function classNivel(tipo: string, s: number) {
 
 interface Notificacao { id: number; tipo: string; nome: string; tempo: string; }
 
+function EvolucaoChart({ historico, tipo }: { historico: Resposta[]; tipo: string }) {
+  const dados = [...historico].sort((a, b) => new Date(a.criado_em).getTime() - new Date(b.criado_em).getTime());
+  if (dados.length < 2) return null;
+  const maxMap: Record<string, number> = { phq9: 27, gad7: 21, bai: 63, bdi: 63, bhs: 20, asrs: 72 };
+  const maxVal = maxMap[tipo] ?? Math.max(...dados.map((d) => d.pontuacao), 1);
+  const W = 400; const H = 160; const PAD = 30;
+  const pw = (W - PAD * 2) / (dados.length - 1);
+  const points = dados.map((d, i) => ({
+    x: PAD + i * pw,
+    y: PAD + (1 - d.pontuacao / maxVal) * (H - PAD * 2),
+    score: d.pontuacao,
+    data: new Date(d.criado_em).toLocaleDateString("pt-BR"),
+  }));
+  const line = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
 
-interface Resposta { id: number; tipo: string; nome: string; telefone?: string; nascimento?: string; respostas: number[]; pontuacao: number; criado_em: string; }
+  return (
+    <div className="glass-card rounded-2xl p-5">
+      <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Evolucao ({tipo.toUpperCase()})</p>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ maxHeight: 180 }}>
+        <line x1={PAD} y1={H - PAD} x2={W - PAD} y2={H - PAD} stroke="var(--c-border)" strokeWidth="1" />
+        <line x1={PAD} y1={PAD} x2={PAD} y2={H - PAD} stroke="var(--c-border)" strokeWidth="1" />
+        <text x={PAD - 4} y={PAD + 4} textAnchor="end" fontSize="9" fill="var(--c-muted)">{maxVal}</text>
+        <text x={PAD - 4} y={H - PAD + 4} textAnchor="end" fontSize="9" fill="var(--c-muted)">0</text>
+        <path d={line} fill="none" stroke="var(--c-accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        {points.map((p, i) => (
+          <g key={i}>
+            <circle cx={p.x} cy={p.y} r="5" fill="var(--c-accent)" stroke="var(--c-bg)" strokeWidth="2" />
+            <text x={p.x} y={p.y - 10} textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--c-text)">{p.score}</text>
+            <text x={p.x} y={H - PAD + 14} textAnchor="middle" fontSize="8" fill="var(--c-muted)">{p.data.slice(0, 5)}</text>
+          </g>
+        ))}
+      </svg>
+    </div>
+  );
+}
 
 export default function BrunoPainel() {
   const [auth, setAuth] = useState(false);
@@ -390,8 +424,27 @@ export default function BrunoPainel() {
         <div className="mx-auto max-w-5xl">
           <motion.div variants={stagger.container} initial="hidden" animate="visible">
 
-            {tab === "respostas" && !respostaAberta && !parecerAvulso && (
+            {tab === "respostas" && !respostaAberta && !parecerAvulso && (() => {
+              const riscos = detectarRiscos(respostas);
+              return (
               <>
+                {riscos.length > 0 && (
+                  <motion.div variants={fadeUp} className="mb-4 space-y-2">
+                    {riscos.map((r, i) => (
+                      <div key={i} className="flex items-start gap-3 rounded-2xl border-2 p-4"
+                        style={{ borderColor: r.nivel === "critico" ? "#dc2626" : "#f59e0b", background: r.nivel === "critico" ? "#dc26260A" : "#f59e0b0A" }}>
+                        <AlertTriangle size={18} className="mt-0.5 flex-shrink-0" style={{ color: r.nivel === "critico" ? "#dc2626" : "#f59e0b" }} />
+                        <div>
+                          <p className="text-xs font-bold" style={{ color: r.nivel === "critico" ? "#dc2626" : "#f59e0b" }}>
+                            {r.nivel === "critico" ? "ALERTA CRITICO" : "ALERTA DE RISCO"}
+                          </p>
+                          <p className="text-xs text-[var(--c-text)]">{r.mensagem}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </motion.div>
+                )}
+
                 <motion.div variants={fadeUp} className="mb-6 flex items-center justify-between">
                   <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Respostas</h2>
                   <div className="flex gap-2">
@@ -453,7 +506,8 @@ export default function BrunoPainel() {
                   </motion.div>
                 )}
               </>
-            )}
+              );
+            })()}
 
             {/* ===== DASHBOARD / RELATÓRIO ===== */}
             {tab === "respostas" && (respostaAberta || parecerAvulso) && (
@@ -537,6 +591,12 @@ export default function BrunoPainel() {
                     )}
                   </motion.div>}
                 </div>
+
+                {respostaAberta && historicoAberto.length >= 2 && (
+                  <div className="mb-6">
+                    <EvolucaoChart historico={historicoAberto.filter((h) => h.tipo === respostaAberta.tipo)} tipo={respostaAberta.tipo} />
+                  </div>
+                )}
 
                 {/* Detalhes das respostas individuais */}
                 {respostaAberta && (

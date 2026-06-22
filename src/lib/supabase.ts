@@ -14,6 +14,7 @@ export interface QuestionnaireResponse {
   respostas: number[];
   pontuacao: number;
   criado_em?: string;
+  consentimento_lgpd?: boolean;
 }
 
 export async function salvarResposta(data: QuestionnaireResponse) {

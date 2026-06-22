@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, ChevronLeft, User, Check, Brain } from "lucide-react";
 import { salvarResposta } from "@/lib/supabase";
 import { AppAurora } from "@/components/ui/AppAurora";
+import { ehFaixaGrave } from "@/lib/scoring";
+import { CrisisCard } from "@/components/shared/CrisisCard";
 
 const perguntas = [
   "Pouco interesse ou prazer em fazer as coisas",
@@ -37,6 +39,7 @@ export default function PHQ9() {
   const [nome, setNome] = useState("");
   const [nascimento, setNascimento] = useState("");
   const [telefone, setTelefone] = useState("");
+  const [consentimento, setConsentimento] = useState(false);
   const [respostas, setRespostas] = useState<(number | null)[]>(Array(9).fill(null));
   const [atual, setAtual] = useState(0);
 
@@ -46,14 +49,15 @@ export default function PHQ9() {
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
-  const dadosValidos = nome.trim().length > 2 && nascimento.length > 0;
+  const dadosValidos = nome.trim().length > 2 && nascimento.length > 0 && consentimento;
   const pontuacao = respostas.reduce<number>((acc, r) => acc + (r ?? 0), 0);
   const resultado = classificar(pontuacao);
+  const emRisco = (respostas[8] ?? 0) >= 1 || ehFaixaGrave("phq9", pontuacao);
   const pct = Math.round(((atual + 1) / perguntas.length) * 100);
   const ringMax = 27, r = 52, circ = 2 * Math.PI * r;
 
   function finalizar() {
-    salvarResposta({ tipo: "phq9", nome: nome.trim(), telefone: telefone.trim(), nascimento, respostas: respostas as number[], pontuacao });
+    salvarResposta({ tipo: "phq9", nome: nome.trim(), telefone: telefone.trim(), nascimento, respostas: respostas as number[], pontuacao, consentimento_lgpd: consentimento });
     setEtapa("resultado");
   }
 
@@ -101,6 +105,14 @@ export default function PHQ9() {
                         className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors placeholder:text-[var(--c-muted)]/50 focus:border-[var(--c-accent)] focus:outline-none" />
                     </div>
                   </div>
+                  <label className="mb-5 flex items-start gap-3 cursor-pointer rounded-xl border border-[var(--c-border)] p-4 transition-colors hover:border-[var(--c-accent)]/50">
+                    <input type="checkbox" checked={consentimento} onChange={(e) => setConsentimento(e.target.checked)} aria-required="true"
+                      className="mt-0.5 accent-[var(--c-accent)]" />
+                    <span className="text-xs leading-relaxed text-[var(--c-muted)]">
+                      Autorizo a coleta e o armazenamento dos meus dados e respostas para fins de acompanhamento psicologico, conforme a <strong className="text-[var(--c-text)]">LGPD (Lei 13.709/2018)</strong>. Acessiveis apenas ao psicologo responsavel.
+                    </span>
+                  </label>
+
                   <motion.button whileHover={{ scale: dadosValidos ? 1.02 : 1 }} whileTap={{ scale: 0.98 }} onClick={() => setEtapa("intro")} disabled={!dadosValidos}
                     className="flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 font-medium text-white transition-opacity disabled:opacity-40"
                     style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))", boxShadow: "0 12px 30px -10px var(--c-accent)" }}>
@@ -139,18 +151,18 @@ export default function PHQ9() {
                 <div className="mb-2 flex items-center justify-between text-xs font-medium text-[var(--c-muted)]">
                   <span>Pergunta {atual + 1} de {perguntas.length}</span><span className="text-[var(--c-accent)]">{pct}%</span>
                 </div>
-                <div className="mb-6 h-2 overflow-hidden rounded-full bg-[var(--c-border)]">
+                <div className="mb-6 h-2 overflow-hidden rounded-full bg-[var(--c-border)]" role="progressbar" aria-valuenow={atual + 1} aria-valuemin={1} aria-valuemax={perguntas.length} aria-label="Progresso do questionário">
                   <motion.div className="h-full rounded-full" style={{ background: "linear-gradient(90deg, var(--c-accent), var(--c-accent-lt))" }} animate={{ width: pct + "%" }} transition={{ duration: 0.4 }} />
                 </div>
                 <div className="glass-card mb-5 rounded-2xl p-6">
                   <p className="mb-2 text-xs text-[var(--c-muted)]">Nas ultimas duas semanas, com que frequencia voce foi incomodado(a) por:</p>
                   <h2 className="text-xl font-semibold leading-snug text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{perguntas[atual]}</h2>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-3" role="radiogroup" aria-label={perguntas[atual]}>
                   {opcoes.map((op, i) => {
                     const selected = respostas[atual] === op.valor;
                     return (
-                      <motion.button key={op.valor} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }} whileHover={{ x: 4 }} whileTap={{ scale: 0.99 }}
+                      <motion.button key={op.valor} role="radio" aria-checked={selected} aria-label={op.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }} whileHover={{ x: 4 }} whileTap={{ scale: 0.99 }}
                         onClick={() => {
                           const novo = [...respostas]; novo[atual] = op.valor; setRespostas(novo);
                           setTimeout(() => { if (atual < perguntas.length - 1) setAtual(atual + 1); else finalizar(); }, 220);
@@ -175,6 +187,7 @@ export default function PHQ9() {
 
             {etapa === "resultado" && (
               <motion.div key="resultado" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
+                {emRisco && <CrisisCard variant="suicida" />}
                 <div className="relative mx-auto mb-5 h-32 w-32">
                   <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
                     <circle cx="60" cy="60" r={r} fill="none" stroke="var(--c-border)" strokeWidth="10" opacity="0.5" />

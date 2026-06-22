@@ -8,6 +8,11 @@ import type { EscalaConfig } from "@/content/escalas";
 import { escalasGerais } from "@/content/escalas-gerais";
 import type { EscalaGeralConfig, BDIItem } from "@/content/escalas-gerais";
 import { AppAurora } from "@/components/ui/AppAurora";
+import {
+  computeGeralScore, computeSchemaAvg, computeThreshold,
+  classificarResposta, pacienteEmRisco, type SchemaResult,
+} from "@/lib/scoring";
+import { CrisisCard } from "@/components/shared/CrisisCard";
 
 type AnyConfig = EscalaConfig | EscalaGeralConfig;
 
@@ -17,90 +22,6 @@ function isEscalaGeral(config: AnyConfig): config is EscalaGeralConfig {
 
 function isBDIItem(item: unknown): item is BDIItem {
   return typeof item === "object" && item !== null && "opcoes" in item;
-}
-
-// ===== Original schema scoring for YSQ/YPI/YCI =====
-interface SchemaResult {
-  id: string;
-  nome: string;
-  media: number;
-  dominio: string;
-}
-
-function computeSchemaAvg(config: EscalaConfig, respostas: number[]): { schemas: SchemaResult[]; pontuacao: number } {
-  const schemas: SchemaResult[] = [];
-  let highest = 0;
-  for (const dominio of config.dominios ?? []) {
-    for (const esquema of dominio.esquemas) {
-      let soma = 0;
-      for (const idx of esquema.itens) {
-        let val = respostas[idx - 1] ?? 1;
-        if (esquema.invertido) val = 7 - val;
-        soma += val;
-      }
-      const media = soma / esquema.itens.length;
-      if (media > highest) highest = media;
-      schemas.push({ id: esquema.id, nome: esquema.nome, media, dominio: dominio.nome });
-    }
-  }
-  return { schemas, pontuacao: Math.round(highest * 10) / 10 };
-}
-
-function computeThreshold(respostas: number[]): { flagged: { index: number; valor: number }[]; pontuacao: number } {
-  const flagged: { index: number; valor: number }[] = [];
-  for (let i = 0; i < respostas.length; i++) {
-    if (respostas[i] >= 5) flagged.push({ index: i, valor: respostas[i] });
-  }
-  return { flagged, pontuacao: flagged.length };
-}
-
-// ===== General scale scoring =====
-interface DominioResult {
-  id: string;
-  nome: string;
-  soma: number;
-  media: number;
-  itensCount: number;
-}
-
-function computeGeralScore(config: EscalaGeralConfig, respostas: number[]): { total: number; dominios: DominioResult[] } {
-  let total = 0;
-  const dominios: DominioResult[] = [];
-
-  if (config.tipo === "binary" && config.chaveCorrecao) {
-    for (let i = 0; i < respostas.length; i++) {
-      const chave = config.chaveCorrecao[i + 1];
-      const resposta = respostas[i] === 1 ? "C" : "E";
-      if (resposta === chave) total++;
-    }
-  } else if (config.tipo === "likert-statements") {
-    total = respostas.reduce((a, b) => a + b, 0);
-  } else {
-    if (config.dominios && config.dominios.length > 0) {
-      for (const dom of config.dominios) {
-        let soma = 0;
-        const invertidos = dom.invertidos ?? [];
-        const globalInvertidos = config.invertidos ?? [];
-        for (const idx of dom.itens) {
-          let val = respostas[idx - 1] ?? 0;
-          const isInverted = invertidos.includes(idx) || globalInvertidos.includes(idx);
-          if (isInverted) {
-            const maxVal = config.opcoes ? Math.max(...config.opcoes.map((o) => o.valor)) : 4;
-            const minVal = config.opcoes ? Math.min(...config.opcoes.map((o) => o.valor)) : 0;
-            val = maxVal + minVal - val;
-          }
-          soma += val;
-        }
-        const media = Math.round((soma / dom.itens.length) * 100) / 100;
-        dominios.push({ id: dom.id, nome: dom.nome, soma, media, itensCount: dom.itens.length });
-        total += soma;
-      }
-    } else {
-      total = respostas.reduce((a, b) => a + b, 0);
-    }
-  }
-
-  return { total, dominios };
 }
 
 // ===== Merged config lookup =====
@@ -141,6 +62,8 @@ function AnimatedBar({ pct, color, delay = 0 }: { pct: number; color: string; de
   );
 }
 
+type Rascunho = { nome: string; nascimento: string; telefone: string; consentimento: boolean; respostas: (number | null)[]; atual: number };
+
 export default function Escala() {
   const { escalaId } = useParams<{ escalaId: string }>();
   const config = escalaId ? allConfigs[escalaId] : undefined;
@@ -149,6 +72,8 @@ export default function Escala() {
   const [nome, setNome] = useState("");
   const [nascimento, setNascimento] = useState("");
   const [telefone, setTelefone] = useState("");
+  const [consentimento, setConsentimento] = useState(false);
+  const [rascunho, setRascunho] = useState<Rascunho | null>(null);
   const [respostas, setRespostas] = useState<(number | null)[]>([]);
   const [atual, setAtual] = useState(0);
 
@@ -171,9 +96,29 @@ export default function Escala() {
     return () => document.documentElement.removeAttribute("data-theme");
   }, [config]);
 
+  const storageKey = escalaId ? `escala-rascunho-${escalaId}` : "";
+
+  useEffect(() => {
+    if (!storageKey) return;
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const d = JSON.parse(raw);
+        if (Array.isArray(d.respostas) && d.respostas.some((x: number | null) => x !== null)) setRascunho(d as Rascunho);
+      }
+    } catch { /* rascunho inválido, ignora */ }
+  }, [storageKey]);
+
+  useEffect(() => {
+    if (!storageKey || etapa !== "form") return;
+    try {
+      localStorage.setItem(storageKey, JSON.stringify({ nome, nascimento, telefone, consentimento, respostas, atual }));
+    } catch { /* storage indisponível, ignora */ }
+  }, [storageKey, etapa, nome, nascimento, telefone, consentimento, respostas, atual]);
+
   if (!config) return <Navigate to="/paciente" replace />;
 
-  const dadosValidos = nome.trim().length > 2 && nascimento.length > 0;
+  const dadosValidos = nome.trim().length > 2 && nascimento.length > 0 && consentimento;
   const respondidas = respostas as number[];
   const sigla = config.sigla;
 
@@ -192,8 +137,21 @@ export default function Escala() {
     if (isEscalaGeral(config!)) pontuacao = computeGeralScore(config!, r).total;
     else if (config!.scoring === "schema-avg") pontuacao = computeSchemaAvg(config! as EscalaConfig, r).pontuacao;
     else pontuacao = computeThreshold(r).pontuacao;
-    salvarResposta({ tipo: config!.id, nome: nome.trim(), telefone: telefone.trim(), nascimento, respostas: r, pontuacao });
+    salvarResposta({ tipo: config!.id, nome: nome.trim(), telefone: telefone.trim(), nascimento, respostas: r, pontuacao, consentimento_lgpd: consentimento });
+    if (storageKey) localStorage.removeItem(storageKey);
     setEtapa("resultado");
+  }
+
+  function retomarRascunho() {
+    if (!rascunho) return;
+    setNome(rascunho.nome); setNascimento(rascunho.nascimento); setTelefone(rascunho.telefone);
+    setConsentimento(rascunho.consentimento); setRespostas(rascunho.respostas); setAtual(rascunho.atual);
+    setRascunho(null); setEtapa("form");
+  }
+
+  function descartarRascunho() {
+    if (storageKey) localStorage.removeItem(storageKey);
+    setRascunho(null);
   }
 
   function getCurrentItemText(): string {
@@ -241,6 +199,15 @@ export default function Escala() {
             {etapa === "dados" && (
               <motion.div key="dados" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="mx-auto max-w-md">
                 <div className="glass-card rounded-3xl p-8">
+                  {rascunho && (
+                    <div className="mb-5 rounded-xl border border-[var(--c-accent)]/40 p-4" style={{ background: "color-mix(in oklab, var(--c-accent) 8%, transparent)" }}>
+                      <p className="mb-2 text-sm font-medium text-[var(--c-text)]">Você tem um questionário em andamento.</p>
+                      <div className="flex gap-2">
+                        <button onClick={retomarRascunho} className="rounded-full px-4 py-2 text-xs font-semibold text-white" style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>Retomar</button>
+                        <button onClick={descartarRascunho} className="rounded-full border border-[var(--c-border)] px-4 py-2 text-xs font-semibold text-[var(--c-muted)] transition-colors hover:text-[var(--c-text)]">Recomeçar</button>
+                      </div>
+                    </div>
+                  )}
                   <div className="mb-6 flex items-center gap-3">
                     <div className="flex h-11 w-11 items-center justify-center rounded-2xl" style={{ background: "linear-gradient(140deg, var(--c-accent), var(--c-accent-lt))", boxShadow: "0 10px 26px -10px var(--c-accent)" }}>
                       <User size={20} className="text-white" />
@@ -268,6 +235,14 @@ export default function Escala() {
                         className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors placeholder:text-[var(--c-muted)]/50 focus:border-[var(--c-accent)] focus:outline-none" />
                     </div>
                   </div>
+
+                  <label className="mb-5 flex items-start gap-3 cursor-pointer rounded-xl border border-[var(--c-border)] p-4 transition-colors hover:border-[var(--c-accent)]/50">
+                    <input type="checkbox" checked={consentimento} onChange={(e) => setConsentimento(e.target.checked)}
+                      className="mt-0.5 accent-[var(--c-accent)]" />
+                    <span className="text-xs leading-relaxed text-[var(--c-muted)]">
+                      Autorizo a coleta e o armazenamento dos meus dados pessoais e respostas para fins exclusivos de acompanhamento psicologico, conforme a <strong className="text-[var(--c-text)]">LGPD (Lei 13.709/2018)</strong>. Esses dados serao acessiveis apenas ao psicologo responsavel.
+                    </span>
+                  </label>
 
                   <motion.button whileHover={{ scale: dadosValidos ? 1.02 : 1 }} whileTap={{ scale: 0.98 }} onClick={() => setEtapa("intro")} disabled={!dadosValidos}
                     className="flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 font-medium text-white transition-opacity disabled:opacity-40"
@@ -304,11 +279,11 @@ export default function Escala() {
 
             {etapa === "form" && (
               <motion.div key={"q" + atual} initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.25 }}>
-                <div className="mb-2 flex items-center justify-between text-xs font-medium text-[var(--c-muted)]">
+                <div className="mb-2 flex items-center justify-between text-xs font-medium text-[var(--c-muted)]" aria-live="polite">
                   <span>Pergunta {atual + 1} de {total}</span>
                   <span className="text-[var(--c-accent)]">{pct}%</span>
                 </div>
-                <div className="mb-6 h-2 overflow-hidden rounded-full bg-[var(--c-border)]">
+                <div className="mb-6 h-2 overflow-hidden rounded-full bg-[var(--c-border)]" role="progressbar" aria-valuenow={atual + 1} aria-valuemin={1} aria-valuemax={total} aria-label="Progresso do questionário">
                   <motion.div className="h-full rounded-full" style={{ background: "linear-gradient(90deg, var(--c-accent), var(--c-accent-lt))" }} animate={{ width: pct + "%" }} transition={{ duration: 0.4, ease: "easeOut" }} />
                 </div>
 
@@ -320,12 +295,13 @@ export default function Escala() {
                   )}
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-3" role="radiogroup" aria-label={getCurrentItemText()}>
                   {getCurrentOptions().map((op, i) => {
                     const selected = respostas[atual] === op.valor;
                     return (
                       <motion.button
                         key={op.valor}
+                        role="radio" aria-checked={selected} aria-label={op.label}
                         initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
                         whileHover={{ x: 4 }} whileTap={{ scale: 0.99 }}
                         onClick={() => handleResposta(op.valor)}
@@ -373,13 +349,18 @@ function ResultadoGeral({ config, respostas }: { config: EscalaGeralConfig; resp
   const result = useMemo(() => computeGeralScore(config, respostas), [config, respostas]);
   const maxPossible = config.pontuacaoMaxima ?? (config.opcoes ? Math.max(...config.opcoes.map((o) => o.valor)) * respostas.length : result.total);
   const maxOp = config.opcoes ? Math.max(...config.opcoes.map((o) => o.valor)) : 6;
+  const classif = classificarResposta(config.id, result.total);
+  const emRisco = pacienteEmRisco(config.id, result.total, respostas);
+  const crisisVariant: "suicida" | "apoio" = config.id === "bhs" || config.id === "bdi" ? "suicida" : "apoio";
 
   return (
     <motion.div key="resultado" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
+      {emRisco && <CrisisCard variant={crisisVariant} />}
       <ScoreRing value={result.total} max={maxPossible} caption="Total" />
+      {classif && <span className="mb-1 block text-xs font-bold uppercase tracking-widest text-[var(--c-accent)]">{classif.classificacao}</span>}
       <h2 className="mb-3 text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Respostas registradas</h2>
       <p className="mx-auto mb-7 max-w-sm leading-relaxed text-[var(--c-muted)]">
-        Pontuacao: {result.total}{maxPossible > 0 ? ` de ${maxPossible}` : ""}. Converse com seu psicologo sobre estes resultados.
+        {classif ? `${classif.descricao} ` : `Pontuacao: ${result.total}${maxPossible > 0 ? ` de ${maxPossible}` : ""}. `}Este é um rastreio, não um diagnóstico — converse com seu psicólogo sobre estes resultados.
       </p>
 
       {result.dominios.length > 0 && (

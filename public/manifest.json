@@ -1,0 +1,16 @@
+{
+  "name": "Bruno SG · Psicólogo",
+  "short_name": "Bruno SG",
+  "description": "Psicólogo clínico — TCC e Terapia do Esquema. Pelotas/RS e online.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f5efe6",
+  "theme_color": "#b05d3a",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "/img/logo.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/img/logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
