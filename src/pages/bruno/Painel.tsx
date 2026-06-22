@@ -18,6 +18,7 @@ import { escalas } from "@/content/escalas";
 import { escalasGerais } from "@/content/escalas-gerais";
 import type { BDIItem } from "@/content/escalas-gerais";
 import { exercicios, type Exercicio } from "@/content/exercicios";
+import { ferramentas, type FerramentaTerapeuta } from "@/content/ferramentas-terapeuta";
 import { posts as staticPosts } from "@/content/posts-loader";
 import { fadeUp, stagger } from "@/lib/motion";
 import { AppAurora } from "@/components/ui/AppAurora";
@@ -93,7 +94,7 @@ export default function BrunoPainel() {
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [loginLoading, setLoginLoading] = useState(true);
-  const [tab, setTab] = useState<"respostas" | "blog" | "exercicios">("respostas");
+  const [tab, setTab] = useState<"respostas" | "blog" | "exercicios" | "ferramentas">("respostas");
   const [respostaAberta, setRespostaAberta] = useState<Resposta | null>(null);
   const [historicoAberto, setHistoricoAberto] = useState<Resposta[]>([]);
   const [parecerAvulso, setParecerAvulso] = useState(false);
@@ -115,6 +116,8 @@ export default function BrunoPainel() {
   const [consideracoes, setConsideracoes] = useState("");
   const [addTesteId, setAddTesteId] = useState<TesteId>("phq9");
   const [notificacoes, setNotificacoes] = useState<Notificacao[]>([]);
+  const [ferramentaAberta, setFerramentaAberta] = useState<FerramentaTerapeuta | null>(null);
+  const [ferramentaDados, setFerramentaDados] = useState<Record<string, string>>({});
   const [exercicioAberto, setExercicioAberto] = useState<Exercicio | null>(null);
   const [filtroPublico, setFiltroPublico] = useState<"todos" | "adulto" | "infantojuvenil">("todos");
   const [hiddenExercicios, setHiddenExercicios] = useState<Set<string>>(() => {
@@ -382,7 +385,28 @@ export default function BrunoPainel() {
     resetParecer();
   }
 
-  const tabBtn = (id: "respostas" | "blog" | "exercicios") =>
+  function exportarFerramentaPDF(f: FerramentaTerapeuta, dados: Record<string, string>) {
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const W = 180; const ML = 15; let y = 20;
+    function txt(text: string, size = 10, bold = false, color: [number, number, number] = [40, 40, 40]) {
+      doc.setFontSize(size); doc.setFont("helvetica", bold ? "bold" : "normal"); doc.setTextColor(...color);
+      for (const line of doc.splitTextToSize(text, W)) { if (y > 275) { doc.addPage(); y = 20; } doc.text(line, ML, y); y += size * 0.45; }
+    }
+    txt(f.titulo, 14, true, [30, 30, 30]); y += 3;
+    txt(f.categoria, 9, false, [120, 120, 120]); y += 5;
+    doc.setDrawColor(200, 200, 200); doc.line(ML, y, ML + W, y); y += 6;
+    for (const campo of f.campos) {
+      txt(campo.label, 10, true); y += 1;
+      const val = dados[campo.label]?.trim();
+      txt(val || "(não preenchido)", 10, false, val ? [40, 40, 40] : [180, 180, 180]); y += 4;
+    }
+    y += 4; doc.setDrawColor(200, 200, 200); doc.line(ML, y, ML + W, y); y += 6;
+    txt(f.referencia, 8, false, [120, 120, 120]); y += 6;
+    txt("Bruno SG — Psicólogo CRP 07/44472", 9, true, [120, 120, 120]);
+    doc.save(`${f.id}_${new Date().toISOString().slice(0, 10)}.pdf`);
+  }
+
+  const tabBtn = (id: "respostas" | "blog" | "exercicios" | "ferramentas") =>
     "px-4 py-1.5 rounded-full text-xs font-semibold transition-all " + (tab === id ? "text-white shadow-[0_8px_20px_-8px_var(--c-accent)]" : "text-[var(--c-muted)] hover:text-[var(--c-text)]");
 
   return (
@@ -398,6 +422,7 @@ export default function BrunoPainel() {
           <div className="flex gap-1">
             <button onClick={() => { setTab("respostas"); fecharDashboard(); }} className={tabBtn("respostas")} style={tab === "respostas" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Respostas</button>
             <button onClick={() => setTab("exercicios")} className={tabBtn("exercicios")} style={tab === "exercicios" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Exercícios</button>
+            <button onClick={() => { setTab("ferramentas"); setFerramentaAberta(null); }} className={tabBtn("ferramentas")} style={tab === "ferramentas" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Ferramentas</button>
             <button onClick={() => setTab("blog")} className={tabBtn("blog")} style={tab === "blog" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Blog</button>
           </div>
         </div>
@@ -710,6 +735,66 @@ export default function BrunoPainel() {
                       placeholder="Considerações finais"
                       className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none resize-none" />
                   </motion.div>
+                )}
+              </>
+            )}
+
+            {tab === "ferramentas" && (
+              <>
+                {ferramentaAberta ? (
+                  <motion.div variants={fadeUp}>
+                    <div className="mb-6 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <button onClick={() => { setFerramentaAberta(null); setFerramentaDados({}); }} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]"><X size={15} /></button>
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--c-muted)]">{ferramentaAberta.categoria}</p>
+                          <h2 className="text-lg font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{ferramentaAberta.titulo}</h2>
+                        </div>
+                      </div>
+                      <button onClick={() => exportarFerramentaPDF(ferramentaAberta, ferramentaDados)}
+                        className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white"
+                        style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
+                        <Download size={14} /> Salvar PDF
+                      </button>
+                    </div>
+                    <div className="glass-card rounded-2xl p-6">
+                      <div className="space-y-4">
+                        {ferramentaAberta.campos.map((campo) => (
+                          <div key={campo.label}>
+                            <label className="mb-1 block text-[11px] font-medium text-[var(--c-accent)]">{campo.label}</label>
+                            {campo.tipo === "area" ? (
+                              <textarea value={ferramentaDados[campo.label] ?? ""} onChange={(e) => setFerramentaDados({ ...ferramentaDados, [campo.label]: e.target.value })} rows={3}
+                                className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none resize-y" />
+                            ) : (
+                              <input value={ferramentaDados[campo.label] ?? ""} onChange={(e) => setFerramentaDados({ ...ferramentaDados, [campo.label]: e.target.value })}
+                                className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-2.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-4 rounded-xl border border-[var(--c-border)] p-3">
+                        <p className="text-[9px] text-[var(--c-muted)]">{ferramentaAberta.referencia}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <>
+                    <motion.div variants={fadeUp} className="mb-6">
+                      <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Ferramentas do Terapeuta</h2>
+                    </motion.div>
+                    <motion.div variants={fadeUp} className="grid gap-3 md:grid-cols-2">
+                      {ferramentas.map((f) => (
+                        <div key={f.id} className="glass-card cursor-pointer rounded-2xl p-5 transition-colors hover:border-[var(--c-accent)]/30"
+                          onClick={() => { setFerramentaAberta(f); setFerramentaDados({}); }}>
+                          <h3 className="text-sm font-semibold text-[var(--c-text)]">{f.titulo}</h3>
+                          <div className="mt-1 flex items-center gap-2">
+                            <span className="rounded-full bg-[var(--c-accent)]/10 px-2 py-0.5 text-[9px] font-bold uppercase text-[var(--c-accent)]">{f.categoria}</span>
+                            <span className="text-[9px] text-[var(--c-muted)]">{f.campos.length} campos</span>
+                          </div>
+                        </div>
+                      ))}
+                    </motion.div>
+                  </>
                 )}
               </>
             )}

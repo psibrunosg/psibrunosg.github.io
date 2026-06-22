@@ -3,12 +3,40 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, Search, X, Download } from "lucide-react";
 import jsPDF from "jspdf";
-import { anexos, type Anexo } from "@/content/anexos";
+import { anexos } from "@/content/anexos";
+import { exercicios } from "@/content/exercicios";
 import { AppAurora } from "@/components/ui/AppAurora";
+
+interface UnifiedExercise {
+  id: string;
+  numero: string;
+  titulo: string;
+  fonte: "te" | "tcc" | "curado";
+  esquema?: string;
+  publico?: string;
+  instrucoes: string[];
+  exemplo?: string;
+  referencia: string;
+  tempoEstimado?: string;
+}
+
+const allExercises: UnifiedExercise[] = [
+  ...exercicios.map((e) => ({
+    id: e.id, numero: e.categoria, titulo: e.titulo,
+    fonte: "curado" as const, publico: e.publico,
+    instrucoes: e.instrucoes, exemplo: e.exemplo,
+    referencia: e.referencia, tempoEstimado: e.tempoEstimado,
+  })),
+  ...anexos.map((a) => ({
+    id: a.id, numero: a.numero, titulo: a.titulo,
+    fonte: a.fonte, esquema: a.esquema,
+    instrucoes: a.instrucoes, referencia: a.referencia,
+  })),
+];
 
 const esquemasTe = [...new Set(anexos.filter((a) => a.fonte === "te").map((a) => a.esquema!))];
 
-function exportPDF(a: Anexo) {
+function exportPDF(a: UnifiedExercise) {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const W = 180; const ML = 15; let y = 20;
   function txt(text: string, size = 10, bold = false, color: [number, number, number] = [40, 40, 40]) {
@@ -20,10 +48,13 @@ function exportPDF(a: Anexo) {
   }
   txt(`${a.numero} — ${a.titulo}`, 14, true, [30, 30, 30]); y += 3;
   if (a.esquema) { txt(`Esquema: ${a.esquema}`, 9, false, [120, 120, 120]); y += 1; }
-  txt(a.fonte === "te" ? "Terapia do Esquema" : "Terapia Cognitivo-Comportamental", 9, false, [120, 120, 120]); y += 5;
+  if (a.publico) { txt(`Público: ${a.publico}`, 9, false, [120, 120, 120]); y += 1; }
+  if (a.tempoEstimado) { txt(`Tempo estimado: ${a.tempoEstimado}`, 9, false, [120, 120, 120]); y += 1; }
+  txt(a.fonte === "te" ? "Terapia do Esquema" : a.fonte === "curado" ? "Exercício Curado" : "Terapia Cognitivo-Comportamental", 9, false, [120, 120, 120]); y += 5;
   doc.setDrawColor(200, 200, 200); doc.line(ML, y, ML + W, y); y += 6;
   txt("INSTRUÇÕES", 11, true); y += 2;
   a.instrucoes.forEach((inst, i) => { txt(`${i + 1}. ${inst}`); y += 2; }); y += 4;
+  if (a.exemplo) { txt("EXEMPLO", 11, true); y += 2; txt(a.exemplo); y += 4; }
   doc.setDrawColor(200, 200, 200); doc.line(ML, y, ML + W, y); y += 6;
   txt(a.referencia, 8, false, [120, 120, 120]); y += 6;
   txt("Bruno SG — Psicólogo CRP 07/44472", 9, true, [120, 120, 120]);
@@ -31,24 +62,29 @@ function exportPDF(a: Anexo) {
 }
 
 export default function Exercicios() {
-  const [filtro, setFiltro] = useState<"todos" | "te" | "tcc">("todos");
+  const [filtro, setFiltro] = useState<"todos" | "te" | "tcc" | "curado" | "infantojuvenil">("todos");
   const [esquemaFiltro, setEsquemaFiltro] = useState<string>("todos");
   const [busca, setBusca] = useState("");
-  const [aberto, setAberto] = useState<Anexo | null>(null);
+  const [aberto, setAberto] = useState<UnifiedExercise | null>(null);
 
   const filtered = useMemo(() => {
-    let list = anexos;
-    if (filtro !== "todos") list = list.filter((a) => a.fonte === filtro);
+    let list = allExercises;
+    if (filtro === "te") list = list.filter((a) => a.fonte === "te");
+    else if (filtro === "tcc") list = list.filter((a) => a.fonte === "tcc" || (a.fonte === "curado" && a.publico === "adulto"));
+    else if (filtro === "curado") list = list.filter((a) => a.fonte === "curado");
+    else if (filtro === "infantojuvenil") list = list.filter((a) => a.publico === "infantojuvenil");
     if (esquemaFiltro !== "todos") list = list.filter((a) => a.esquema === esquemaFiltro);
     if (busca.trim()) {
       const q = busca.toLowerCase();
-      list = list.filter((a) => a.titulo.toLowerCase().includes(q) || a.esquema?.toLowerCase().includes(q) || a.instrucoes.some((i) => i.toLowerCase().includes(q)));
+      list = list.filter((a) => a.titulo.toLowerCase().includes(q) || a.esquema?.toLowerCase().includes(q) || a.publico?.toLowerCase().includes(q) || a.instrucoes.some((i) => i.toLowerCase().includes(q)));
     }
     return list;
   }, [filtro, esquemaFiltro, busca]);
 
-  const teCount = anexos.filter((a) => a.fonte === "te").length;
-  const tccCount = anexos.filter((a) => a.fonte === "tcc").length;
+  const teCount = allExercises.filter((a) => a.fonte === "te").length;
+  const tccCount = allExercises.filter((a) => a.fonte === "tcc").length;
+  const curadoCount = allExercises.filter((a) => a.fonte === "curado").length;
+  const infantoCount = allExercises.filter((a) => a.publico === "infantojuvenil").length;
 
   return (
     <div className="relative min-h-screen" data-theme="c">
@@ -60,7 +96,7 @@ export default function Exercicios() {
             <ChevronLeft size={16} /> Voltar
           </Link>
           <span className="text-xs font-bold tracking-widest uppercase text-[var(--c-accent)]">Exercícios Terapêuticos</span>
-          <span className="text-xs text-[var(--c-muted)]">{filtered.length} de {anexos.length}</span>
+          <span className="text-xs text-[var(--c-muted)]">{filtered.length} de {allExercises.length}</span>
         </div>
       </header>
 
@@ -87,10 +123,11 @@ export default function Exercicios() {
 
                 <div className="glass-card rounded-2xl p-6">
                   <div className="mb-5 flex flex-wrap gap-2">
-                    <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${aberto.fonte === "te" ? "bg-emerald-100 text-emerald-700" : "bg-blue-100 text-blue-700"}`}>
-                      {aberto.fonte === "te" ? "Terapia do Esquema" : "TCC"}
+                    <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${aberto.fonte === "te" ? "bg-emerald-100 text-emerald-700" : aberto.publico === "infantojuvenil" ? "bg-purple-100 text-purple-600" : aberto.fonte === "curado" ? "bg-amber-100 text-amber-700" : "bg-blue-100 text-blue-700"}`}>
+                      {aberto.fonte === "te" ? "Terapia do Esquema" : aberto.publico === "infantojuvenil" ? "Infantojuvenil" : aberto.fonte === "curado" ? "Exercício Curado" : "TCC"}
                     </span>
                     {aberto.esquema && <span className="rounded-full bg-[var(--c-surface)] px-3 py-1 text-[10px] font-medium text-[var(--c-muted)]">{aberto.esquema}</span>}
+                    {aberto.tempoEstimado && <span className="rounded-full bg-[var(--c-surface)] px-3 py-1 text-[10px] font-medium text-[var(--c-muted)]">⏱ {aberto.tempoEstimado}</span>}
                   </div>
 
                   <p className="mb-4 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Instruções</p>
@@ -103,6 +140,13 @@ export default function Exercicios() {
                     ))}
                   </ol>
 
+                  {aberto.exemplo && (
+                    <>
+                      <p className="mt-6 mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Exemplo</p>
+                      <div className="rounded-xl bg-[var(--c-surface)] p-4 text-sm italic leading-relaxed text-[var(--c-muted)]">{aberto.exemplo}</div>
+                    </>
+                  )}
+
                   <div className="mt-6 rounded-xl border border-[var(--c-border)] p-4">
                     <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--c-muted)]">Referência</p>
                     <p className="mt-1 text-xs text-[var(--c-muted)]">{aberto.referencia}</p>
@@ -114,7 +158,7 @@ export default function Exercicios() {
                 {/* Filtros */}
                 <div className="mb-6 space-y-3">
                   <div className="flex flex-wrap items-center gap-2">
-                    {([["todos", `Todos (${anexos.length})`], ["te", `Terapia do Esquema (${teCount})`], ["tcc", `TCC — Leahy (${tccCount})`]] as const).map(([id, label]) => (
+                    {([["todos", `Todos (${allExercises.length})`], ["curado", `Curados (${curadoCount})`], ["te", `Terapia do Esquema (${teCount})`], ["tcc", `TCC (${tccCount})`], ["infantojuvenil", `Infantojuvenil (${infantoCount})`]] as const).map(([id, label]) => (
                       <button key={id} onClick={() => { setFiltro(id); setEsquemaFiltro("todos"); }}
                         className={"rounded-full px-3 py-1.5 text-xs font-semibold transition-all " + (filtro === id ? "text-white shadow" : "text-[var(--c-muted)] border border-[var(--c-border)] hover:text-[var(--c-text)]")}
                         style={filtro === id ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>
@@ -155,10 +199,11 @@ export default function Exercicios() {
                         </button>
                       </div>
                       <div className="flex flex-wrap gap-1">
-                        <span className={`rounded-full px-2 py-0.5 text-[8px] font-bold uppercase ${a.fonte === "te" ? "bg-emerald-100 text-emerald-700" : "bg-blue-100 text-blue-700"}`}>
-                          {a.fonte === "te" ? "TE" : "TCC"}
+                        <span className={`rounded-full px-2 py-0.5 text-[8px] font-bold uppercase ${a.fonte === "te" ? "bg-emerald-100 text-emerald-700" : a.publico === "infantojuvenil" ? "bg-purple-100 text-purple-600" : a.fonte === "curado" ? "bg-amber-100 text-amber-700" : "bg-blue-100 text-blue-700"}`}>
+                          {a.fonte === "te" ? "TE" : a.publico === "infantojuvenil" ? "Infantojuvenil" : a.fonte === "curado" ? "Curado" : "TCC"}
                         </span>
                         {a.esquema && <span className="rounded-full bg-[var(--c-surface)] px-2 py-0.5 text-[8px] font-medium text-[var(--c-muted)]">{a.esquema}</span>}
+                        {a.tempoEstimado && <span className="rounded-full bg-[var(--c-surface)] px-2 py-0.5 text-[8px] font-medium text-[var(--c-muted)]">{a.tempoEstimado}</span>}
                       </div>
                     </motion.div>
                   ))}
