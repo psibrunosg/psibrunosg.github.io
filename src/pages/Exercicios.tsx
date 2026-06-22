@@ -7,6 +7,8 @@ import { anexos } from "@/content/anexos";
 import { exercicios } from "@/content/exercicios";
 import { AppAurora } from "@/components/ui/AppAurora";
 import { temas, corExercicio } from "@/content/temas-exercicios";
+import { CampoExercicio, tipoCampo, valorLegivel } from "@/components/exercicios/ExerciseWidgets";
+import { Mascote, CenaTema } from "@/components/exercicios/MascoteCena";
 
 interface UnifiedExercise {
   id: string;
@@ -110,7 +112,7 @@ function exportFilledPDF(a: UnifiedExercise, responses: Record<number, string>) 
 
   a.instrucoes.forEach((inst, i) => {
     txt(`${i + 1}. ${inst}`, 10, true); y += 2;
-    const resp = responses[i]?.trim();
+    const resp = valorLegivel(tipoCampo(inst), responses[i] ?? "").trim();
     if (resp) {
       doc.setFillColor(245, 245, 240);
       const lines = doc.splitTextToSize(resp, W - 8);
@@ -139,8 +141,12 @@ function ExerciseDetail({ exercise, onClose }: { exercise: UnifiedExercise; onCl
   const isInfantil = exercise.publico === "infantojuvenil";
   const { cor, corBg, tema } = corExercicio(exercise.numero, exercise.esquema);
 
-  const filledCount = Object.values(responses).filter((v) => v.trim().length > 0).length;
-  const totalSteps = exercise.instrucoes.length;
+  const tipos = exercise.instrucoes.map(tipoCampo);
+  const isStepFilled = (i: number) => valorLegivel(tipos[i], responses[i] ?? "").trim().length > 0;
+  // passos "info" sao opcionais — progresso conta so passos acionaveis
+  const passosAtivos = exercise.instrucoes.map((_, i) => i).filter((i) => tipos[i] !== "info");
+  const filledCount = passosAtivos.filter(isStepFilled).length;
+  const totalSteps = passosAtivos.length || exercise.instrucoes.length;
   const progressPct = totalSteps > 0 ? Math.round((filledCount / totalSteps) * 100) : 0;
 
   const updateResponse = useCallback((idx: number, val: string) => {
@@ -167,17 +173,13 @@ function ExerciseDetail({ exercise, onClose }: { exercise: UnifiedExercise; onCl
     setCompletedState(false);
   }
 
-  const isPrompt = (text: string) => {
-    const t = text.toLowerCase();
-    return text.endsWith(":") || text.endsWith("?") || text.includes("___") ||
-      t.includes("escreva") || t.includes("liste") || t.includes("anote") ||
-      t.includes("descreva") || t.includes("registre") || t.includes("preencha") ||
-      t.includes("identifique") || t.includes("reflita") || t.includes("observe") ||
-      t.includes("responda") || t.includes("complete") || t.includes("avalie");
-  };
+  const falaMascote = progressPct >= 100 ? "Voce conseguiu! 🌟"
+    : filledCount === 0 ? "Oi! Vamos juntos?"
+    : `Muito bem! ${filledCount} de ${totalSteps} ✨`;
 
   return (
     <motion.div key="detail" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+      {isInfantil && <Mascote progresso={progressPct / 100} cor={cor} fala={falaMascote} />}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <button onClick={onClose} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]"><X size={15} /></button>
@@ -212,7 +214,9 @@ function ExerciseDetail({ exercise, onClose }: { exercise: UnifiedExercise; onCl
         </div>
       </div>
 
-      <div className="glass-card overflow-hidden rounded-2xl p-6" style={{ borderTop: `3px solid ${cor}` }}>
+      <div className="glass-card overflow-hidden rounded-2xl" style={{ borderTop: `3px solid ${cor}` }}>
+        <CenaTema cor={cor} variante={exercise.titulo.length % 2} />
+        <div className="p-6">
         <div className="mb-5 flex flex-wrap gap-2">
           <span className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider" style={{ background: corBg, color: cor }}>
             {tema.label}
@@ -234,49 +238,34 @@ function ExerciseDetail({ exercise, onClose }: { exercise: UnifiedExercise; onCl
 
         <div className="space-y-5">
           {exercise.instrucoes.map((inst, i) => {
-            const hasInput = isPrompt(inst);
-            const filled = (responses[i] ?? "").trim().length > 0;
+            const tipo = tipos[i];
+            const filled = isStepFilled(i);
             return (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className={`rounded-xl border p-4 transition-colors ${filled ? "border-green-300 bg-green-50/30" : "border-[var(--c-border)]"}`}
+                className="rounded-xl border p-4 transition-colors"
+                style={{ borderColor: filled ? cor + "66" : "var(--c-border)", background: filled ? cor + "0A" : undefined }}
               >
-                <div className="mb-2 flex items-start gap-3">
+                <div className="mb-1 flex items-start gap-3">
                   <motion.span
                     className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-bold"
                     style={{
-                      background: filled ? "#4A6B47" : "color-mix(in oklab, var(--c-accent) 15%, transparent)",
-                      color: filled ? "#fff" : "var(--c-accent)",
+                      background: filled ? cor : `color-mix(in oklab, ${cor} 15%, transparent)`,
+                      color: filled ? "#fff" : cor,
                     }}
                     animate={filled ? { scale: [1, 1.2, 1] } : {}}
                     transition={{ duration: 0.3 }}
                   >
                     {filled ? <Check size={13} /> : i + 1}
                   </motion.span>
-                  <p className={`text-sm leading-relaxed text-[var(--c-text)] ${isInfantil ? "text-base" : ""}`}>
+                  <p className={`leading-relaxed text-[var(--c-text)] ${isInfantil ? "text-base" : "text-sm"}`}>
                     {inst}
                   </p>
                 </div>
-                {hasInput ? (
-                  <textarea
-                    value={responses[i] ?? ""}
-                    onChange={(e) => updateResponse(i, e.target.value)}
-                    placeholder={isInfantil ? "Escreva ou desenhe aqui com palavras..." : "Escreva sua resposta..."}
-                    rows={3}
-                    className="mt-2 w-full rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-sm text-[var(--c-text)] transition-colors placeholder:text-[var(--c-muted)]/40 focus:border-[var(--c-accent)] focus:outline-none resize-y"
-                  />
-                ) : (
-                  <textarea
-                    value={responses[i] ?? ""}
-                    onChange={(e) => updateResponse(i, e.target.value)}
-                    placeholder="Anotacoes (opcional)..."
-                    rows={2}
-                    className="mt-2 w-full rounded-lg border border-dashed border-[var(--c-border)]/60 bg-transparent px-4 py-2 text-xs text-[var(--c-muted)] transition-colors placeholder:text-[var(--c-muted)]/30 focus:border-[var(--c-accent)] focus:bg-[var(--c-bg)]/40 focus:outline-none resize-y"
-                  />
-                )}
+                <CampoExercicio tipo={tipo} value={responses[i] ?? ""} onChange={(v) => updateResponse(i, v)} cor={cor} isInfantil={isInfantil} />
               </motion.div>
             );
           })}
@@ -294,6 +283,7 @@ function ExerciseDetail({ exercise, onClose }: { exercise: UnifiedExercise; onCl
         <div className="mt-6 rounded-xl border border-[var(--c-border)] p-4">
           <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--c-muted)]">Referencia</p>
           <p className="mt-1 text-xs text-[var(--c-muted)]">{exercise.referencia}</p>
+        </div>
         </div>
       </div>
 
@@ -457,7 +447,51 @@ export default function Exercicios() {
                   </div>
                 </div>
 
-                {/* Grid */}
+                {/* Trilha (infantil) */}
+                {isInfantilFilter ? (
+                  <div className="relative mx-auto max-w-lg py-2">
+                    <div className="absolute bottom-6 left-1/2 top-6 w-1 -translate-x-1/2 rounded-full bg-[var(--c-border)]" aria-hidden="true" />
+                    <div className="space-y-3">
+                      {filtered.map((a, i) => {
+                        const done = completedIds.has(a.id);
+                        const current = !done && filtered.findIndex((x) => !completedIds.has(x.id)) === i;
+                        const { cor } = corExercicio(a.numero, a.esquema);
+                        const lado = i % 2 === 0;
+                        return (
+                          <motion.button
+                            key={a.id}
+                            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: Math.min(i * 0.04, 0.4) }}
+                            onClick={() => setAberto(a)}
+                            className={`relative flex w-full items-center gap-3 ${lado ? "flex-row" : "flex-row-reverse"}`}
+                          >
+                            <div className={`flex-1 ${lado ? "text-right" : "text-left"}`}>
+                              <div className="inline-block max-w-[90%] rounded-2xl px-4 py-2.5 text-left shadow-sm transition-shadow hover:shadow-md"
+                                style={{ background: done ? cor + "1A" : "var(--c-surface)", border: `1.5px solid ${current ? cor : "var(--c-border)"}` }}>
+                                <p className="text-xs font-semibold text-[var(--c-text)]">{a.titulo}</p>
+                                {a.tempoEstimado && <p className="text-[9px] text-[var(--c-muted)]">⏱ {a.tempoEstimado}</p>}
+                              </div>
+                            </div>
+                            <motion.span
+                              className="relative z-10 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold text-white shadow-md"
+                              style={{ background: done ? cor : current ? cor : "var(--c-border)" }}
+                              animate={current ? { scale: [1, 1.12, 1] } : {}}
+                              transition={{ duration: 1.4, repeat: Infinity }}
+                            >
+                              {done ? <Star size={18} className="fill-white" /> : i + 1}
+                              {current && <span className="absolute inset-0 rounded-full ring-2 ring-offset-2" style={{ color: cor }} />}
+                            </motion.span>
+                            <div className="flex-1" aria-hidden="true" />
+                          </motion.button>
+                        );
+                      })}
+                    </div>
+                    {filtered.length > 0 && (
+                      <p className="mt-4 text-center text-xs text-[var(--c-muted)]">
+                        {completedIds.size > 0 ? `Voce ja completou ${filtered.filter((x) => completedIds.has(x.id)).length} de ${filtered.length}! 🌟` : "Toque na primeira parada para comecar!"}
+                      </p>
+                    )}
+                  </div>
+                ) : (
                 <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
                   {filtered.map((a, i) => {
                     const done = completedIds.has(a.id);
@@ -491,6 +525,7 @@ export default function Exercicios() {
                     );
                   })}
                 </div>
+                )}
 
                 {filtered.length === 0 && (
                   <p className="py-16 text-center text-sm text-[var(--c-muted)]">Nenhum exercicio encontrado.</p>
