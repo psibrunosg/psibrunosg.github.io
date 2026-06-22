@@ -5,13 +5,11 @@ import { motion } from "framer-motion";
 export function Mascote({ progresso, cor, fala }: { progresso: number; cor: string; fala?: string }) {
   const feliz = progresso >= 1;
   const animado = progresso > 0;
-  // curva do sorriso: comeca neutro, vira sorriso conforme progride
-  const sorriso = 50 + progresso * 8; // controle Y da boca
-  const olhoY = feliz ? 40 : 42;
+  const src = feliz ? "/img/mascote-lobo-feliz.png" : "/img/mascote-lobo.png";
 
   return (
     <motion.div
-      className="pointer-events-none fixed bottom-5 right-5 z-40 flex flex-col items-end gap-2"
+      className="pointer-events-none fixed bottom-4 right-4 z-40 flex flex-col items-end gap-2"
       initial={{ opacity: 0, y: 30, scale: 0.7 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ type: "spring", stiffness: 200, damping: 18 }}
@@ -21,46 +19,21 @@ export function Mascote({ progresso, cor, fala }: { progresso: number; cor: stri
           key={fala}
           initial={{ opacity: 0, scale: 0.8, y: 6 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          className="max-w-[160px] rounded-2xl rounded-br-sm bg-white px-3 py-2 text-[11px] font-medium text-[var(--c-text)] shadow-lg"
+          className="max-w-[170px] rounded-2xl rounded-br-sm bg-white px-3 py-2 text-[11px] font-medium text-[var(--c-text)] shadow-lg"
           style={{ border: `1.5px solid ${cor}40` }}
         >
           {fala}
         </motion.div>
       )}
-      <motion.svg
-        width="84" height="84" viewBox="0 0 100 100"
-        animate={animado ? { y: [0, -6, 0], rotate: [0, -3, 3, 0] } : { y: [0, -3, 0] }}
-        transition={{ duration: feliz ? 1.4 : 3, repeat: Infinity, ease: "easeInOut" }}
-        style={{ filter: "drop-shadow(0 8px 16px rgba(0,0,0,0.18))" }}
-      >
-        {/* corpo */}
-        <ellipse cx="50" cy="55" rx="34" ry="33" fill={cor} />
-        <ellipse cx="50" cy="55" rx="34" ry="33" fill="url(#mascoteGrad)" opacity="0.25" />
-        {/* barriga clara */}
-        <ellipse cx="50" cy="62" rx="20" ry="18" fill="#ffffff" opacity="0.85" />
-        {/* olhos */}
-        <circle cx="40" cy={olhoY} r="4.2" fill="#3a2a1f" />
-        <circle cx="60" cy={olhoY} r="4.2" fill="#3a2a1f" />
-        <circle cx="41.3" cy={olhoY - 1.3} r="1.4" fill="#fff" />
-        <circle cx="61.3" cy={olhoY - 1.3} r="1.4" fill="#fff" />
-        {/* bochechas */}
-        <circle cx="33" cy="50" r="4" fill="#ff9bb0" opacity="0.55" />
-        <circle cx="67" cy="50" r="4" fill="#ff9bb0" opacity="0.55" />
-        {/* boca */}
-        <path d={`M40 52 Q50 ${sorriso} 60 52`} stroke="#3a2a1f" strokeWidth="2.4" fill="none" strokeLinecap="round" />
-        {/* folhinha quando feliz */}
-        {feliz && (
-          <motion.g initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring" }}>
-            <path d="M50 22 Q50 12 58 10 Q52 18 50 24 Z" fill="#6B8C3A" />
-          </motion.g>
-        )}
-        <defs>
-          <radialGradient id="mascoteGrad" cx="35%" cy="30%">
-            <stop offset="0%" stopColor="#fff" />
-            <stop offset="100%" stopColor="#000" />
-          </radialGradient>
-        </defs>
-      </motion.svg>
+      <motion.img
+        src={src}
+        alt="Mascote"
+        draggable={false}
+        className="h-24 w-24 select-none object-contain sm:h-28 sm:w-28"
+        style={{ filter: "drop-shadow(0 8px 16px rgba(0,0,0,0.2))" }}
+        animate={animado ? { y: [0, -8, 0], rotate: [0, -2, 2, 0] } : { y: [0, -4, 0] }}
+        transition={{ duration: feliz ? 1.6 : 3.2, repeat: Infinity, ease: "easeInOut" }}
+      />
     </motion.div>
   );
 }
