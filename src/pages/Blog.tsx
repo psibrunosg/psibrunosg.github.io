@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Clock, ArrowRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getAllPosts, loadDynamicPosts, isDynamicLoaded, type BlogPost } from "@/content/posts-loader";
+import { areaDe, areasLista } from "@/content/areas-blog";
 import { FloatingNav } from "@/components/ui/FloatingNav";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
 import { SkipLink } from "@/components/shared/SkipLink";
@@ -23,6 +24,8 @@ const categoriaCor: Record<string, string> = {
 
 export default function Blog() {
   const [allPosts, setAllPosts] = useState<BlogPost[]>(getAllPosts());
+  const [areaFiltro, setAreaFiltro] = useState<string>("todos");
+  const filtered = areaFiltro === "todos" ? allPosts : allPosts.filter((p) => p.area === areaFiltro);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "c");
@@ -60,27 +63,50 @@ export default function Blog() {
             >
               Blog
             </motion.h1>
-            <motion.p variants={fadeUp} className="text-[var(--c-muted)] max-w-xl mb-16 leading-relaxed">
-              Textos sobre saude mental, terapia e o que acontece quando decidimos entender melhor o que sentimos. Sem jargoes, sem respostas prontas.
+            <motion.p variants={fadeUp} className="text-[var(--c-muted)] max-w-xl mb-8 leading-relaxed">
+              Textos sobre saude mental, terapia e o que acontece quando decidimos entender melhor o que sentimos. Baseados em pesquisa recente, escritos para serem lidos sem dor de cabeca.
             </motion.p>
 
+            {/* filtro por area */}
+            <motion.div variants={fadeUp} className="mb-12 flex flex-wrap gap-2">
+              <button onClick={() => setAreaFiltro("todos")}
+                className={"rounded-full px-3 py-1.5 text-xs font-semibold transition-all " + (areaFiltro === "todos" ? "bg-[var(--c-accent)] text-white" : "border border-[var(--c-border)] text-[var(--c-muted)] hover:text-[var(--c-text)]")}>
+                Todas
+              </button>
+              {areasLista.map((a) => {
+                const Icon = a.Icon;
+                const ativo = areaFiltro === a.id;
+                return (
+                  <button key={a.id} onClick={() => setAreaFiltro(a.id)}
+                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all"
+                    style={ativo ? { background: a.cor, color: "#fff" } : { background: a.corBg, color: a.cor }}>
+                    <Icon size={13} /> {a.label}
+                  </button>
+                );
+              })}
+            </motion.div>
+
             <div className="grid md:grid-cols-2 gap-6">
-              {allPosts.map((post, i) => {
-                const cor = categoriaCor[post.categoria] ?? "var(--c-accent)";
+              {filtered.map((post, i) => {
+                const area = areaDe(post.area);
+                const cor = area?.cor ?? categoriaCor[post.categoria] ?? "var(--c-accent)";
+                const AreaIcon = area?.Icon;
                 return (
                   <motion.article
                     key={post.slug}
                     variants={fadeUp}
                     custom={i}
-                    className="group rounded-2xl border border-[var(--c-border)] bg-[var(--c-surface)] hover:border-[var(--c-accent)]/50 transition-colors overflow-hidden"
+                    className="group rounded-2xl border border-[var(--c-border)] bg-[var(--c-surface)] transition-colors overflow-hidden"
+                    style={{ borderLeftWidth: 4, borderLeftColor: cor }}
                   >
                     <Link to={"/blog/" + post.slug} className="block p-7">
                       <div className="flex items-center justify-between mb-4">
                         <span
-                          className="text-xs font-semibold tracking-widest uppercase px-3 py-1 rounded-full"
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase px-3 py-1 rounded-full"
                           style={{ color: cor, background: cor + "20" }}
                         >
-                          {post.categoria}
+                          {AreaIcon && <AreaIcon size={12} />}
+                          {area?.label ?? post.categoria}
                         </span>
                         <span className="flex items-center gap-1 text-xs text-[var(--c-muted)]">
                           <Clock size={13} aria-hidden="true" />
@@ -88,13 +114,13 @@ export default function Blog() {
                         </span>
                       </div>
                       <h2
-                        className="text-xl font-semibold text-[var(--c-text)] mb-2 group-hover:text-[var(--c-accent)] transition-colors"
+                        className="text-xl font-semibold text-[var(--c-text)] mb-2 transition-colors"
                         style={{ fontFamily: "var(--font-heading)" }}
                       >
                         {post.titulo}
                       </h2>
                       <p className="text-[var(--c-muted)] text-sm leading-relaxed mb-5">{post.resumo}</p>
-                      <span className="inline-flex items-center gap-1.5 text-sm text-[var(--c-accent)] font-medium">
+                      <span className="inline-flex items-center gap-1.5 text-sm font-medium" style={{ color: cor }}>
                         Ler artigo <ArrowRight size={15} />
                       </span>
                     </Link>

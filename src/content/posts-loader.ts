@@ -9,6 +9,9 @@ export interface BlogPost {
   resumo: string;
   tags: string[];
   conteudo: string;
+  area?: string;
+  referencias?: string[];
+  narracaoUrl?: string;
   fonte?: "static" | "supabase";
 }
 
