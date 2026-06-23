@@ -9,6 +9,7 @@ import { AppAurora } from "@/components/ui/AppAurora";
 import { temas, corExercicio } from "@/content/temas-exercicios";
 import { CampoExercicio, tipoCampo, valorLegivel } from "@/components/exercicios/ExerciseWidgets";
 import { Mascote, CenaTema } from "@/components/exercicios/MascoteCena";
+import { LoboToupeira } from "@/components/exercicios/LoboToupeira";
 
 interface UnifiedExercise {
   id: string;
@@ -353,6 +354,7 @@ export default function Exercicios() {
   return (
     <div className="relative min-h-screen" data-theme="c">
       <AppAurora />
+      <LoboToupeira active={isInfantilFilter && !aberto} />
 
       <header className="fixed left-0 right-0 top-0 z-50 px-6 py-4 glass-panel">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
