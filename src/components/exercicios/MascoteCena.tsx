@@ -50,29 +50,19 @@ export function Mascote({ progresso, cor, fala }: { progresso: number; cor: stri
         type="button"
         onClick={brincar}
         aria-label="Brincar com o mascote"
-        className="relative cursor-pointer rounded-full"
+        className="relative cursor-pointer"
         whileHover={{ scale: 1.06 }}
         whileTap={{ scale: 0.92 }}
         animate={controls}
       >
-        {/* balao claro: o blend multiply some o fundo branco do video */}
-        <span
-          className="absolute inset-0 rounded-full"
-          style={{ background: "#FBF7F0", boxShadow: `0 10px 24px -8px ${cor}99, inset 0 0 0 2px ${cor}33` }}
-          aria-hidden="true"
-        />
-        <motion.div
-          className="relative h-[104px] w-[104px] overflow-hidden rounded-full sm:h-[120px] sm:w-[120px]"
+        <motion.video
+          src="/img/mascote-lobo.webm"
+          autoPlay loop muted playsInline
+          className="h-[112px] w-[112px] object-contain sm:h-[132px] sm:w-[132px]"
+          style={{ filter: `drop-shadow(0 8px 16px ${cor}66)` }}
           animate={{ y: [0, -6, 0] }}
           transition={{ duration: feliz ? 1.8 : 3.4, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <video
-            src="/img/mascote-lobo.mp4"
-            autoPlay loop muted playsInline
-            className="h-full w-full scale-110 object-contain"
-            style={{ mixBlendMode: "multiply" }}
-          />
-        </motion.div>
+        />
         {feliz && (
           <motion.span
             className="absolute -right-1 -top-1 text-xl"
