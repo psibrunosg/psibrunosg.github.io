@@ -79,7 +79,7 @@ export function LoboToupeira({ active }: { active: boolean }) {
             whileTap={{ scale: 0.85 }}
           >
             <video
-              src="/img/lobo-toupeira.webm"
+              src="/img/lobo-espia.webm"
               autoPlay loop muted playsInline
               className="h-full w-full object-contain"
               style={{ filter: "drop-shadow(0 6px 12px rgba(0,0,0,0.25))" }}
