@@ -50,6 +50,79 @@ export const asrsFaixas = [
   { min: 24, max: 72, classificacao: "Altamente provável", descricao: "Altamente provável de TDAH — avaliação neuropsicológica indicada." },
 ] as const;
 
+// ------ Rosenberg / EAR (Autoestima) — escore 10-40, maior = melhor ------
+export const rosenbergFaixas = [
+  { min: 10, max: 24, classificacao: "Baixa", descricao: "Autoestima reduzida. Recomenda-se acompanhamento." },
+  { min: 25, max: 34, classificacao: "Media", descricao: "Autoestima na faixa media." },
+  { min: 35, max: 40, classificacao: "Satisfatoria", descricao: "Autoestima satisfatoria." },
+] as const;
+
+// ------ PSS-10 (Estresse Percebido) — escore 0-40 ------
+export const pss10Faixas = [
+  { min: 0, max: 13, classificacao: "Baixo", descricao: "Nivel baixo de estresse percebido." },
+  { min: 14, max: 26, classificacao: "Moderado", descricao: "Estresse percebido moderado." },
+  { min: 27, max: 40, classificacao: "Alto", descricao: "Estresse percebido alto." },
+] as const;
+
+// ------ ISI (Índice de Gravidade de Insônia) — escore 0-28 ------
+export const isiFaixas = [
+  { min: 0, max: 7, classificacao: "Sem insonia clinica", descricao: "Sem indicativo de insonia clinicamente significativa." },
+  { min: 8, max: 14, classificacao: "Insonia subclinica", descricao: "Insonia subclinica — sintomas leves." },
+  { min: 15, max: 21, classificacao: "Insonia moderada", descricao: "Insonia clinica moderada." },
+  { min: 22, max: 28, classificacao: "Insonia grave", descricao: "Insonia clinica grave." },
+] as const;
+
+// ------ AUDIT (Uso de Álcool — OMS) — escore 0-40 ------
+export const auditFaixas = [
+  { min: 0, max: 7, classificacao: "Baixo risco", descricao: "Uso de baixo risco ou abstinencia." },
+  { min: 8, max: 15, classificacao: "Uso de risco", descricao: "Uso de risco — orientacao sobre reducao recomendada." },
+  { min: 16, max: 19, classificacao: "Uso nocivo", descricao: "Uso nocivo — intervencao breve indicada." },
+  { min: 20, max: 40, classificacao: "Provavel dependencia", descricao: "Provavel dependencia — encaminhamento para avaliacao especializada." },
+] as const;
+
+// ------ SCS (Autocompaixão — Neff) — escore 26-130 (após inversão), maior = melhor ------
+// Neff (2003): mean ≤2.49 = baixa, 2.50-3.49 = moderada, ≥3.50 = alta. ×26 itens para soma.
+export const scsFaixas = [
+  { min: 26, max: 64, classificacao: "Baixa", descricao: "Autocompaixão reduzida. Recomenda-se trabalho terapêutico focado em autocuidado." },
+  { min: 65, max: 90, classificacao: "Moderada", descricao: "Autocompaixão na faixa moderada." },
+  { min: 91, max: 130, classificacao: "Alta", descricao: "Autocompaixão satisfatória." },
+] as const;
+
+// ------ MDQ (Rastreio Bipolar) — escore 0-13 ------
+export const mdqFaixas = [
+  { min: 0, max: 6, classificacao: "Rastreio negativo", descricao: "Sem indicativo de transtorno bipolar neste rastreio." },
+  { min: 7, max: 13, classificacao: "Rastreio positivo", descricao: "Rastreio positivo para transtorno bipolar — avaliação clínica aprofundada recomendada." },
+] as const;
+
+// ------ PCL-5 (TEPT) — escore 0-80 ------
+export const pcl5Faixas = [
+  { min: 0, max: 18, classificacao: "Minimo", descricao: "Sintomatologia de TEPT mínima." },
+  { min: 19, max: 32, classificacao: "Moderado", descricao: "Sintomatologia de TEPT moderada — monitorar." },
+  { min: 33, max: 80, classificacao: "Clinicamente significativo", descricao: "Provável TEPT — avaliação clínica indicada." },
+] as const;
+
+// ------ OCI-R (TOC) — escore 0-72 ------
+export const ocirFaixas = [
+  { min: 0, max: 20, classificacao: "Sem significancia clinica", descricao: "Sintomas obsessivo-compulsivos dentro da faixa normal." },
+  { min: 21, max: 72, classificacao: "Clinicamente significativo", descricao: "Sintomas obsessivo-compulsivos clinicamente significativos — avaliação recomendada." },
+] as const;
+
+// ------ Epworth / ESS (Sonolência Diurna) — escore 0-24 ------
+export const epworthFaixas = [
+  { min: 0, max: 6, classificacao: "Normal", descricao: "Sonolência diurna dentro da faixa normal." },
+  { min: 7, max: 8, classificacao: "Media", descricao: "Sonolência diurna média." },
+  { min: 9, max: 14, classificacao: "Elevada", descricao: "Sonolência diurna elevada — investigar qualidade do sono." },
+  { min: 15, max: 24, classificacao: "Excessiva", descricao: "Sonolência diurna excessiva — encaminhamento para avaliação do sono." },
+] as const;
+
+// ------ WHO-5 (Índice de Bem-Estar da OMS) — escore bruto 0-25 ------
+// Maior = melhor. ×4 = percentual. ≤50% (bruto ≤12) rastreio positivo; <28% (bruto ≤6) provável depressão.
+export const who5Faixas = [
+  { min: 0, max: 6, classificacao: "Muito baixo", descricao: "Bem-estar muito reduzido (≤24%). Recomenda-se investigar sintomatologia depressiva." },
+  { min: 7, max: 12, classificacao: "Baixo", descricao: "Bem-estar reduzido (28-48%). Rastreio positivo — recomenda-se avaliação." },
+  { min: 13, max: 25, classificacao: "Adequado", descricao: "Bem-estar satisfatório (≥52%)." },
+] as const;
+
 // ============================================================
 // G-36 — Tabela 20: Padronização 2001, São Paulo
 // Percentil → Pontos por escolaridade

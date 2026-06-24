@@ -80,9 +80,43 @@ describe("classificarResposta", () => {
     expect(classificarResposta("bdi", 30)!.classificacao).toBe("Grave");
     expect(classificarResposta("bhs", 15)!.classificacao).toBe("Grave");
     expect(classificarResposta("asrs", 25)!.classificacao).toBe("Altamente provável");
+    expect(classificarResposta("who5", 6)!.classificacao).toBe("Muito baixo");
+    expect(classificarResposta("who5", 7)!.classificacao).toBe("Baixo");
+    expect(classificarResposta("who5", 13)!.classificacao).toBe("Adequado");
+    expect(classificarResposta("rosenberg", 20)!.classificacao).toBe("Baixa");
+    expect(classificarResposta("rosenberg", 30)!.classificacao).toBe("Media");
+    expect(classificarResposta("rosenberg", 38)!.classificacao).toBe("Satisfatoria");
+    expect(classificarResposta("pss10", 10)!.classificacao).toBe("Baixo");
+    expect(classificarResposta("pss10", 20)!.classificacao).toBe("Moderado");
+    expect(classificarResposta("pss10", 35)!.classificacao).toBe("Alto");
+    expect(classificarResposta("isi", 5)!.classificacao).toBe("Sem insonia clinica");
+    expect(classificarResposta("isi", 10)!.classificacao).toBe("Insonia subclinica");
+    expect(classificarResposta("isi", 18)!.classificacao).toBe("Insonia moderada");
+    expect(classificarResposta("isi", 25)!.classificacao).toBe("Insonia grave");
+    expect(classificarResposta("audit", 3)!.classificacao).toBe("Baixo risco");
+    expect(classificarResposta("audit", 12)!.classificacao).toBe("Uso de risco");
+    expect(classificarResposta("audit", 18)!.classificacao).toBe("Uso nocivo");
+    expect(classificarResposta("audit", 25)!.classificacao).toBe("Provavel dependencia");
+    expect(classificarResposta("scs", 50)!.classificacao).toBe("Baixa");
+    expect(classificarResposta("scs", 75)!.classificacao).toBe("Moderada");
+    expect(classificarResposta("scs", 100)!.classificacao).toBe("Alta");
+    expect(classificarResposta("mdq", 3)!.classificacao).toBe("Rastreio negativo");
+    expect(classificarResposta("mdq", 9)!.classificacao).toBe("Rastreio positivo");
+    expect(classificarResposta("pcl5", 10)!.classificacao).toBe("Minimo");
+    expect(classificarResposta("pcl5", 25)!.classificacao).toBe("Moderado");
+    expect(classificarResposta("pcl5", 45)!.classificacao).toBe("Clinicamente significativo");
+    expect(classificarResposta("ocir", 15)!.classificacao).toBe("Sem significancia clinica");
+    expect(classificarResposta("ocir", 30)!.classificacao).toBe("Clinicamente significativo");
+    expect(classificarResposta("epworth", 5)!.classificacao).toBe("Normal");
+    expect(classificarResposta("epworth", 7)!.classificacao).toBe("Media");
+    expect(classificarResposta("epworth", 12)!.classificacao).toBe("Elevada");
+    expect(classificarResposta("epworth", 18)!.classificacao).toBe("Excessiva");
   });
   it("retorna null para escala sem faixa", () => {
     expect(classificarResposta("neoffir", 50)).toBeNull();
+  });
+  it("WHO-5 baixo bem-estar NÃO é crise (maior = melhor)", () => {
+    expect(pacienteEmRisco("who5", 4, [0, 1, 1, 1, 1])).toBe(false);
   });
 });
 

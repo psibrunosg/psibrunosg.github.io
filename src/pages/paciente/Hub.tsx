@@ -1,7 +1,7 @@
 ﻿import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ClipboardList, Brain, ArrowRight, Shield, Lock, Heart, Leaf, Activity, BookOpen, Gauge, Zap, Eye, Sprout } from "lucide-react";
+import { ClipboardList, Brain, ArrowRight, Shield, Lock, Heart, Leaf, Activity, BookOpen, Gauge, Zap, Eye, Sprout, Smile, Star, Wine, Flame, Moon, HeartHandshake, ShieldOff, Layers, Sun, AlertTriangle, Repeat, Coffee } from "lucide-react";
 import { SkipLink } from "@/components/shared/SkipLink";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
 import { AppAurora } from "@/components/ui/AppAurora";
@@ -18,6 +18,11 @@ const ferramentasRastreio: Ferramenta[] = [
 ];
 
 const ferramentasGerais: Ferramenta[] = [
+  { id: "who5", href: "/paciente/escala/who5", icon: Smile, sigla: "WHO-5", nome: "Indice de Bem-Estar", descricao: "5 perguntas rapidas sobre seu bem-estar nas ultimas 2 semanas. ~1 min.", cor: "#2F8C7A" },
+  { id: "rosenberg", href: "/paciente/escala/rosenberg", icon: Star, sigla: "EAR", nome: "Escala de Autoestima", descricao: "10 perguntas sobre como voce se ve e se valoriza. ~3 min.", cor: "#C2658A" },
+  { id: "pss10", href: "/paciente/escala/pss10", icon: Flame, sigla: "PSS-10", nome: "Estresse Percebido", descricao: "10 perguntas sobre estresse no ultimo mes. ~3 min.", cor: "#B05D3A" },
+  { id: "isi", href: "/paciente/escala/isi", icon: Moon, sigla: "ISI", nome: "Gravidade de Insonia", descricao: "7 perguntas sobre qualidade do sono. ~2 min.", cor: "#5B6B8C" },
+  { id: "audit", href: "/paciente/escala/audit", icon: Wine, sigla: "AUDIT", nome: "Rastreio de Uso de Alcool", descricao: "10 perguntas sobre consumo de alcool (OMS). ~3 min.", cor: "#8C5A3A" },
   { id: "asrs", href: "/paciente/escala/asrs", icon: Zap, sigla: "ASRS-18", nome: "Rastreio de TDAH", descricao: "18 perguntas sobre atencao e hiperatividade. ~5 min.", cor: "#C06839" },
   { id: "bai", href: "/paciente/escala/bai", icon: Activity, sigla: "BAI", nome: "Inventario de Ansiedade de Beck", descricao: "21 sintomas de ansiedade na ultima semana. ~5 min.", cor: "#4A6B47" },
   { id: "bdi", href: "/paciente/escala/bdi", icon: Heart, sigla: "BDI", nome: "Inventario de Depressao de Beck", descricao: "21 grupos de sentimentos sobre humor atual. ~8 min.", cor: "#8C4A5B" },
@@ -26,12 +31,19 @@ const ferramentasGerais: Ferramenta[] = [
   { id: "less", href: "/paciente/escala/less", icon: BookOpen, sigla: "LESS", nome: "Esquemas Emocionais de Leahy", descricao: "50 perguntas sobre como voce lida com emocoes. ~12 min.", cor: "#8C6B3A" },
   { id: "neoffir", href: "/paciente/escala/neoffir", icon: Gauge, sigla: "NEO-FFI-R", nome: "Personalidade (Versao Curta)", descricao: "60 perguntas sobre tracos de personalidade. ~15 min.", cor: "#6B3A8C" },
   { id: "neopir", href: "/paciente/escala/neopir", icon: Sprout, sigla: "NEO-PI-R", nome: "Personalidade (Versao Completa)", descricao: "240 perguntas sobre personalidade detalhada. ~45 min.", cor: "#3A5B8C" },
+  { id: "scs", href: "/paciente/escala/scs", icon: HeartHandshake, sigla: "SCS", nome: "Escala de Autocompaixao", descricao: "26 perguntas sobre como voce trata a si mesmo em momentos dificeis. ~5 min.", cor: "#8C6B8C" },
+  { id: "mdq", href: "/paciente/escala/mdq", icon: Sun, sigla: "MDQ", nome: "Rastreio de Transtorno Bipolar", descricao: "13 perguntas sobre episodios de humor elevado. ~2 min.", cor: "#C0873A" },
+  { id: "pcl5", href: "/paciente/escala/pcl5", icon: AlertTriangle, sigla: "PCL-5", nome: "Checklist de TEPT", descricao: "20 perguntas sobre reacoes a experiencias estressantes. ~5 min.", cor: "#8C4A4A" },
+  { id: "ocir", href: "/paciente/escala/ocir", icon: Repeat, sigla: "OCI-R", nome: "Inventario Obsessivo-Compulsivo", descricao: "18 perguntas sobre pensamentos e comportamentos repetitivos. ~4 min.", cor: "#4A6B8C" },
+  { id: "epworth", href: "/paciente/escala/epworth", icon: Coffee, sigla: "ESS", nome: "Sonolencia de Epworth", descricao: "8 perguntas sobre chance de cochilar em situacoes do dia a dia. ~2 min.", cor: "#6B5B4A" },
 ];
 
 const ferramentasEsquemas: Ferramenta[] = [
   { id: "ysq", href: "/paciente/escala/ysq", icon: Brain, sigla: "YSQ-S3", nome: "Questionario de Esquemas", descricao: "90 perguntas sobre padroes emocionais profundos. ~20 min.", cor: "#7A4A8C" },
   { id: "ypi", href: "/paciente/escala/ypi", icon: ClipboardList, sigla: "YPI", nome: "Inventario Parental de Young", descricao: "72 perguntas sobre atitudes dos seus pais. ~15 min.", cor: "#3A6B8C" },
   { id: "yci", href: "/paciente/escala/yci", icon: Shield, sigla: "YCI", nome: "Inventario de Compensacao", descricao: "48 perguntas sobre estrategias de enfrentamento. ~10 min.", cor: "#6B5B3A" },
+  { id: "yrai", href: "/paciente/escala/yrai", icon: ShieldOff, sigla: "YRAI", nome: "Inventario de Evitacao", descricao: "40 perguntas sobre padroes de evitacao esquematica. ~8 min.", cor: "#5B8C6B" },
+  { id: "smi", href: "/paciente/escala/smi", icon: Layers, sigla: "SMI", nome: "Inventario de Modos Esquematicos", descricao: "118 perguntas sobre modos de funcionamento emocional. ~25 min.", cor: "#6B4A8C" },
 ];
 
 function FerramentaCard({ f }: { f: Ferramenta }) {

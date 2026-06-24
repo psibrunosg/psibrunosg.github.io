@@ -835,7 +835,383 @@ export const neopir: EscalaGeralConfig = {
   ],
 };
 
+// ============ WHO-5 (Índice de Bem-Estar da OMS) ============
+// Escore bruto 0-25; multiplicado por 4 = percentual 0-100. Maior = melhor bem-estar.
+// Pontos de corte: ≤50% (bruto ≤12) rastreio positivo; <28% (bruto ≤6) provável depressão.
+export const who5: EscalaGeralConfig = {
+  id: "who5",
+  sigla: "WHO-5",
+  nome: "Índice de Bem-Estar (OMS)",
+  instrucoes:
+    "Para cada uma das cinco afirmacoes, indique como voce se sentiu nas ultimas duas semanas. Quanto maior o numero, mais presente esteve o sentimento.",
+  tipo: "likert",
+  opcoes: [
+    { label: "O tempo todo", valor: 5 },
+    { label: "A maior parte do tempo", valor: 4 },
+    { label: "Mais da metade do tempo", valor: 3 },
+    { label: "Menos da metade do tempo", valor: 2 },
+    { label: "De vez em quando", valor: 1 },
+    { label: "Em nenhum momento", valor: 0 },
+  ],
+  pontuacaoMaxima: 25,
+  itens: [
+    "Eu me senti alegre e de bom humor.",
+    "Eu me senti calmo(a) e relaxado(a).",
+    "Eu me senti ativo(a) e vigoroso(a).",
+    "Eu acordei me sentindo descansado(a) e revigorado(a).",
+    "Meu dia a dia foi preenchido com coisas que me interessam.",
+  ],
+};
+
+// ============ Rosenberg / EAR (Escala de Autoestima) ============
+// Hutz & Zanon (2011). 10 itens, 1-4. Itens 3,5,8,9,10 invertidos. Maior = melhor.
+export const rosenberg: EscalaGeralConfig = {
+  id: "rosenberg",
+  sigla: "EAR",
+  nome: "Escala de Autoestima de Rosenberg",
+  instrucoes: "Leia cada frase e indique o quanto voce concorda ou discorda dela.",
+  tipo: "likert",
+  opcoes: [
+    { label: "Discordo totalmente", valor: 1 },
+    { label: "Discordo", valor: 2 },
+    { label: "Concordo", valor: 3 },
+    { label: "Concordo totalmente", valor: 4 },
+  ],
+  pontuacaoMaxima: 40,
+  dominios: [{ id: "total", nome: "Autoestima", itens: [1,2,3,4,5,6,7,8,9,10], invertidos: [3,5,8,9,10] }],
+  itens: [
+    "Eu sinto que sou uma pessoa de valor, no minimo tanto quanto as outras pessoas.",
+    "Eu acho que eu tenho varias boas qualidades.",
+    "Levando tudo em conta, eu penso que eu sou um fracasso.",
+    "Eu acho que sou capaz de fazer as coisas tao bem quanto a maioria das pessoas.",
+    "Eu acho que eu nao tenho muito do que me orgulhar.",
+    "Eu tenho uma atitude positiva com relacao a mim mesmo(a).",
+    "No conjunto, eu estou satisfeito(a) comigo mesmo(a).",
+    "Eu gostaria de poder ter mais respeito por mim mesmo(a).",
+    "As vezes eu me sinto inutil.",
+    "As vezes eu acho que nao presto para nada.",
+  ],
+};
+
+// ============ PSS-10 (Estresse Percebido) ============
+// Cohen, Kamarck & Mermelstein (1983); BR: Luft et al. (2007). 10 itens, 0-4. Itens 4,5,7,8 invertidos.
+export const pss10: EscalaGeralConfig = {
+  id: "pss10",
+  sigla: "PSS-10",
+  nome: "Escala de Estresse Percebido",
+  instrucoes: "Para cada pergunta, indique com que frequencia voce se sentiu ou pensou dessa forma no ultimo mes.",
+  tipo: "likert",
+  opcoes: [
+    { label: "Nunca", valor: 0 },
+    { label: "Quase nunca", valor: 1 },
+    { label: "As vezes", valor: 2 },
+    { label: "Com alguma frequencia", valor: 3 },
+    { label: "Muito frequentemente", valor: 4 },
+  ],
+  pontuacaoMaxima: 40,
+  dominios: [{ id: "total", nome: "Estresse Percebido", itens: [1,2,3,4,5,6,7,8,9,10], invertidos: [4,5,7,8] }],
+  itens: [
+    "No ultimo mes, com que frequencia voce ficou aborrecido(a) por causa de algo que aconteceu inesperadamente?",
+    "No ultimo mes, com que frequencia voce sentiu que era incapaz de controlar as coisas importantes da sua vida?",
+    "No ultimo mes, com que frequencia voce esteve nervoso(a) e estressado(a)?",
+    "No ultimo mes, com que frequencia voce se sentiu confiante em sua capacidade de lidar com seus problemas pessoais?",
+    "No ultimo mes, com que frequencia voce sentiu que as coisas estavam indo do jeito que voce queria?",
+    "No ultimo mes, com que frequencia voce percebeu que nao conseguia dar conta de tudo que tinha para fazer?",
+    "No ultimo mes, com que frequencia voce conseguiu controlar as irritacoes da sua vida?",
+    "No ultimo mes, com que frequencia voce sentiu que estava no comando das situacoes?",
+    "No ultimo mes, com que frequencia voce ficou irritado(a) por causa de coisas que estavam fora de seu controle?",
+    "No ultimo mes, com que frequencia voce sentiu que as dificuldades se acumulavam tanto que voce nao conseguia supera-las?",
+  ],
+};
+
+// ============ ISI (Índice de Gravidade de Insônia) ============
+// Morin (1993); BR: Bastien, Vallières & Morin (2001). 7 itens, 0-4. Maior = pior.
+export const isi: EscalaGeralConfig = {
+  id: "isi",
+  sigla: "ISI",
+  nome: "Indice de Gravidade de Insonia",
+  instrucoes: "Avalie a gravidade dos seus problemas de sono nas ultimas duas semanas.",
+  tipo: "likert",
+  opcoes: [
+    { label: "Nenhum(a)", valor: 0 },
+    { label: "Leve", valor: 1 },
+    { label: "Moderado(a)", valor: 2 },
+    { label: "Grave", valor: 3 },
+    { label: "Muito grave", valor: 4 },
+  ],
+  pontuacaoMaxima: 28,
+  itens: [
+    "Dificuldade para pegar no sono.",
+    "Dificuldade para manter o sono (acordar durante a noite).",
+    "Problema de despertar muito cedo.",
+    "Quao satisfeito(a) ou insatisfeito(a) voce esta com seu padrao de sono atual?",
+    "Em que medida voce acha que seu problema de sono interfere no seu funcionamento diario (fadiga, humor, concentracao, memoria, disposicao)?",
+    "Como os outros percebem a diminuicao da sua qualidade de vida por causa do seu problema de sono?",
+    "Quao preocupado(a) ou angustiado(a) voce esta com seu problema de sono atual?",
+  ],
+};
+
+// ============ AUDIT (Transtornos por Uso de Álcool — OMS) ============
+// Babor et al. (2001); BR: Lima et al. (2005). 10 itens, 0-40.
+const auditOp3a8: BDIItem["opcoes"] = [
+  { texto: "Nunca", valor: 0 },
+  { texto: "Menos do que uma vez ao mes", valor: 1 },
+  { texto: "Mensalmente", valor: 2 },
+  { texto: "Semanalmente", valor: 3 },
+  { texto: "Todos ou quase todos os dias", valor: 4 },
+];
+export const audit: EscalaGeralConfig = {
+  id: "audit",
+  sigla: "AUDIT",
+  nome: "Rastreio de Uso de Alcool (OMS)",
+  instrucoes: "Responda sobre seu consumo de bebidas alcoolicas nos ultimos 12 meses. Se voce nao bebe, responda 'Nunca' ou 'Nao' e pule para o proximo.",
+  tipo: "likert-statements",
+  pontuacaoMaxima: 40,
+  itens: [
+    { opcoes: [
+      { texto: "Nunca consumo bebidas alcoolicas", valor: 0 },
+      { texto: "Consumo mensalmente ou menos", valor: 1 },
+      { texto: "Consumo de 2 a 4 vezes por mes", valor: 2 },
+      { texto: "Consumo de 2 a 3 vezes por semana", valor: 3 },
+      { texto: "Consumo 4 ou mais vezes por semana", valor: 4 },
+    ]},
+    { opcoes: [
+      { texto: "1 ou 2 doses num dia tipico", valor: 0 },
+      { texto: "3 ou 4 doses", valor: 1 },
+      { texto: "5 ou 6 doses", valor: 2 },
+      { texto: "7 a 9 doses", valor: 3 },
+      { texto: "10 ou mais doses", valor: 4 },
+    ]},
+    { opcoes: auditOp3a8.map((o) => ({ texto: o.texto === "Nunca" ? "Nunca consumo 6 ou mais doses de uma vez" : o.texto, valor: o.valor })) },
+    { opcoes: auditOp3a8.map((o) => ({ texto: o.texto === "Nunca" ? "Nunca achei que nao conseguiria parar de beber" : o.texto, valor: o.valor })) },
+    { opcoes: auditOp3a8.map((o) => ({ texto: o.texto === "Nunca" ? "Nunca deixei de fazer o esperado por causa da bebida" : o.texto, valor: o.valor })) },
+    { opcoes: auditOp3a8.map((o) => ({ texto: o.texto === "Nunca" ? "Nunca precisei beber pela manha para me sentir bem" : o.texto, valor: o.valor })) },
+    { opcoes: auditOp3a8.map((o) => ({ texto: o.texto === "Nunca" ? "Nunca me senti culpado(a) depois de beber" : o.texto, valor: o.valor })) },
+    { opcoes: auditOp3a8.map((o) => ({ texto: o.texto === "Nunca" ? "Nunca fui incapaz de lembrar o que aconteceu por ter bebido" : o.texto, valor: o.valor })) },
+    { opcoes: [
+      { texto: "Nao, ninguem se machucou por causa do meu consumo de alcool", valor: 0 },
+      { texto: "Sim, mas nao no ultimo ano", valor: 2 },
+      { texto: "Sim, no ultimo ano", valor: 4 },
+    ]},
+    { opcoes: [
+      { texto: "Nao, ninguem se preocupou ou sugeriu que eu diminuisse", valor: 0 },
+      { texto: "Sim, mas nao no ultimo ano", valor: 2 },
+      { texto: "Sim, no ultimo ano", valor: 4 },
+    ]},
+  ] as BDIItem[],
+};
+
+// ============ SCS (Escala de Autocompaixão — Neff) ============
+// Neff (2003); BR: Souza & Hutz (2016). 26 itens, 1-5. 6 subescalas.
+// Autojulgamento, Isolamento e Sobre-Identificação invertidos para total.
+export const scs: EscalaGeralConfig = {
+  id: "scs",
+  sigla: "SCS",
+  nome: "Escala de Autocompaixao",
+  instrucoes: "Leia cada afirmacao e indique com que frequencia voce age da maneira descrita.",
+  tipo: "likert",
+  opcoes: [
+    { label: "Quase nunca", valor: 1 },
+    { label: "Raramente", valor: 2 },
+    { label: "As vezes", valor: 3 },
+    { label: "Frequentemente", valor: 4 },
+    { label: "Quase sempre", valor: 5 },
+  ],
+  pontuacaoMaxima: 130,
+  invertidos: [1, 2, 4, 6, 8, 11, 13, 16, 18, 20, 21, 24, 25],
+  dominios: [
+    { id: "autobondade", nome: "Autobondade", itens: [5, 12, 19, 23, 26] },
+    { id: "autojulgamento", nome: "Autojulgamento", itens: [1, 8, 11, 16, 21] },
+    { id: "humanidade", nome: "Humanidade Comum", itens: [3, 7, 10, 15] },
+    { id: "isolamento", nome: "Isolamento", itens: [4, 13, 18, 25] },
+    { id: "mindfulness", nome: "Atencao Plena", itens: [9, 14, 17, 22] },
+    { id: "sobreidentificacao", nome: "Sobre-Identificacao", itens: [2, 6, 20, 24] },
+  ],
+  itens: [
+    "Eu me reprovo e faco julgamentos sobre meus erros e inadequacoes.",
+    "Quando estou me sentindo para baixo, tendo a ficar obcecado(a) e fixado(a) em tudo que e errado.",
+    "Quando as coisas vao mal para mim, vejo as dificuldades como parte da vida pelas quais todo mundo passa.",
+    "Quando penso nas minhas inadequacoes, isso tende a me fazer sentir mais separado(a) e isolado(a) do resto do mundo.",
+    "Tento ser amavel comigo mesmo(a) quando estou me sentindo emocionalmente mal.",
+    "Quando eu falho em algo importante para mim, fico consumido(a) por sentimentos de inadequacao.",
+    "Quando estou para baixo e triste, lembro que existem muitas outras pessoas no mundo se sentindo como eu.",
+    "Quando tempos sao realmente dificeis, tendo a ser duro(a) comigo mesmo(a).",
+    "Quando algo me chateia, tento manter minhas emocoes em equilibrio.",
+    "Quando me sinto inadequado(a) de alguma forma, tento lembrar que sentimentos de inadequacao sao compartilhados pela maioria das pessoas.",
+    "Sou intolerante e impaciente com os aspectos de minha personalidade dos quais nao gosto.",
+    "Quando estou passando por um momento muito dificil, dou a mim mesmo(a) o cuidado e carinho que preciso.",
+    "Quando estou para baixo, sinto que a maioria das outras pessoas e provavelmente mais feliz do que eu.",
+    "Quando algo doloroso acontece, tento ter uma visao equilibrada da situacao.",
+    "Tento ver meus erros como parte da condicao humana.",
+    "Quando vejo aspectos de mim mesmo(a) dos quais nao gosto, fico deprimido(a).",
+    "Quando eu falho em algo importante para mim, tento manter as coisas em perspectiva.",
+    "Quando estou realmente passando por dificuldades, tendo a sentir que outras pessoas devem estar tendo uma vida mais facil.",
+    "Sou gentil comigo mesmo(a) quando estou experienciando sofrimento.",
+    "Quando algo me chateia, sou tomado(a) pelos meus sentimentos.",
+    "Posso ser um pouco frio(a) e insensivel comigo mesmo(a) quando experiencio sofrimento.",
+    "Quando estou me sentindo para baixo, tento abordar meus sentimentos com curiosidade e abertura.",
+    "Sou tolerante com minhas proprias falhas e inadequacoes.",
+    "Quando algo doloroso acontece, tendo a exagerar na importancia do evento.",
+    "Quando eu falho em algo que e importante para mim, tendo a me sentir sozinho(a) na minha falha.",
+    "Tento ser compreensivo(a) e paciente com os aspectos de minha personalidade dos quais nao gosto.",
+  ],
+};
+
+// ============ MDQ (Questionário de Transtornos do Humor) ============
+// Hirschfeld et al. (2000); BR: Castelo et al. (2010). 13 itens yes/no. Cutoff ≥ 7.
+export const mdq: EscalaGeralConfig = {
+  id: "mdq",
+  sigla: "MDQ",
+  nome: "Questionario de Transtornos do Humor",
+  instrucoes: "Responda Sim ou Nao para cada pergunta. Ja houve um periodo de tempo em que voce nao era o seu eu habitual e...",
+  tipo: "binary",
+  pontuacaoMaxima: 13,
+  opcoes: [
+    { label: "Sim", valor: 1 },
+    { label: "Nao", valor: 0 },
+  ],
+  chaveCorrecao: {
+    1: "C", 2: "C", 3: "C", 4: "C", 5: "C", 6: "C", 7: "C",
+    8: "C", 9: "C", 10: "C", 11: "C", 12: "C", 13: "C",
+  },
+  itens: [
+    "Voce se sentiu tao bem ou tao para cima que outras pessoas acharam que voce nao estava no seu normal, ou estava tao para cima que arranjou problemas?",
+    "Voce ficou tao irritavel que gritava com as pessoas ou comecava brigas ou discussoes?",
+    "Voce se sentiu muito mais autoconfiante do que o habitual?",
+    "Voce dormiu muito menos do que o habitual e descobriu que nao fazia falta?",
+    "Voce ficou muito mais falante ou falou muito mais rapido do que o habitual?",
+    "Os pensamentos passavam rapidamente pela sua cabeca e voce nao conseguia diminuir o ritmo deles?",
+    "Voce se distraia tao facilmente com as coisas a sua volta que tinha dificuldade em se concentrar ou manter um pensamento?",
+    "Voce teve muito mais energia do que o habitual?",
+    "Voce ficou muito mais ativo(a) ou fez muito mais coisas do que o habitual?",
+    "Voce ficou muito mais sociavel ou extrovertido(a) do que o habitual, por exemplo, telefonava para amigos no meio da noite?",
+    "Voce ficou muito mais interessado(a) em sexo do que o habitual?",
+    "Voce fez coisas que eram incomuns para voce ou que outras pessoas acharam que foram excessivas, tolas ou arriscadas?",
+    "Gastos de dinheiro colocaram voce ou sua familia em problemas?",
+  ],
+};
+
+// ============ PCL-5 (Checklist de TEPT — DSM-5) ============
+// Weathers et al. (2013); BR: Lima et al. (2016). 20 itens, 0-4. 4 clusters. Cutoff ≥ 33.
+export const pcl5: EscalaGeralConfig = {
+  id: "pcl5",
+  sigla: "PCL-5",
+  nome: "Checklist de Transtorno de Estresse Pos-Traumatico",
+  instrucoes: "Abaixo ha uma lista de problemas que as pessoas as vezes tem em resposta a uma experiencia muito estressante. Indique o quanto voce foi incomodado(a) por cada problema no ultimo mes.",
+  tipo: "likert",
+  opcoes: [
+    { label: "Nada", valor: 0 },
+    { label: "Um pouco", valor: 1 },
+    { label: "Moderadamente", valor: 2 },
+    { label: "Bastante", valor: 3 },
+    { label: "Extremamente", valor: 4 },
+  ],
+  pontuacaoMaxima: 80,
+  dominios: [
+    { id: "intrusao", nome: "Intrusao (Criterio B)", itens: [1, 2, 3, 4, 5] },
+    { id: "evitacao", nome: "Evitacao (Criterio C)", itens: [6, 7] },
+    { id: "cognicao", nome: "Cognicao e Humor Negativos (Criterio D)", itens: [8, 9, 10, 11, 12, 13, 14] },
+    { id: "hiperativacao", nome: "Hiperativacao (Criterio E)", itens: [15, 16, 17, 18, 19, 20] },
+  ],
+  itens: [
+    "Memorias, pensamentos ou imagens repetidas e perturbadoras da experiencia estressante.",
+    "Sonhos repetidos e perturbadores sobre a experiencia estressante.",
+    "De repente, sentir ou agir como se a experiencia estressante estivesse acontecendo novamente (como se voce estivesse revivendo).",
+    "Sentir-se muito perturbado(a) quando algo lembrou voce da experiencia estressante.",
+    "Ter reacoes fisicas fortes quando algo lembrou voce da experiencia estressante (coracao disparado, dificuldade para respirar, suor).",
+    "Evitar memorias, pensamentos ou sentimentos relacionados a experiencia estressante.",
+    "Evitar lembretes externos da experiencia estressante (pessoas, lugares, conversas, atividades, objetos ou situacoes).",
+    "Dificuldade em lembrar partes importantes da experiencia estressante.",
+    "Ter crencas negativas fortes sobre si mesmo(a), outras pessoas ou o mundo (por exemplo: eu sou mau(ma), ha algo de muito errado comigo, nao se pode confiar em ninguem, o mundo e completamente perigoso).",
+    "Culpar a si mesmo(a) ou outra pessoa pela experiencia estressante ou pelo que aconteceu depois dela.",
+    "Ter sentimentos negativos fortes como medo, horror, raiva, culpa ou vergonha.",
+    "Perda de interesse em atividades de que voce costumava gostar.",
+    "Sentir-se distante ou desligado(a) de outras pessoas.",
+    "Dificuldade em ter sentimentos positivos (por exemplo, ser incapaz de sentir felicidade ou ter sentimentos amorosos por pessoas proximas a voce).",
+    "Comportamento irritavel, explosoes de raiva ou agir agressivamente.",
+    "Correr muitos riscos ou fazer coisas que poderiam causar dano a voce.",
+    "Estar superalerta, vigilante ou em guarda.",
+    "Sobressaltar-se ou assustar-se facilmente.",
+    "Ter dificuldade em se concentrar.",
+    "Dificuldade para pegar no sono ou permanecer dormindo.",
+  ],
+};
+
+// ============ OCI-R (Inventário Obsessivo-Compulsivo Revisado) ============
+// Foa et al. (2002); BR: Souza et al. (2011). 18 itens, 0-4. 6 subescalas. Cutoff ≥ 21.
+export const ocir: EscalaGeralConfig = {
+  id: "ocir",
+  sigla: "OCI-R",
+  nome: "Inventario Obsessivo-Compulsivo Revisado",
+  instrucoes: "As afirmacoes seguintes referem-se a experiencias que muitas pessoas tem no dia a dia. Indique o grau de sofrimento ou incomodo que cada experiencia lhe causou durante o ultimo mes.",
+  tipo: "likert",
+  opcoes: [
+    { label: "Nenhum", valor: 0 },
+    { label: "Pouco", valor: 1 },
+    { label: "Moderado", valor: 2 },
+    { label: "Muito", valor: 3 },
+    { label: "Extremo", valor: 4 },
+  ],
+  pontuacaoMaxima: 72,
+  dominios: [
+    { id: "acumulacao", nome: "Acumulacao", itens: [1, 7, 13] },
+    { id: "verificacao", nome: "Verificacao", itens: [2, 8, 14] },
+    { id: "ordenacao", nome: "Ordenacao", itens: [3, 9, 15] },
+    { id: "neutralizacao", nome: "Neutralizacao", itens: [4, 10, 16] },
+    { id: "lavagem", nome: "Lavagem", itens: [5, 11, 17] },
+    { id: "obsessao", nome: "Obsessao", itens: [6, 12, 18] },
+  ],
+  itens: [
+    "Tenho guardado tantas coisas que elas atrapalham.",
+    "Eu verifico as coisas mais do que o necessario.",
+    "Fico perturbado(a) se os objetos nao estao arrumados de forma correta.",
+    "Sinto necessidade de contar enquanto estou fazendo coisas.",
+    "Acho dificil tocar um objeto quando sei que ele foi tocado por estranhos ou por certas pessoas.",
+    "Acho dificil controlar meus proprios pensamentos.",
+    "Eu junto coisas de que nao preciso.",
+    "Eu verifico repetidamente portas, janelas, gavetas, etc.",
+    "Fico perturbado(a) se os outros mudam a forma como arrumei as coisas.",
+    "Sinto que tenho que repetir certos numeros.",
+    "As vezes tenho que me lavar ou me limpar so porque me sinto contaminado(a).",
+    "Fico perturbado(a) por pensamentos desagradaveis que vem a minha mente contra a minha vontade.",
+    "Evito jogar coisas fora porque tenho medo de precisar delas depois.",
+    "Eu verifico repetidamente torneiras de gas, agua e interruptores de luz depois de desliga-los.",
+    "Preciso que as coisas estejam arrumadas em uma ordem particular.",
+    "Sinto que existem numeros bons e maus.",
+    "Eu lavo as maos mais do que o necessario.",
+    "Frequentemente tenho pensamentos nojentos e tenho dificuldade em me livrar deles.",
+  ],
+};
+
+// ============ Epworth / ESS (Escala de Sonolência de Epworth) ============
+// Johns (1991); BR: Bertolazi et al. (2009). 8 itens, 0-3.
+export const epworth: EscalaGeralConfig = {
+  id: "epworth",
+  sigla: "ESS",
+  nome: "Escala de Sonolencia de Epworth",
+  instrucoes: "Qual a chance de voce cochilar ou adormecer nas seguintes situacoes, em contraste com apenas se sentir cansado(a)? Considere seu modo de vida recente.",
+  tipo: "likert",
+  opcoes: [
+    { label: "Nenhuma chance de cochilar", valor: 0 },
+    { label: "Pequena chance de cochilar", valor: 1 },
+    { label: "Moderada chance de cochilar", valor: 2 },
+    { label: "Alta chance de cochilar", valor: 3 },
+  ],
+  pontuacaoMaxima: 24,
+  itens: [
+    "Sentado(a) e lendo.",
+    "Assistindo televisao.",
+    "Sentado(a), quieto(a), em um lugar publico (por exemplo, em um teatro, reuniao ou palestra).",
+    "Andando de carro por uma hora sem parar, como passageiro(a).",
+    "Deitado(a) para descansar a tarde, quando as circunstancias permitem.",
+    "Sentado(a) conversando com alguem.",
+    "Sentado(a) quieto(a) apos o almoco sem ter bebido alcool.",
+    "Em um carro, parado(a) por alguns minutos no transito.",
+  ],
+};
+
 // ============ MERGED MAP ============
 export const escalasGerais: Record<string, EscalaGeralConfig> = {
-  asrs, bai, bdi, bhs, ebep, less, neoffir, neopir,
+  asrs, bai, bdi, bhs, ebep, less, neoffir, neopir, who5, rosenberg, pss10, isi, audit, scs,
+  mdq, pcl5, ocir, epworth,
 };
