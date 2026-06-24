@@ -80,10 +80,17 @@ export function LoboToupeira({ active }: { active: boolean }) {
             whileTap={{ scale: 0.85 }}
           >
             <video
+              ref={(el) => {
+                if (!el) return;
+                const p = () => { if (el.paused) el.play().catch(() => {}); };
+                p();
+                el.addEventListener("canplay", p, { once: true });
+              }}
               src="/img/lobo-espia.webm"
               autoPlay loop muted playsInline
+              controls={false}
               className="h-full w-full object-contain"
-              style={{ filter: "drop-shadow(0 6px 12px rgba(0,0,0,0.25))" }}
+              style={{ filter: "drop-shadow(0 6px 12px rgba(0,0,0,0.25))", mixBlendMode: "multiply" }}
             />
           </motion.button>
         )}

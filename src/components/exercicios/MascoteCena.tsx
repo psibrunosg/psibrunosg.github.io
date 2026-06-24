@@ -1,5 +1,5 @@
 import { motion, useAnimationControls, useReducedMotion } from "framer-motion";
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Star } from "lucide-react";
 
 const FRASES_TOQUE = [
@@ -14,6 +14,26 @@ export function Mascote({ progresso, cor, fala }: { progresso: number; cor: stri
   const [falaToque, setFalaToque] = useState<string | null>(null);
   const controls = useAnimationControls();
   const reduce = useReducedMotion();
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const forcePlay = useCallback(() => {
+    const v = videoRef.current;
+    if (v && v.paused) v.play().catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    forcePlay();
+    v.addEventListener("canplay", forcePlay, { once: true });
+    document.addEventListener("touchstart", forcePlay, { once: true });
+    document.addEventListener("click", forcePlay, { once: true });
+    return () => {
+      v.removeEventListener("canplay", forcePlay);
+      document.removeEventListener("touchstart", forcePlay);
+      document.removeEventListener("click", forcePlay);
+    };
+  }, [forcePlay]);
 
   const falaAtual = falaToque ?? fala;
 
@@ -58,10 +78,12 @@ export function Mascote({ progresso, cor, fala }: { progresso: number; cor: stri
         animate={controls}
       >
         <motion.video
+          ref={videoRef}
           src="/img/mascote-lobo.webm"
           autoPlay loop muted playsInline
+          controls={false}
           className="h-[112px] w-[112px] object-contain sm:h-[132px] sm:w-[132px]"
-          style={{ filter: `drop-shadow(0 8px 16px ${cor}66)` }}
+          style={{ filter: `drop-shadow(0 8px 16px ${cor}66)`, mixBlendMode: "multiply" as const }}
           animate={reduce ? {} : { y: [0, -6, 0] }}
           transition={{ duration: feliz ? 1.8 : 3.4, repeat: Infinity, ease: "easeInOut" }}
         />
