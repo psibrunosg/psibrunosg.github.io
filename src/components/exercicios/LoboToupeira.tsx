@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { PawPrint } from "lucide-react";
 
 const FRASES = [
-  "Me pegou! 🐺", "Auuu!", "Que rapido!", "Hihi, quase!", "Boa!", "Voce e craque!",
+  "Me pegou!", "Auuu!", "Que rapido!", "Hihi, quase!", "Boa!", "Voce e craque!",
 ];
 
 // "Ache a toupeira": o lobo surge em pontos aleatorios perto do topo,
@@ -58,8 +59,8 @@ export function LoboToupeira({ active }: { active: boolean }) {
     <>
       {/* placar */}
       {pontos > 0 && (
-        <div className="fixed left-1/2 top-[68px] z-[60] -translate-x-1/2 rounded-full bg-[var(--c-accent)] px-3 py-1 text-[11px] font-bold text-white shadow-lg">
-          🐺 {pontos} {pontos === 1 ? "captura" : "capturas"}
+        <div className="fixed left-1/2 top-[68px] z-[60] flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[var(--c-accent)] px-3 py-1 text-[11px] font-bold text-white shadow-lg">
+          <PawPrint size={12} aria-hidden="true" /> {pontos} {pontos === 1 ? "captura" : "capturas"}
         </div>
       )}
 

@@ -1,6 +1,8 @@
 // Catalogo de objetivos terapeuticos -> cor/tema.
 // Cada objetivo tem uma familia de cor. Esquemas sao coloridos pelo dominio de Young.
 
+import { Heart, Compass, Brain, Waves, Footprints, Shield, Layers, type LucideIcon } from "lucide-react";
+
 export interface TemaExercicio {
   id: string;
   label: string;
@@ -90,4 +92,19 @@ export function corExercicio(categoria: string, esquema?: string): { cor: string
     return { cor, corBg: cor + "14", tema };
   }
   return { cor: tema.cor, corBg: tema.corBg, tema };
+}
+
+// icone Lucide por objetivo (reutilizado em trilha, grid e detalhe)
+export const temaIcone: Record<string, LucideIcon> = {
+  autoestima:       Heart,
+  autoconhecimento: Compass,
+  cognicao:         Brain,
+  emocao:           Waves,
+  comportamento:    Footprints,
+  enfrentamento:    Shield,
+  esquema:          Layers,
+};
+
+export function iconeDe(temaId: string): LucideIcon {
+  return temaIcone[temaId] ?? Compass;
 }

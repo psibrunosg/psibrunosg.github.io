@@ -1,9 +1,10 @@
-import { motion, useAnimationControls } from "framer-motion";
+import { motion, useAnimationControls, useReducedMotion } from "framer-motion";
 import { useState } from "react";
+import { Star } from "lucide-react";
 
 const FRASES_TOQUE = [
-  "Oi! Que bom te ver! 🐾", "Voce consegue!", "To aqui com voce!",
-  "Respira fundo... 🌿", "Mandou bem!", "Vamos com calma!", "Auuu! 🐺",
+  "Oi! Que bom te ver!", "Voce consegue!", "To aqui com voce!",
+  "Respira fundo...", "Mandou bem!", "Vamos com calma!", "Auuu!",
 ];
 
 // Mascote lobo animado (video), tocavel e reativo ao progresso.
@@ -12,6 +13,7 @@ export function Mascote({ progresso, cor, fala }: { progresso: number; cor: stri
   const feliz = progresso >= 1;
   const [falaToque, setFalaToque] = useState<string | null>(null);
   const controls = useAnimationControls();
+  const reduce = useReducedMotion();
 
   const falaAtual = falaToque ?? fala;
 
@@ -60,15 +62,15 @@ export function Mascote({ progresso, cor, fala }: { progresso: number; cor: stri
           autoPlay loop muted playsInline
           className="h-[112px] w-[112px] object-contain sm:h-[132px] sm:w-[132px]"
           style={{ filter: `drop-shadow(0 8px 16px ${cor}66)` }}
-          animate={{ y: [0, -6, 0] }}
+          animate={reduce ? {} : { y: [0, -6, 0] }}
           transition={{ duration: feliz ? 1.8 : 3.4, repeat: Infinity, ease: "easeInOut" }}
         />
         {feliz && (
           <motion.span
-            className="absolute -right-1 -top-1 text-xl"
+            className="absolute -right-1 -top-1"
             initial={{ scale: 0 }} animate={{ scale: [0, 1.3, 1], rotate: [0, 20, 0] }} transition={{ type: "spring" }}
           >
-            🌟
+            <Star size={20} className="fill-[#E5B341] text-[#E5B341]" aria-hidden="true" />
           </motion.span>
         )}
       </motion.button>
@@ -78,6 +80,7 @@ export function Mascote({ progresso, cor, fala }: { progresso: number; cor: stri
 
 // Cena ilustrada suave por tema (header decorativo, tingida pela cor do objetivo).
 export function CenaTema({ cor, variante = 0 }: { cor: string; variante?: number }) {
+  const reduce = useReducedMotion();
   return (
     <div className="relative h-24 w-full overflow-hidden rounded-t-2xl" style={{ background: `linear-gradient(160deg, ${cor}22, ${cor}08)` }}>
       <svg viewBox="0 0 400 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
@@ -92,7 +95,7 @@ export function CenaTema({ cor, variante = 0 }: { cor: string; variante?: number
             key={x}
             d={`M${x} 88 Q${x - 5} 76 ${x} 70 Q${x + 5} 76 ${x} 88`}
             fill={cor} opacity="0.45"
-            animate={{ rotate: [0, 4, -4, 0] }}
+            animate={reduce ? {} : { rotate: [0, 4, -4, 0] }}
             transition={{ duration: 4 + i, repeat: Infinity, ease: "easeInOut" }}
             style={{ transformOrigin: `${x}px 88px` }}
           />

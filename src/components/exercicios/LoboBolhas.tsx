@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { PawPrint } from "lucide-react";
 
 const CORES_BOLHA = ["#C2658A", "#7A4A8C", "#3A6B8C", "#2F8C7A", "#C0773A", "#8C5A3A", "#5B6B8C"];
 
@@ -11,16 +12,20 @@ export function LoboBolhas({ active }: { active: boolean }) {
   const bolhas = useMemo<Bolha[]>(() => {
     const list: Bolha[] = [];
     let id = 0;
-    for (let row = 0; row < 3; row++) {
-      for (let col = 0; col < 4; col++) {
-        list.push({
-          id: id++,
-          x: 8 + col * 24 + (row % 2 === 1 ? 12 : 0),
-          y: 20 + row * 28,
-          size: 48 + Math.random() * 16,
-          cor: CORES_BOLHA[id % CORES_BOLHA.length],
-        });
-      }
+    const posicoes = [
+      { x: 2, y: 12 }, { x: 88, y: 8 },
+      { x: -2, y: 42 }, { x: 92, y: 38 },
+      { x: 3, y: 72 }, { x: 90, y: 68 },
+      { x: 85, y: 88 }, { x: 5, y: 92 },
+    ];
+    for (const pos of posicoes) {
+      list.push({
+        id: id++,
+        x: pos.x,
+        y: pos.y,
+        size: 40 + Math.random() * 20,
+        cor: CORES_BOLHA[id % CORES_BOLHA.length],
+      });
     }
     return list;
   }, []);
@@ -76,7 +81,7 @@ export function LoboBolhas({ active }: { active: boolean }) {
       {bolhas.map((b) => (
         <div
           key={b.id}
-          className="absolute rounded-full opacity-[0.12]"
+          className="absolute rounded-full opacity-[0.06]"
           style={{ left: `${b.x}%`, top: `${b.y}%`, width: b.size, height: b.size, background: b.cor }}
         />
       ))}
@@ -111,8 +116,8 @@ export function LoboBolhas({ active }: { active: boolean }) {
 
       {/* placar + fala */}
       {pontos > 0 && (
-        <div className="pointer-events-none fixed bottom-20 left-1/2 z-[60] -translate-x-1/2 rounded-full bg-[var(--c-accent)] px-3 py-1 text-[11px] font-bold text-white shadow-lg">
-          🐺 {pontos} encontrado{pontos > 1 ? "s" : ""}
+        <div className="pointer-events-none fixed bottom-20 left-1/2 z-[60] flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[var(--c-accent)] px-3 py-1 text-[11px] font-bold text-white shadow-lg">
+          <PawPrint size={12} aria-hidden="true" /> {pontos} encontrado{pontos > 1 ? "s" : ""}
         </div>
       )}
       <AnimatePresence>

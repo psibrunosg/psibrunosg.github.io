@@ -1,12 +1,12 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Search, X, Download, Check, RotateCcw, Sparkles, Clock, Star } from "lucide-react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { ChevronLeft, Search, X, Download, Check, RotateCcw, Sparkles, Clock, Star, Trophy, Compass } from "lucide-react";
 import jsPDF from "jspdf";
 import { anexos } from "@/content/anexos";
 import { exercicios } from "@/content/exercicios";
 import { AppAurora } from "@/components/ui/AppAurora";
-import { temas, corExercicio } from "@/content/temas-exercicios";
+import { temas, corExercicio, iconeDe } from "@/content/temas-exercicios";
 import { CampoExercicio, tipoCampo, valorLegivel } from "@/components/exercicios/ExerciseWidgets";
 import { Mascote, CenaTema } from "@/components/exercicios/MascoteCena";
 import { LoboToupeira } from "@/components/exercicios/LoboToupeira";
@@ -175,13 +175,59 @@ function ExerciseDetail({ exercise, onClose }: { exercise: UnifiedExercise; onCl
     setCompletedState(false);
   }
 
-  const falaMascote = progressPct >= 100 ? "Voce conseguiu! 🌟"
+  const falaMascote = progressPct >= 100 ? "Voce conseguiu!"
     : filledCount === 0 ? "Oi! Vamos juntos?"
-    : `Muito bem! ${filledCount} de ${totalSteps} ✨`;
+    : `Muito bem! ${filledCount} de ${totalSteps}`;
+
+  // celebracao ao concluir 100%
+  const reduceMotion = useReducedMotion();
+  const [burst, setBurst] = useState(false);
+  const prevPct = useRef(progressPct);
+  useEffect(() => {
+    if (prevPct.current < 100 && progressPct >= 100 && !reduceMotion) {
+      setBurst(true);
+      const t = setTimeout(() => setBurst(false), 1600);
+      prevPct.current = progressPct;
+      return () => clearTimeout(t);
+    }
+    prevPct.current = progressPct;
+  }, [progressPct, reduceMotion]);
 
   return (
     <motion.div key="detail" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
       {isInfantil && <Mascote progresso={progressPct / 100} cor={cor} fala={falaMascote} />}
+
+      {/* burst de celebracao ao 100% */}
+      <AnimatePresence>
+        {burst && (
+          <div className="pointer-events-none fixed inset-0 z-[70] flex items-center justify-center" aria-hidden="true">
+            <motion.div
+              initial={{ scale: 0, rotate: -20, opacity: 0 }}
+              animate={{ scale: [0, 1.25, 1], rotate: 0, opacity: [0, 1, 1, 0] }}
+              transition={{ duration: 1.5, times: [0, 0.3, 0.7, 1] }}
+              className="flex h-20 w-20 items-center justify-center rounded-full shadow-xl"
+              style={{ background: "linear-gradient(135deg, #4A6B47, #6B8C3A)" }}
+            >
+              <Trophy size={36} className="text-white" />
+            </motion.div>
+            {Array.from({ length: 18 }).map((_, k) => {
+              const ang = (k / 18) * Math.PI * 2;
+              const dist = 110 + (k % 3) * 46;
+              const cores = ["#C2658A", "#7A4A8C", "#3A6B8C", "#2F8C7A", "#C0773A", "#6B8C3A", "#E5B341"];
+              return (
+                <motion.span
+                  key={k}
+                  className="absolute h-3 w-3 rounded-[2px]"
+                  style={{ background: cores[k % cores.length] }}
+                  initial={{ opacity: 1, scale: 0, x: 0, y: 0, rotate: 0 }}
+                  animate={{ opacity: [1, 1, 0], scale: [0, 1, 0.6], x: Math.cos(ang) * dist, y: Math.sin(ang) * dist, rotate: 220 }}
+                  transition={{ duration: 1.3, ease: "easeOut" }}
+                />
+              );
+            })}
+          </div>
+        )}
+      </AnimatePresence>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <button onClick={onClose} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]"><X size={15} /></button>
@@ -253,15 +299,17 @@ function ExerciseDetail({ exercise, onClose }: { exercise: UnifiedExercise; onCl
               >
                 <div className="mb-1 flex items-start gap-3">
                   <motion.span
-                    className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-bold"
+                    className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
                     style={{
-                      background: filled ? cor : `color-mix(in oklab, ${cor} 15%, transparent)`,
+                      background: filled ? cor : `color-mix(in oklab, ${cor} 12%, transparent)`,
                       color: filled ? "#fff" : cor,
+                      border: filled ? "2px solid #fff" : `1.5px solid ${cor}40`,
+                      boxShadow: filled ? `0 2px 8px -2px ${cor}99` : undefined,
                     }}
                     animate={filled ? { scale: [1, 1.2, 1] } : {}}
                     transition={{ duration: 0.3 }}
                   >
-                    {filled ? <Check size={13} /> : i + 1}
+                    {filled ? <Check size={15} strokeWidth={3} /> : i + 1}
                   </motion.span>
                   <p className={`leading-relaxed text-[var(--c-text)] ${isInfantil ? "text-base" : "text-sm"}`}>
                     {inst}
@@ -322,6 +370,7 @@ export default function Exercicios() {
   const [busca, setBusca] = useState("");
   const [aberto, setAberto] = useState<UnifiedExercise | null>(null);
   const [completedIds, setCompletedIds] = useState<Set<string>>(() => getCompleted());
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "c");
@@ -358,21 +407,22 @@ export default function Exercicios() {
       <LoboToupeira active={isInfantilFilter && !aberto} />
       <LoboBolhas active={isInfantilFilter && !aberto} />
 
-      <header className="fixed left-0 right-0 top-0 z-50 px-6 py-4 glass-panel">
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 text-sm text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]">
-            <ChevronLeft size={16} /> Voltar
+      <header className="fixed left-0 right-0 top-0 z-50 px-4 py-4 glass-panel sm:px-6">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-2">
+          <Link to="/" className="flex flex-shrink-0 items-center gap-1.5 text-sm text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]">
+            <ChevronLeft size={16} /> <span className="hidden sm:inline">Voltar</span>
           </Link>
-          <span className="text-xs font-bold tracking-widest uppercase text-[var(--c-accent)]">
-            {isInfantilFilter ? "Aventuras Terapeuticas" : "Exercicios Terapeuticos"}
+          <span className="flex min-w-0 items-center gap-1.5 truncate text-[11px] font-bold uppercase tracking-wider text-[var(--c-accent)] sm:text-xs sm:tracking-widest">
+            {isInfantilFilter && <Compass size={13} className="flex-shrink-0" aria-hidden="true" />}
+            <span className="truncate">{isInfantilFilter ? "Aventuras Terapeuticas" : "Exercicios Terapeuticos"}</span>
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-shrink-0 items-center gap-2">
             {completedCount > 0 && (
               <span className="flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-[10px] font-bold text-green-700">
                 <Star size={10} className="fill-green-700" /> {completedCount}
               </span>
             )}
-            <span className="text-xs text-[var(--c-muted)]">{filtered.length} de {allExercises.length}</span>
+            <span className="hidden text-xs text-[var(--c-muted)] sm:inline">{filtered.length} de {allExercises.length}</span>
           </div>
         </div>
       </header>
@@ -424,23 +474,28 @@ export default function Exercicios() {
                     </div>
                   )}
 
-                  {/* Filtro por objetivo (cor) */}
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="mr-1 text-[10px] font-bold uppercase tracking-wider text-[var(--c-muted)]">Objetivo:</span>
-                    <button onClick={() => setObjetivoFiltro("todos")}
-                      className={`rounded-full px-2.5 py-1 text-[10px] font-semibold transition-colors ${objetivoFiltro === "todos" ? "bg-[var(--c-accent)] text-white" : "border border-[var(--c-border)] text-[var(--c-muted)] hover:text-[var(--c-text)]"}`}>
-                      Todos
-                    </button>
-                    {Object.values(temas).map((t) => (
-                      <button key={t.id} onClick={() => setObjetivoFiltro(t.id)}
-                        className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold transition-all"
-                        style={objetivoFiltro === t.id
-                          ? { background: t.cor, color: "#fff" }
-                          : { background: t.corBg, color: t.cor }}>
-                        <span className="h-2 w-2 rounded-full" style={{ background: objetivoFiltro === t.id ? "#fff" : t.cor }} />
-                        {t.label}
+                  {/* Filtro por objetivo (cor) — rola na horizontal no mobile */}
+                  <div className="flex items-center gap-2">
+                    <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider text-[var(--c-muted)]">Objetivo:</span>
+                    <div className="flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                      <button onClick={() => setObjetivoFiltro("todos")}
+                        className={`flex-shrink-0 rounded-full px-3 py-1.5 text-[10px] font-semibold transition-colors ${objetivoFiltro === "todos" ? "bg-[var(--c-accent)] text-white" : "border border-[var(--c-border)] text-[var(--c-muted)] hover:text-[var(--c-text)]"}`}>
+                        Todos
                       </button>
-                    ))}
+                      {Object.values(temas).map((t) => {
+                        const TIcon = iconeDe(t.id);
+                        return (
+                          <button key={t.id} onClick={() => setObjetivoFiltro(t.id)}
+                            className="flex flex-shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-semibold transition-all"
+                            style={objetivoFiltro === t.id
+                              ? { background: t.cor, color: "#fff" }
+                              : { background: t.corBg, color: t.cor }}>
+                            <TIcon size={11} aria-hidden="true" />
+                            {t.label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
 
                   <div className="relative">
@@ -453,63 +508,118 @@ export default function Exercicios() {
 
                 {/* Trilha (infantil) */}
                 {isInfantilFilter ? (
-                  <div className="relative mx-auto max-w-lg py-2">
-                    <div className="absolute bottom-6 left-1/2 top-6 w-1 -translate-x-1/2 rounded-full bg-[var(--c-border)]" aria-hidden="true" />
+                  (() => {
+                    const doneTrail = filtered.filter((x) => completedIds.has(x.id)).length;
+                    const fillPct = filtered.length > 0 ? (doneTrail / filtered.length) * 100 : 0;
+                    return (
+                  <div className="relative mx-auto max-w-md py-2">
+                    {/* trilho base (rail esquerda, centrado no no = 28px) */}
+                    <div className="absolute bottom-6 top-6 w-1.5 -translate-x-1/2 rounded-full bg-[var(--c-border)]" style={{ left: 28 }} aria-hidden="true" />
+                    {/* trilho preenchido ate o progresso */}
+                    <motion.div
+                      className="absolute top-6 w-1.5 -translate-x-1/2 rounded-full"
+                      style={{ left: 28, bottom: 24, transformOrigin: "top", background: "linear-gradient(180deg, #4A6B47, #6B8C3A)" }}
+                      initial={false}
+                      animate={{ scaleY: fillPct / 100 }}
+                      transition={{ duration: 0.6, ease: "easeOut" }}
+                      aria-hidden="true"
+                    />
                     <div className="space-y-3">
                       {filtered.map((a, i) => {
                         const done = completedIds.has(a.id);
                         const current = !done && filtered.findIndex((x) => !completedIds.has(x.id)) === i;
-                        const { cor } = corExercicio(a.numero, a.esquema);
-                        const lado = i % 2 === 0;
+                        const { cor, tema } = corExercicio(a.numero, a.esquema);
+                        const TemaIcon = iconeDe(tema.id);
                         return (
                           <motion.button
                             key={a.id}
-                            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: Math.min(i * 0.04, 0.4) }}
+                            initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: Math.min(i * 0.04, 0.4) }}
                             onClick={() => setAberto(a)}
-                            className={`relative flex w-full items-center gap-3 ${lado ? "flex-row" : "flex-row-reverse"}`}
+                            aria-label={`Abrir ${a.titulo}${done ? " (concluido)" : current ? " (proxima parada)" : ""}`}
+                            className="group relative flex w-full items-center gap-4 text-left"
                           >
-                            <div className={`flex-1 ${lado ? "text-right" : "text-left"}`}>
-                              <div className="inline-block max-w-[90%] rounded-2xl px-4 py-2.5 text-left shadow-sm transition-shadow hover:shadow-md"
-                                style={{ background: done ? cor + "1A" : "var(--c-surface)", border: `1.5px solid ${current ? cor : "var(--c-border)"}` }}>
-                                <p className="text-xs font-semibold text-[var(--c-text)]">{a.titulo}</p>
-                                {a.tempoEstimado && <p className="text-[9px] text-[var(--c-muted)]">⏱ {a.tempoEstimado}</p>}
+                            <motion.span
+                              className="relative z-10 flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full text-base font-bold shadow-md"
+                              style={{
+                                background: done ? "#4A6B47" : current ? cor : cor + "1A",
+                                color: done || current ? "#fff" : cor,
+                                border: done || current ? "2px solid #fff" : `2px solid ${cor}33`,
+                              }}
+                              animate={current && !reduceMotion ? { scale: [1, 1.1, 1] } : {}}
+                              transition={{ duration: 1.4, repeat: current && !reduceMotion ? Infinity : 0, ease: "easeInOut" }}
+                            >
+                              {done ? <Check size={20} strokeWidth={3} /> : i + 1}
+                              {current && (
+                                <motion.span
+                                  className="absolute inset-0 rounded-full"
+                                  style={{ boxShadow: `0 0 0 3px ${cor}55` }}
+                                  animate={reduceMotion ? { opacity: 0.7 } : { opacity: [0.4, 0.9, 0.4] }}
+                                  transition={{ duration: 1.6, repeat: reduceMotion ? 0 : Infinity, ease: "easeInOut" }}
+                                  aria-hidden="true"
+                                />
+                              )}
+                            </motion.span>
+                            <div
+                              className="flex flex-1 items-center gap-3 rounded-2xl px-4 py-3 shadow-sm transition-all group-hover:-translate-y-0.5 group-hover:shadow-md"
+                              style={{
+                                background: done
+                                  ? "color-mix(in oklab, #4A6B47 9%, var(--c-bg))"
+                                  : current ? cor + "14" : "var(--c-surface)",
+                                boxShadow: current ? `0 8px 22px -10px ${cor}99` : undefined,
+                                outline: current ? `1.5px solid ${cor}55` : "1px solid var(--c-border)",
+                                outlineOffset: -1,
+                              }}
+                            >
+                              <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl" style={{ background: done ? "#4A6B4720" : cor + "1A" }}>
+                                <TemaIcon size={16} style={{ color: done ? "#4A6B47" : cor }} aria-hidden="true" />
+                              </span>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-semibold leading-snug text-[var(--c-text)]">{a.titulo}</p>
+                                {a.tempoEstimado && (
+                                  <p className="mt-0.5 flex items-center gap-1 text-[10px] text-[var(--c-muted)]">
+                                    <Clock size={10} aria-hidden="true" /> {a.tempoEstimado}
+                                  </p>
+                                )}
                               </div>
                             </div>
-                            <motion.span
-                              className="relative z-10 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold text-white shadow-md"
-                              style={{ background: done ? cor : current ? cor : "var(--c-border)" }}
-                              animate={current ? { scale: [1, 1.12, 1] } : {}}
-                              transition={{ duration: 1.4, repeat: Infinity }}
-                            >
-                              {done ? <Star size={18} className="fill-white" /> : i + 1}
-                              {current && <span className="absolute inset-0 rounded-full ring-2 ring-offset-2" style={{ color: cor }} />}
-                            </motion.span>
-                            <div className="flex-1" aria-hidden="true" />
                           </motion.button>
                         );
                       })}
                     </div>
                     {filtered.length > 0 && (
-                      <p className="mt-4 text-center text-xs text-[var(--c-muted)]">
-                        {completedIds.size > 0 ? `Voce ja completou ${filtered.filter((x) => completedIds.has(x.id)).length} de ${filtered.length}! 🌟` : "Toque na primeira parada para comecar!"}
+                      <p className="mt-5 flex items-center justify-center gap-1.5 text-center text-xs font-medium text-[var(--c-muted)]">
+                        {doneTrail > 0 ? (
+                          <>
+                            <Star size={13} className="fill-[#6B8C3A] text-[#6B8C3A]" aria-hidden="true" />
+                            Voce ja completou {doneTrail} de {filtered.length}!
+                          </>
+                        ) : "Toque na primeira parada para comecar a aventura!"}
                       </p>
                     )}
                   </div>
+                    );
+                  })()
                 ) : (
                 <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
                   {filtered.map((a, i) => {
                     const done = completedIds.has(a.id);
                     const hasDraft = (() => { try { const r = localStorage.getItem(`exercicio-${a.id}`); return r && Object.values(JSON.parse(r)).some((v: unknown) => typeof v === "string" && (v as string).trim()); } catch { return false; } })();
                     const { cor, corBg, tema } = corExercicio(a.numero, a.esquema);
+                    const TemaIcon = iconeDe(tema.id);
                     return (
                       <motion.div key={a.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i * 0.02, 0.3) }}
                         whileHover={{ y: -4 }}
-                        className="glass-card relative cursor-pointer overflow-hidden rounded-2xl p-4 pl-5 transition-shadow hover:shadow-[0_14px_36px_-16px_rgba(58,42,31,0.35)]"
+                        className="glass-card relative cursor-pointer overflow-hidden rounded-2xl p-4 transition-shadow hover:shadow-[0_14px_36px_-16px_rgba(58,42,31,0.35)]"
                         onClick={() => setAberto(a)}
-                        style={{ borderLeft: `4px solid ${cor}`, background: done ? "color-mix(in oklab, #4A6B47 5%, transparent)" : undefined }}
+                        style={{ background: done ? "color-mix(in oklab, #4A6B47 5%, transparent)" : undefined }}
                       >
-                        <div className="mb-2 flex items-start justify-between gap-2">
-                          <div className="min-w-0">
+                        {/* realce de cor suave no topo (sem borda lateral) */}
+                        <span className="absolute inset-x-0 top-0 h-1" style={{ background: `linear-gradient(90deg, ${cor}, ${cor}22)` }} aria-hidden="true" />
+                        <div className="mb-2 flex items-start gap-3">
+                          <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl" style={{ background: corBg }}>
+                            <TemaIcon size={16} style={{ color: cor }} aria-hidden="true" />
+                          </span>
+                          <div className="min-w-0 flex-1">
                             <p className="text-[9px] font-bold uppercase tracking-wider" style={{ color: cor }}>{tema.label}</p>
                             <h3 className="text-sm font-semibold leading-snug text-[var(--c-text)]">{a.titulo}</h3>
                           </div>
@@ -518,7 +628,7 @@ export default function Exercicios() {
                             {hasDraft && !done && <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-100"><Clock size={10} className="text-amber-600" /></span>}
                           </div>
                         </div>
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-1 pl-12">
                           {a.esquema && <span className="rounded-full px-2 py-0.5 text-[8px] font-bold uppercase" style={{ background: corBg, color: cor }}>{a.esquema}</span>}
                           <span className="rounded-full bg-[var(--c-surface)] px-2 py-0.5 text-[8px] font-medium text-[var(--c-muted)]">
                             {a.fonte === "te" ? "TE" : a.publico === "infantojuvenil" ? "Infantil" : a.fonte === "curado" ? "Curado" : "TCC"}
