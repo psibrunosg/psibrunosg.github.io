@@ -1,0 +1,36 @@
+﻿backend:
+  name: github
+  repo: psibrunosg/psibrunosg.github.io
+  branch: main
+  base_url: https://sveltia-cms-auth.brunomacedo.workers.dev
+  # SETUP: Replace base_url above with your own auth proxy URL
+  # See: https://github.com/sveltia/sveltia-cms-auth
+
+media_folder: public/img/blog
+public_folder: /img/blog
+
+collections:
+  - name: posts
+    label: Posts do Blog
+    label_singular: Post
+    folder: src/content/blog
+    create: true
+    delete: true
+    format: json
+    extension: json
+    identifier_field: slug
+    fields:
+      - { label: Slug (URL), name: slug, widget: string, hint: "Ex: ansiedade-no-trabalho (sem acentos, sem espacos)" }
+      - { label: Titulo, name: titulo, widget: string }
+      - { label: Subtitulo, name: subtitulo, widget: string }
+      - label: Categoria
+        name: categoria
+        widget: select
+        options: [Abordagens, Condicoes, Publico]
+      - { label: Tempo de leitura, name: tempoLeitura, widget: string, default: "5 min" }
+      - { label: Resumo (card), name: resumo, widget: text }
+      - { label: Tags, name: tags, widget: list, default: ["saude mental", "Pelotas"] }
+      - label: Conteudo
+        name: conteudo
+        widget: markdown
+        hint: "Use ## para titulos, - para listas, > para notas/avisos"
