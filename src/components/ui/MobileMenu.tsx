@@ -21,7 +21,7 @@ export function MobileMenu({ items, crp, whatsappLink }: Props) {
         aria-label={open ? "Fechar menu" : "Abrir menu"}
         aria-expanded={open}
         className={cn(
-          "fixed top-4 right-4 z-[70] md:hidden",
+          "fixed top-4 right-4 z-[70]",
           "w-11 h-11 rounded-full flex flex-col items-center justify-center gap-1.5",
           "bg-[var(--c-bg)]/90 backdrop-blur-md border border-[var(--c-border)] shadow-md",
           "transition-colors hover:border-[var(--c-accent)]"
@@ -53,7 +53,7 @@ export function MobileMenu({ items, crp, whatsappLink }: Props) {
             exit={{ opacity: 0, x: "100%" }}
             transition={{ type: "spring", stiffness: 300, damping: 32 }}
             className={cn(
-              "fixed inset-0 z-[65] md:hidden",
+              "fixed inset-0 z-[65]",
               "bg-[var(--c-bg)] flex flex-col items-center justify-center gap-8"
             )}
           >
