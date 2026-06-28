@@ -705,10 +705,10 @@ export default function BrunoPainel() {
     setPaciente({ nome: r.nome, idade: r.nascimento ?? "", dataAvaliacao: new Date(r.criado_em).toLocaleDateString("pt-BR"), escolaridade: "" });
     const testeInfo = testesDisponiveis.find((t) => t.id === r.tipo);
     if (testeInfo) {
-      const novoTeste: ResultadoTeste = { testeId: testeInfo.id, sigla: testeInfo.sigla, nome: testeInfo.nome, dados: { escore: r.pontuacao } };
+      const novoTeste: ResultadoTeste = { testeId: testeInfo.id, sigla: testeInfo.sigla, nome: testeInfo.nome, dados: { escore: r.pontuacao }, respostasCruas: r.respostas };
       const outros = hist.filter((x) => x.id !== r.id && testesDisponiveis.some((t) => t.id === x.tipo)).map((x) => {
         const info = testesDisponiveis.find((t) => t.id === x.tipo)!;
-        return processarTeste({ testeId: info.id, sigla: info.sigla, nome: info.nome, dados: { escore: x.pontuacao } });
+        return processarTeste({ testeId: info.id, sigla: info.sigla, nome: info.nome, dados: { escore: x.pontuacao }, respostasCruas: x.respostas });
       });
       setParecerTestes([processarTeste(novoTeste), ...outros]);
     }

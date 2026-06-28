@@ -335,9 +335,9 @@ export function classificarPorFaixa(escore: number, faixas: readonly { min: numb
   return f ?? { classificacao: "Indeterminado", descricao: "" };
 }
 
-export type TesteId = "phq9" | "gad7" | "bai" | "bdi" | "bhs" | "asrs" | "neo-ffi" | "neo-pi" | "g36" | "teadi" | "tealt";
+export type TesteId = "phq9" | "gad7" | "bai" | "bdi" | "bhs" | "asrs" | "neo-ffi" | "neo-pi" | "g36" | "teadi" | "tealt" | "ysq" | "ypi" | "yci" | "yrai" | "smi";
 
-export const testesDisponiveis: { id: TesteId; sigla: string; nome: string; tipo: "faixa" | "t-score" | "percentil" }[] = [
+export const testesDisponiveis: { id: TesteId; sigla: string; nome: string; tipo: "faixa" | "t-score" | "percentil" | "schema" | "threshold" }[] = [
   { id: "phq9",    sigla: "PHQ-9",      nome: "Rastreio de Depressão",                tipo: "faixa" },
   { id: "gad7",    sigla: "GAD-7",      nome: "Rastreio de Ansiedade",                tipo: "faixa" },
   { id: "bai",     sigla: "BAI",        nome: "Inventário de Ansiedade de Beck",      tipo: "faixa" },
@@ -349,4 +349,9 @@ export const testesDisponiveis: { id: TesteId; sigla: string; nome: string; tipo
   { id: "g36",     sigla: "G-36",       nome: "Teste Não Verbal de Inteligência",     tipo: "percentil" },
   { id: "teadi",   sigla: "TEADI",      nome: "Teste de Atenção Dividida",            tipo: "percentil" },
   { id: "tealt",   sigla: "TEALT",      nome: "Teste de Atenção Alternada",           tipo: "percentil" },
+  { id: "ysq",     sigla: "YSQ-S3",     nome: "Questionário de Esquemas de Young",    tipo: "schema" },
+  { id: "ypi",     sigla: "YPI",        nome: "Inventário Parental de Young",         tipo: "schema" },
+  { id: "smi",     sigla: "SMI",        nome: "Inventário de Modos Esquemáticos",     tipo: "schema" },
+  { id: "yci",     sigla: "YCI",        nome: "Inventário de Compensação de Young",   tipo: "threshold" },
+  { id: "yrai",    sigla: "YRAI",       nome: "Inventário de Evitação de Young-Rygh", tipo: "threshold" },
 ];

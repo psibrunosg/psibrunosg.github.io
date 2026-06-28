@@ -9,6 +9,7 @@ import {
 import {
   templatesPorTeste, templatesNeoDominio, templatesNeoFaceta, templatesNeoFFIDominio,
 } from "@/content/parecer-templates";
+import { interpretarResposta, LIMIAR_ATIVACAO } from "@/lib/interpret";
 
 export interface DadosPaciente {
   nome: string;
@@ -22,6 +23,7 @@ export interface ResultadoTeste {
   sigla: string;
   nome: string;
   dados: Record<string, string | number>;
+  respostasCruas?: number[];
   resultado?: { classificacao: string; detalhes: string };
   texto?: string;
   textoEditado?: boolean;
@@ -63,7 +65,43 @@ function gerarTextoInterpretativo(testeId: string, classificacao: string, dados:
     return partes.join("\n") || "Preencha os escores brutos para gerar o texto interpretativo.";
   }
 
+  // Schema / threshold — texto gerado diretamente pelo caller, não via template.
+  if (["ysq", "ypi", "smi", "yci", "yrai"].includes(testeId)) return "";
+
   return templatesPorTeste[testeId]?.[classificacao] ?? "";
+}
+
+function gerarTextoSchema(t: ResultadoTeste): string {
+  if (!t.respostasCruas?.length) return "Respostas cruas não disponíveis para gerar texto interpretativo.";
+  const interp = interpretarResposta(t.testeId, t.respostasCruas, Number(t.dados.escore ?? 0));
+  if (interp.familia === "threshold") {
+    const flags = interp.flagged ?? [];
+    if (flags.length === 0) return `O ${t.sigla} não identificou ${interp.unidadeDefesa}s com ativação significativa (nenhum item ≥ 5).`;
+    const listagem = flags.map((f) => `• ${f.texto} (${f.valor}/6)`).join("\n");
+    return `O ${t.sigla} identificou ${flags.length} ${interp.unidadeDefesa}${flags.length > 1 ? "s" : ""} com ativação significativa (item ≥ 5):\n${listagem}\nRecomenda-se exploração terapêutica dessas estratégias no contexto da manutenção esquemática.`;
+  }
+  // schema-avg
+  const partes: string[] = [];
+  for (const rd of interp.rodadas ?? []) {
+    const label = rd.label ? `(${rd.label}) ` : "";
+    if (rd.ativos.length === 0) {
+      partes.push(`${label}Nenhum ${interp.unidade} apresentou média acima do limiar de ativação (${LIMIAR_ATIVACAO}).`);
+      continue;
+    }
+    const porDominio = new Map<string, typeof rd.ativos>();
+    for (const e of rd.ativos) { const a = porDominio.get(e.dominio) ?? []; a.push(e); porDominio.set(e.dominio, a); }
+    const linhas: string[] = [];
+    for (const [dom, esqs] of porDominio) {
+      const nomes = esqs.map((e) => `${e.nome} (${e.media.toFixed(1)})`).join(", ");
+      linhas.push(`No domínio ${dom}: ${nomes}.`);
+    }
+    partes.push(`${label}Foram identificados ${rd.ativos.length} ${interp.unidade}${rd.ativos.length > 1 ? "s" : ""} com ativação significativa (média > ${LIMIAR_ATIVACAO}):\n${linhas.join("\n")}`);
+    if (rd.saudavelAtivo) {
+      partes.push(`O modo Adulto Saudável apresentou ativação (${rd.saudavelAtivo.media.toFixed(1)}), constituindo recurso protetor do(a) avaliando(a).`);
+    }
+  }
+  partes.push("Recomenda-se que os esquemas/modos ativos sejam explorados em contexto psicoterapêutico para compreensão de padrões de funcionamento e planejamento de intervenção.");
+  return partes.join("\n");
 }
 
 export function processarTeste(t: ResultadoTeste): ResultadoTeste {
@@ -149,11 +187,45 @@ export function processarTeste(t: ResultadoTeste): ResultadoTeste {
       resultado = { classificacao: r.classificacao, detalhes: `Pontuação: ${escore}. Percentil: ${r.percentil}. Classificação: ${r.classificacao}. (Normas SP)` };
       break;
     }
+    case "ysq":
+    case "ypi":
+    case "smi": {
+      if (t.respostasCruas?.length) {
+        const interp = interpretarResposta(t.testeId, t.respostasCruas, escore);
+        const total = interp.totalAtivos ?? 0;
+        const mapped = interp.totalEsquemas ?? 0;
+        const unidade = interp.unidade ?? "esquema";
+        const ativosNomes = (interp.rodadas ?? []).flatMap((rd) => {
+          const prefix = rd.label ? `[${rd.label}] ` : "";
+          return rd.ativos.map((e) => `${prefix}${e.nome} (${e.dominio}, ${e.media.toFixed(1)})`);
+        });
+        const detalhes = `${total} ${unidade}${total !== 1 ? "s" : ""} ativo${total !== 1 ? "s" : ""} de ${mapped} mapeados.\n${ativosNomes.join("\n") || "Nenhum ativo."}`;
+        resultado = { classificacao: total > 0 ? `${total} ${unidade}${total !== 1 ? "s" : ""} ativo${total !== 1 ? "s" : ""}` : `Nenhum ${unidade} ativo`, detalhes };
+      } else {
+        resultado = { classificacao: "Ver detalhes", detalhes: "Respostas cruas não disponíveis. Insira manualmente o escore." };
+      }
+      break;
+    }
+    case "yci":
+    case "yrai": {
+      if (t.respostasCruas?.length) {
+        const interp = interpretarResposta(t.testeId, t.respostasCruas, escore);
+        const n = interp.flagged?.length ?? 0;
+        const unidade = interp.unidadeDefesa ?? "defesa";
+        const lista = (interp.flagged ?? []).map((f) => `• Item ${f.index + 1} (${f.valor}/6): ${f.texto}`).join("\n");
+        resultado = { classificacao: n > 0 ? `${n} ${unidade}${n > 1 ? "s" : ""} ativa${n > 1 ? "s" : ""}` : `Nenhuma ${unidade} ativa`, detalhes: lista || "Nenhum item com ativação significativa (≥ 5)." };
+      } else {
+        resultado = { classificacao: "Ver detalhes", detalhes: "Respostas cruas não disponíveis." };
+      }
+      break;
+    }
     default:
       resultado = { classificacao: "N/A", detalhes: `Escore: ${escore}` };
   }
 
-  const textoAuto = gerarTextoInterpretativo(t.testeId, resultado.classificacao, d);
+  const textoAuto = ["ysq", "ypi", "smi", "yci", "yrai"].includes(t.testeId) && t.respostasCruas?.length
+    ? gerarTextoSchema(t)
+    : gerarTextoInterpretativo(t.testeId, resultado.classificacao, d);
   return {
     ...t,
     resultado,
