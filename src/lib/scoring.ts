@@ -9,6 +9,7 @@ import {
   phq9Faixas, gad7Faixas, baiFaixas, bdiFaixas, bhsFaixas, asrsFaixas, who5Faixas,
   rosenbergFaixas, pss10Faixas, isiFaixas, auditFaixas, scsFaixas,
   mdqFaixas, pcl5Faixas, ocirFaixas, epworthFaixas,
+  dass21Faixas, maasFaixas, spinFaixas,
 } from "@/content/normative-tables";
 
 // ----- Schema scoring (YSQ / YPI) -----
@@ -105,6 +106,7 @@ export const faixasPorTipo: Record<string, readonly Faixa[]> = {
   phq9: phq9Faixas, gad7: gad7Faixas, bai: baiFaixas, bdi: bdiFaixas, bhs: bhsFaixas, asrs: asrsFaixas,
   who5: who5Faixas, rosenberg: rosenbergFaixas, pss10: pss10Faixas, isi: isiFaixas, audit: auditFaixas, scs: scsFaixas,
   mdq: mdqFaixas, pcl5: pcl5Faixas, ocir: ocirFaixas, epworth: epworthFaixas,
+  dass21: dass21Faixas, maas: maasFaixas, spin: spinFaixas,
 };
 
 /** Retorna { classificacao, descricao } para escalas tipo-faixa, ou null se não houver faixa. */

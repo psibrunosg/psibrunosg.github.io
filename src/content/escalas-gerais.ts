@@ -1210,8 +1210,167 @@ export const epworth: EscalaGeralConfig = {
   ],
 };
 
+// ============ DASS-21 (Escala de Depressao, Ansiedade e Estresse) ============
+// Lovibond & Lovibond (1995); BR: Vignola & Tucci (2014). 21 itens, 0-3.
+export const dass21: EscalaGeralConfig = {
+  id: "dass21",
+  sigla: "DASS-21",
+  nome: "Escala de Depressao, Ansiedade e Estresse",
+  instrucoes: "Leia cada afirmacao e indique o quanto ela se aplicou a voce durante a ultima semana. Nao ha respostas certas ou erradas.",
+  tipo: "likert",
+  pontuacaoMaxima: 63,
+  opcoes: [
+    { label: "Nao se aplicou de maneira alguma", valor: 0 },
+    { label: "Aplicou-se em algum grau ou pouco tempo", valor: 1 },
+    { label: "Aplicou-se em um grau consideravel ou boa parte do tempo", valor: 2 },
+    { label: "Aplicou-se muito ou na maioria do tempo", valor: 3 },
+  ],
+  dominios: [
+    { id: "depressao", nome: "Depressao", itens: [3, 5, 10, 13, 16, 17, 21] },
+    { id: "ansiedade", nome: "Ansiedade", itens: [2, 4, 7, 9, 15, 19, 20] },
+    { id: "estresse", nome: "Estresse", itens: [1, 6, 8, 11, 12, 14, 18] },
+  ],
+  itens: [
+    "Achei dificil me acalmar",
+    "Percebi que minha boca estava seca",
+    "Nao consegui vivenciar nenhum sentimento positivo",
+    "Tive dificuldade em respirar em alguns momentos (sem esforco fisico)",
+    "Achei dificil ter iniciativa para fazer as coisas",
+    "Tive a tendencia de reagir de forma exagerada",
+    "Senti tremores (ex: nas maos)",
+    "Senti que estava sempre nervoso(a)",
+    "Preocupei-me com situacoes em que poderia entrar em panico e fazer papel de bobo(a)",
+    "Senti que nao tinha nada a esperar do futuro",
+    "Percebi que estava ficando agitado(a)",
+    "Achei dificil relaxar",
+    "Senti-me deprimido(a) e sem animo",
+    "Fui intolerante com as coisas que me impediam de continuar o que estava fazendo",
+    "Senti que ia entrar em panico",
+    "Nao consegui me entusiasmar com nada",
+    "Senti que nao tinha muito valor como pessoa",
+    "Senti que estava um pouco emotivo(a) ou sensivel demais",
+    "Sabia que meu coracao estava alterado mesmo sem ter feito esforco fisico (ex: aceleracao cardiaca)",
+    "Senti medo sem ter uma razao obvia para isso",
+    "Senti que a vida nao tinha sentido",
+  ],
+};
+
+// ============ ERQ (Questionario de Regulacao Emocional) ============
+// Gross & John (2003); BR: Batistoni, Ordonez & Silva (2013). 10 itens, 1-7.
+export const erq: EscalaGeralConfig = {
+  id: "erq",
+  sigla: "ERQ",
+  nome: "Questionario de Regulacao Emocional",
+  instrucoes: "Gostaríamos de lhe fazer algumas perguntas sobre sua vida emocional. Estamos interessados em como voce controla (regula e gerencia) suas emocoes. Para cada item, responda usando a escala de 1 a 7.",
+  tipo: "likert",
+  pontuacaoMaxima: 70,
+  opcoes: [
+    { label: "Discordo totalmente", valor: 1 },
+    { label: "Discordo", valor: 2 },
+    { label: "Discordo parcialmente", valor: 3 },
+    { label: "Neutro", valor: 4 },
+    { label: "Concordo parcialmente", valor: 5 },
+    { label: "Concordo", valor: 6 },
+    { label: "Concordo totalmente", valor: 7 },
+  ],
+  dominios: [
+    { id: "reavaliacao", nome: "Reavaliacao Cognitiva", itens: [1, 3, 5, 7, 8, 10] },
+    { id: "supressao", nome: "Supressao Expressiva", itens: [2, 4, 6, 9] },
+  ],
+  itens: [
+    "Quando quero sentir mais emocoes positivas (como alegria ou diversao), mudo o que estou pensando.",
+    "Guardo minhas emocoes para mim mesmo(a).",
+    "Quando quero sentir menos emocoes negativas (como tristeza ou raiva), mudo o que estou pensando.",
+    "Quando estou sentindo emocoes positivas, tomo cuidado para nao expressa-las.",
+    "Quando estou diante de uma situacao estressante, forco-me a pensar sobre ela de uma forma que me ajude a manter a calma.",
+    "Controlo minhas emocoes nao as expressando.",
+    "Quando quero sentir mais emocoes positivas, mudo a forma como penso sobre a situacao.",
+    "Controlo minhas emocoes mudando a forma como penso sobre a situacao em que me encontro.",
+    "Quando estou sentindo emocoes negativas, faco o possivel para nao expressa-las.",
+    "Quando quero sentir menos emocoes negativas, mudo a forma como penso sobre a situacao.",
+  ],
+};
+
+// ============ MAAS (Escala de Atencao e Consciencia Plena) ============
+// Brown & Ryan (2003); BR: Barros et al. (2015). 15 itens, 1-6.
+export const maas: EscalaGeralConfig = {
+  id: "maas",
+  sigla: "MAAS",
+  nome: "Escala de Atencao e Consciencia Plena",
+  instrucoes: "Abaixo ha uma serie de afirmacoes sobre sua experiencia cotidiana. Indique com que frequencia voce tem cada experiencia descrita, usando a escala de 1 (quase sempre) a 6 (quase nunca). Quanto maior a pontuacao, maior o nivel de atencao plena.",
+  tipo: "likert",
+  pontuacaoMaxima: 90,
+  opcoes: [
+    { label: "Quase sempre", valor: 1 },
+    { label: "Com muita frequencia", valor: 2 },
+    { label: "Com alguma frequencia", valor: 3 },
+    { label: "Com pouca frequencia", valor: 4 },
+    { label: "Raramente", valor: 5 },
+    { label: "Quase nunca", valor: 6 },
+  ],
+  itens: [
+    "Posso estar experienciando alguma emocao e nao estar consciente dela ate algum tempo depois.",
+    "Quebro ou derramo coisas por descuido, por nao prestar atencao, ou por estar pensando em outra coisa.",
+    "Acho dificil permanecer focado(a) no que esta acontecendo no presente.",
+    "Tenho tendencia a caminhar rapido para chegar aonde quero ir sem prestar atencao ao que experiencio ao longo do caminho.",
+    "Tendo a nao perceber sensacoes de tensao fisica ou desconforto ate que elas realmente chamem minha atencao.",
+    "Esqueco o nome de uma pessoa quase que imediatamente apos ouvi-lo pela primeira vez.",
+    "Parece que estou funcionando no piloto automatico, sem muita consciencia do que estou fazendo.",
+    "Faco atividades com pressa sem estar realmente atento(a) a elas.",
+    "Fico tao focado(a) na meta que quero alcancar que perco a nocao do que estou fazendo agora para chegar la.",
+    "Faco trabalhos ou tarefas automaticamente, sem estar consciente do que estou fazendo.",
+    "Percebo que ouco alguem falar com um ouvido enquanto faco outra coisa ao mesmo tempo.",
+    "Dirijo ou me desloco no piloto automatico e depois me pergunto por que fui aquele lugar.",
+    "Fico preocupado(a) com o futuro ou com o passado.",
+    "Percebo que faco coisas sem prestar atencao.",
+    "Faco lanches sem estar consciente de que estou comendo.",
+  ],
+};
+
+// ============ SPIN (Inventario de Fobia Social) ============
+// Connor et al. (2000); BR: Osorio et al. (2008). 17 itens, 0-4.
+export const spin: EscalaGeralConfig = {
+  id: "spin",
+  sigla: "SPIN",
+  nome: "Inventario de Fobia Social",
+  instrucoes: "Indique o quanto as seguintes situacoes te incomodaram durante a ultima semana.",
+  tipo: "likert",
+  pontuacaoMaxima: 68,
+  opcoes: [
+    { label: "Nenhum pouco", valor: 0 },
+    { label: "Um pouco", valor: 1 },
+    { label: "Moderadamente", valor: 2 },
+    { label: "Bastante", valor: 3 },
+    { label: "Extremamente", valor: 4 },
+  ],
+  dominios: [
+    { id: "medo", nome: "Medo", itens: [1, 3, 5, 10, 14, 15] },
+    { id: "evitacao", nome: "Evitacao", itens: [4, 6, 8, 9, 11, 16] },
+    { id: "fisiologico", nome: "Fisiologico", itens: [2, 7, 12, 13, 17] },
+  ],
+  itens: [
+    "Tenho medo de pessoas em posicoes de autoridade.",
+    "Fico incomodado(a) ao corar na frente das pessoas.",
+    "Festas e eventos sociais me assustam.",
+    "Evito falar com pessoas que nao conheco.",
+    "Ser criticado(a) me assusta muito.",
+    "O medo de ficar constrangido(a) me faz evitar fazer coisas ou falar com pessoas.",
+    "Transpirar na frente das pessoas me causa angustia.",
+    "Evito ir a festas.",
+    "Evito atividades em que sou o centro das atencoes.",
+    "Conversar com estranhos me assusta.",
+    "Evito ter que fazer discursos.",
+    "Eu faria qualquer coisa para evitar ser criticado(a).",
+    "Palpitacoes cardiacas me incomodam quando estou entre pessoas.",
+    "Tenho medo de fazer coisas quando as pessoas podem estar olhando.",
+    "Estar constrangido(a) ou parecer estupido(a) estao entre meus piores medos.",
+    "Evito falar com qualquer pessoa em posicao de autoridade.",
+    "Tremer ou estremecer na frente dos outros me angustia.",
+  ],
+};
+
 // ============ MERGED MAP ============
 export const escalasGerais: Record<string, EscalaGeralConfig> = {
   asrs, bai, bdi, bhs, ebep, less, neoffir, neopir, who5, rosenberg, pss10, isi, audit, scs,
-  mdq, pcl5, ocir, epworth,
+  mdq, pcl5, ocir, epworth, dass21, erq, maas, spin,
 };

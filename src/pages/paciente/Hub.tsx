@@ -1,7 +1,7 @@
 ﻿import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ClipboardList, Brain, ArrowRight, Shield, Lock, Heart, Leaf, Activity, BookOpen, Gauge, Zap, Eye, Sprout, Smile, Star, Wine, Flame, Moon, HeartHandshake, ShieldOff, Layers, Sun, AlertTriangle, Repeat, Coffee } from "lucide-react";
+import { ClipboardList, Brain, ArrowRight, Shield, Lock, Heart, Leaf, Activity, BookOpen, Gauge, Zap, Eye, Sprout, Smile, Star, Wine, Flame, Moon, HeartHandshake, ShieldOff, Layers, Sun, AlertTriangle, Repeat, Coffee, BarChart3, Users, Focus, Sparkles } from "lucide-react";
 import { SkipLink } from "@/components/shared/SkipLink";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
 import { AppAurora } from "@/components/ui/AppAurora";
@@ -36,6 +36,10 @@ const ferramentasGerais: Ferramenta[] = [
   { id: "pcl5", href: "/paciente/escala/pcl5", icon: AlertTriangle, sigla: "PCL-5", nome: "Checklist de TEPT", descricao: "20 perguntas sobre reacoes a experiencias estressantes. ~5 min.", cor: "#8C4A4A" },
   { id: "ocir", href: "/paciente/escala/ocir", icon: Repeat, sigla: "OCI-R", nome: "Inventario Obsessivo-Compulsivo", descricao: "18 perguntas sobre pensamentos e comportamentos repetitivos. ~4 min.", cor: "#4A6B8C" },
   { id: "epworth", href: "/paciente/escala/epworth", icon: Coffee, sigla: "ESS", nome: "Sonolencia de Epworth", descricao: "8 perguntas sobre chance de cochilar em situacoes do dia a dia. ~2 min.", cor: "#6B5B4A" },
+  { id: "dass21", href: "/paciente/escala/dass21", icon: BarChart3, sigla: "DASS-21", nome: "Depressao, Ansiedade e Estresse", descricao: "21 perguntas sobre depressao, ansiedade e estresse. ~5 min.", cor: "#6B4A6B" },
+  { id: "erq", href: "/paciente/escala/erq", icon: Sparkles, sigla: "ERQ", nome: "Regulacao Emocional", descricao: "10 perguntas sobre como voce regula suas emocoes. ~3 min.", cor: "#4A8C6B" },
+  { id: "maas", href: "/paciente/escala/maas", icon: Focus, sigla: "MAAS", nome: "Atencao Plena (Mindfulness)", descricao: "15 perguntas sobre atencao e consciencia no dia a dia. ~4 min.", cor: "#3A6B8C" },
+  { id: "spin", href: "/paciente/escala/spin", icon: Users, sigla: "SPIN", nome: "Inventario de Fobia Social", descricao: "17 perguntas sobre desconforto em situacoes sociais. ~4 min.", cor: "#8C5B6B" },
 ];
 
 const ferramentasEsquemas: Ferramenta[] = [
@@ -49,22 +53,19 @@ const ferramentasEsquemas: Ferramenta[] = [
 function FerramentaCard({ f }: { f: Ferramenta }) {
   const Icon = f.icon;
   return (
-    <motion.div variants={fadeUp} whileHover={{ y: -5 }} transition={{ type: "spring", stiffness: 300, damping: 22 }}>
+    <motion.div variants={fadeUp}>
       <Link
         to={f.href}
-        className="shine-host glass-card group relative block h-full overflow-hidden rounded-2xl p-6 transition-shadow duration-300 hover:shadow-[0_18px_44px_-16px_rgba(58,42,31,0.4)]"
+        className="shine-host glass-card group relative block h-full overflow-hidden rounded-2xl p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_18px_44px_-16px_rgba(58,42,31,0.4)]"
       >
-        {/* fita de cor lateral */}
         <span className="absolute left-0 top-0 h-full w-1.5" style={{ background: `linear-gradient(to bottom, ${f.cor}, ${f.cor}55)` }} aria-hidden="true" />
         <div className="flex items-start gap-4 pl-1">
-          <motion.div
-            className="relative flex-shrink-0 rounded-2xl p-3.5"
+          <div
+            className="relative flex-shrink-0 rounded-2xl p-3.5 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-6"
             style={{ background: f.cor + "1A", boxShadow: `0 8px 22px -8px ${f.cor}88` }}
-            whileHover={{ scale: 1.1, rotate: 6 }}
-            transition={{ type: "spring", stiffness: 320 }}
           >
             <Icon size={24} style={{ color: f.cor }} aria-hidden="true" />
-          </motion.div>
+          </div>
           <div className="flex-1">
             <span className="text-[11px] font-bold tracking-[0.15em] uppercase" style={{ color: f.cor }}>{f.sigla}</span>
             <h3 className="mb-1.5 text-lg font-semibold text-[var(--c-text)] leading-snug" style={{ fontFamily: "var(--font-heading)" }}>{f.nome}</h3>

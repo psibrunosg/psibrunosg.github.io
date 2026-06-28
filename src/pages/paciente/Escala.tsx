@@ -285,13 +285,13 @@ export default function Escala() {
             )}
 
             {etapa === "form" && (
-              <motion.div key={"q" + atual} initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.25 }}>
+              <motion.div key="form" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
                 <div className="mb-2 flex items-center justify-between text-xs font-medium text-[var(--c-muted)]" aria-live="polite">
                   <span>Pergunta {atual + 1} de {total}</span>
                   <span className="text-[var(--c-accent)]">{pct}%</span>
                 </div>
                 <div className="mb-6 h-2 overflow-hidden rounded-full bg-[var(--c-border)]" role="progressbar" aria-valuenow={atual + 1} aria-valuemin={1} aria-valuemax={total} aria-label="Progresso do questionário">
-                  <motion.div className="h-full rounded-full" style={{ background: "linear-gradient(90deg, var(--c-accent), var(--c-accent-lt))" }} animate={{ width: pct + "%" }} transition={{ duration: 0.4, ease: "easeOut" }} />
+                  <div className="h-full rounded-full transition-[width] duration-300 ease-out" style={{ width: pct + "%", background: "linear-gradient(90deg, var(--c-accent), var(--c-accent-lt))" }} />
                 </div>
 
                 {rodadaLabel && (
@@ -312,16 +312,14 @@ export default function Escala() {
                 </div>
 
                 <div className="space-y-3" role="radiogroup" aria-label={getCurrentItemText()}>
-                  {getCurrentOptions().map((op, i) => {
+                  {getCurrentOptions().map((op) => {
                     const selected = respostas[atual] === op.valor;
                     return (
-                      <motion.button
+                      <button
                         key={op.valor}
                         role="radio" aria-checked={selected} aria-label={op.label}
-                        initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
-                        whileHover={{ x: 4 }} whileTap={{ scale: 0.99 }}
                         onClick={() => handleResposta(op.valor)}
-                        className="flex w-full items-center gap-3 rounded-xl border px-5 py-4 text-left transition-colors"
+                        className="flex w-full items-center gap-3 rounded-xl border px-5 py-4 text-left transition-all duration-150 hover:translate-x-1 active:scale-[0.99]"
                         style={{
                           borderColor: selected ? "var(--c-accent)" : "var(--c-border)",
                           background: selected ? "color-mix(in oklab, var(--c-accent) 12%, transparent)" : "color-mix(in oklab, var(--c-bg) 60%, transparent)",
@@ -333,7 +331,7 @@ export default function Escala() {
                           {selected ? <Check size={14} /> : op.valor}
                         </span>
                         <span className="flex-1">{op.label}</span>
-                      </motion.button>
+                      </button>
                     );
                   })}
                 </div>

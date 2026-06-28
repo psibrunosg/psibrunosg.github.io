@@ -115,6 +115,31 @@ export const epworthFaixas = [
   { min: 15, max: 24, classificacao: "Excessiva", descricao: "Sonolência diurna excessiva — encaminhamento para avaliação do sono." },
 ] as const;
 
+// ------ DASS-21 (Depressão, Ansiedade e Estresse) — escore 0-63 ------
+export const dass21Faixas = [
+  { min: 0, max: 9, classificacao: "Normal", descricao: "Niveis normais de depressao, ansiedade e estresse." },
+  { min: 10, max: 13, classificacao: "Leve", descricao: "Sintomatologia leve." },
+  { min: 14, max: 20, classificacao: "Moderada", descricao: "Sintomatologia moderada." },
+  { min: 21, max: 27, classificacao: "Grave", descricao: "Sintomatologia grave." },
+  { min: 28, max: 63, classificacao: "Muito grave", descricao: "Sintomatologia muito grave — avaliacao clinica recomendada." },
+] as const;
+
+// ------ MAAS (Atenção e Consciência Plena) — escore 15-90 ------
+export const maasFaixas = [
+  { min: 15, max: 35, classificacao: "Baixa", descricao: "Atencao plena reduzida — mindfulness pode ser util." },
+  { min: 36, max: 59, classificacao: "Moderada", descricao: "Nivel moderado de atencao plena." },
+  { min: 60, max: 90, classificacao: "Alta", descricao: "Nivel elevado de atencao plena." },
+] as const;
+
+// ------ SPIN (Fobia Social) — escore 0-68 ------
+export const spinFaixas = [
+  { min: 0, max: 20, classificacao: "Sem fobia social", descricao: "Sem indicativo de fobia social." },
+  { min: 21, max: 30, classificacao: "Leve", descricao: "Fobia social leve." },
+  { min: 31, max: 40, classificacao: "Moderada", descricao: "Fobia social moderada." },
+  { min: 41, max: 50, classificacao: "Grave", descricao: "Fobia social grave." },
+  { min: 51, max: 68, classificacao: "Muito grave", descricao: "Fobia social muito grave — avaliacao clinica recomendada." },
+] as const;
+
 // ------ WHO-5 (Índice de Bem-Estar da OMS) — escore bruto 0-25 ------
 // Maior = melhor. ×4 = percentual. ≤50% (bruto ≤12) rastreio positivo; <28% (bruto ≤6) provável depressão.
 export const who5Faixas = [
