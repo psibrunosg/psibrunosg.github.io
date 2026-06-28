@@ -11,7 +11,6 @@ import { gerarPDF } from "@/lib/pdf-generator";
 import { processarTeste, gerarParecerPDF, type DadosPaciente, type ResultadoTeste } from "@/lib/parecer-generator";
 import {
   testesDisponiveis, neoFacetasPorDominio, neoFacetasNomes, neoDominioNomes,
-  classificarPorFaixa, phq9Faixas, gad7Faixas, baiFaixas, bdiFaixas, bhsFaixas, asrsFaixas,
   type TesteId, type NeoFFIDominio,
 } from "@/content/normative-tables";
 import { escalas } from "@/content/escalas";
@@ -22,6 +21,10 @@ import { posts as staticPosts } from "@/content/posts-loader";
 import { fadeUp, stagger } from "@/lib/motion";
 import { AppAurora } from "@/components/ui/AppAurora";
 import { detectarRiscos, type RespostaRegistro as Resposta } from "@/lib/scoring";
+import {
+  interpretarResposta, correlacoesFactuais,
+  type RespostaInterpretada, type RodadaInterpretada, type EsquemaInterpretado, type Correlacao,
+} from "@/lib/interpret";
 
 
 const allScaleConfigs: Record<string, { itens: (string | BDIItem)[]; opcoes?: { label: string; valor: number }[] }> = {};
@@ -69,44 +72,28 @@ function getOptionLabel(tipo: string, valor: number): string | null {
   return cfg.opcoes.find((o) => o.valor === valor)?.label ?? null;
 }
 
-const faixasPorTipo: Record<string, readonly { readonly min: number; readonly max: number; readonly classificacao: string; readonly descricao: string }[]> = {
-  phq9: phq9Faixas, gad7: gad7Faixas, bai: baiFaixas, bdi: bdiFaixas, bhs: bhsFaixas, asrs: asrsFaixas,
-};
-
-function classNivel(tipo: string, s: number) {
-  const faixas = faixasPorTipo[tipo];
-  if (faixas) return classificarPorFaixa(s, faixas).classificacao;
-  if (["ysq", "ypi"].includes(tipo)) return s > 3.5 ? "Esquemas ativos" : "Sem ativação";
-  if (tipo === "yci") return s > 0 ? `${s} defesa${s > 1 ? "s" : ""}` : "Nenhuma";
-  if (["neoffir", "neopir"].includes(tipo)) return "Ver perfil";
-  if (["ebep", "less"].includes(tipo)) return "Ver domínios";
-  return `Score: ${s}`;
-}
-
 interface Notificacao { id: number; tipo: string; nome: string; tempo: string; }
 
-function EvolucaoChart({ historico, tipo }: { historico: Resposta[]; tipo: string }) {
-  const dados = [...historico].sort((a, b) => new Date(a.criado_em).getTime() - new Date(b.criado_em).getTime());
-  if (dados.length < 2) return null;
-  const maxMap: Record<string, number> = { phq9: 27, gad7: 21, bai: 63, bdi: 63, bhs: 20, asrs: 72 };
-  const maxVal = maxMap[tipo] ?? Math.max(...dados.map((d) => d.pontuacao), 1);
+function EvolucaoChart({ serie, maxVal, titulo }: { serie: { data: string; valor: number }[]; maxVal: number; titulo: string }) {
+  if (serie.length < 2) return null;
+  const mv = maxVal > 0 ? maxVal : Math.max(...serie.map((d) => d.valor), 1);
   const W = 400; const H = 160; const PAD = 30;
-  const pw = (W - PAD * 2) / (dados.length - 1);
-  const points = dados.map((d, i) => ({
+  const pw = (W - PAD * 2) / (serie.length - 1);
+  const points = serie.map((d, i) => ({
     x: PAD + i * pw,
-    y: PAD + (1 - d.pontuacao / maxVal) * (H - PAD * 2),
-    score: d.pontuacao,
-    data: new Date(d.criado_em).toLocaleDateString("pt-BR"),
+    y: PAD + (1 - d.valor / mv) * (H - PAD * 2),
+    score: d.valor,
+    data: d.data,
   }));
   const line = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
 
   return (
     <div className="glass-card rounded-2xl p-5">
-      <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Evolucao ({tipo.toUpperCase()})</p>
+      <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Evolucao ({titulo})</p>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ maxHeight: 180 }}>
         <line x1={PAD} y1={H - PAD} x2={W - PAD} y2={H - PAD} stroke="var(--c-border)" strokeWidth="1" />
         <line x1={PAD} y1={PAD} x2={PAD} y2={H - PAD} stroke="var(--c-border)" strokeWidth="1" />
-        <text x={PAD - 4} y={PAD + 4} textAnchor="end" fontSize="9" fill="var(--c-muted)">{maxVal}</text>
+        <text x={PAD - 4} y={PAD + 4} textAnchor="end" fontSize="9" fill="var(--c-muted)">{mv}</text>
         <text x={PAD - 4} y={H - PAD + 4} textAnchor="end" fontSize="9" fill="var(--c-muted)">0</text>
         <path d={line} fill="none" stroke="var(--c-accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
         {points.map((p, i) => (
@@ -121,6 +108,369 @@ function EvolucaoChart({ historico, tipo }: { historico: Resposta[]; tipo: strin
   );
 }
 
+// Série temporal por família (reusa interpret): nº de ativos / defesas / escore total.
+function serieEvolucao(historico: Resposta[]): { serie: { data: string; valor: number }[]; maxVal: number; titulo: string } | null {
+  const ordenado = [...historico].sort((a, b) => new Date(a.criado_em).getTime() - new Date(b.criado_em).getTime());
+  if (ordenado.length < 2) return null;
+  const interps = ordenado.map((h) => ({ h, i: interpretarResposta(h.tipo, h.respostas, h.pontuacao) }));
+  const fam = interps[0].i.familia;
+  const serie = interps.map(({ h, i }) => {
+    const valor = fam === "schema" ? (i.totalAtivos ?? 0)
+      : fam === "threshold" ? (i.flagged?.length ?? 0)
+      : (i.total ?? h.pontuacao);
+    return { data: new Date(h.criado_em).toLocaleDateString("pt-BR"), valor };
+  });
+  const first = interps[0].i;
+  const maxVal = fam === "schema" ? (first.totalEsquemas ?? Math.max(...serie.map((s) => s.valor), 1))
+    : fam === "threshold" ? (first.respostas.length || Math.max(...serie.map((s) => s.valor), 1))
+    : (first.max ?? Math.max(...serie.map((s) => s.valor), 1));
+  const titulo = fam === "schema" ? `${first.sigla} · ${first.unidade}s ativos`
+    : fam === "threshold" ? `${first.sigla} · ${first.unidadeDefesa}s`
+    : first.sigla;
+  return { serie, maxVal, titulo };
+}
+
+// ===== Componentes de interpretação (painel) =====
+function BarraMini({ pct, cor, delay = 0 }: { pct: number; cor: string; delay?: number }) {
+  return (
+    <div className="h-2 overflow-hidden rounded-full bg-[var(--c-border)]">
+      <motion.div className="h-full rounded-full" style={{ background: cor }}
+        initial={{ width: 0 }} animate={{ width: Math.min(100, pct) + "%" }}
+        transition={{ duration: 0.7, ease: "easeOut", delay }} />
+    </div>
+  );
+}
+
+function SchemaDrill({ rodada, cor }: { rodada: RodadaInterpretada; cor: string }) {
+  const grupos = new Map<string, EsquemaInterpretado[]>();
+  for (const e of rodada.esquemas) {
+    const arr = grupos.get(e.dominio) ?? [];
+    arr.push(e);
+    grupos.set(e.dominio, arr);
+  }
+  const verde = "#4A8B6B";
+  return (
+    <div className="space-y-3">
+      {Array.from(grupos.entries()).map(([dom, esquemas]) => (
+        <div key={dom} className="rounded-xl border border-[var(--c-border)] p-4">
+          <h4 className="mb-3 text-xs font-semibold text-[var(--c-text)]">{dom}</h4>
+          <div className="space-y-2.5">
+            {esquemas.map((e, i) => {
+              const ativo = e.ativo && !e.positivo;
+              const destaque = ativo || (e.positivo && e.ativo);
+              const corItem = e.positivo ? verde : ativo ? cor : "var(--c-muted)";
+              return (
+                <div key={e.id}>
+                  <div className="mb-1 flex items-center justify-between text-xs">
+                    <span className={destaque ? "font-semibold" : "text-[var(--c-muted)]"} style={destaque ? { color: corItem } : undefined}>
+                      {e.nome}{e.positivo ? " (saudável)" : ""}
+                    </span>
+                    <span className={destaque ? "font-bold" : "text-[var(--c-muted)]"} style={destaque ? { color: corItem } : undefined}>{e.media.toFixed(1)}</span>
+                  </div>
+                  <BarraMini pct={(e.media / 6) * 100} cor={e.positivo ? verde : ativo ? cor : "var(--c-muted)"} delay={i * 0.03} />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function RawItens({ interp }: { interp: RespostaInterpretada }) {
+  const [aberto, setAberto] = useState(false);
+  const cfg = allScaleConfigs[interp.tipo];
+  return (
+    <div className="pt-1">
+      <button onClick={() => setAberto(!aberto)} className="text-[11px] font-medium text-[var(--c-accent)] hover:underline">
+        {aberto ? "Ocultar respostas item a item" : `Ver respostas item a item (${interp.respostas.length})`}
+      </button>
+      {aberto && (
+        <div className="mt-3 grid gap-2 md:grid-cols-2">
+          {interp.respostas.map((val, i) => {
+            const itemRaw = cfg?.itens?.[i];
+            const pergunta = itemRaw ? getItemText(itemRaw, i) : `Item ${i + 1}`;
+            const optLabel = getOptionLabel(interp.tipo, val);
+            const maxOp = cfg?.opcoes ? Math.max(...cfg.opcoes.map((o) => o.valor)) : 6;
+            const ratio = maxOp > 0 ? val / maxOp : 0;
+            return (
+              <div key={i} className="flex items-start gap-3 rounded-lg p-2 hover:bg-[var(--c-surface)]/30">
+                <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-[var(--c-accent)]/10 text-[10px] font-bold text-[var(--c-accent)]">{i + 1}</span>
+                <div className="min-w-0">
+                  <p className="text-xs text-[var(--c-text)]">{pergunta}</p>
+                  <p className="text-[10px] font-medium" style={{ color: ratio >= 0.75 ? "#c53030" : ratio >= 0.5 ? "#d69e2e" : ratio > 0 ? "#38a169" : "var(--c-muted)" }}>
+                    {optLabel ? `${optLabel} (${val})` : `${val}`}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ResumoCard({ interp }: { interp: RespostaInterpretada }) {
+  const cor = "var(--c-accent)";
+  let valor: number; let sub: string; let pct: number; let nivel: string | undefined;
+  if (interp.familia === "schema") {
+    valor = interp.totalAtivos ?? 0;
+    sub = `de ${interp.totalEsquemas} ${interp.unidade}s mapeados`;
+    pct = interp.totalEsquemas ? ((interp.totalAtivos ?? 0) / interp.totalEsquemas) * 100 : 0;
+    nivel = `${interp.unidade === "modo" ? "Modos" : "Esquemas"} ativos`;
+  } else if (interp.familia === "threshold") {
+    valor = interp.flagged?.length ?? 0;
+    sub = `${interp.unidadeDefesa}s ativas (item ≥ 5)`;
+    pct = interp.respostas.length ? ((interp.flagged?.length ?? 0) / interp.respostas.length) * 100 : 0;
+  } else {
+    valor = interp.total ?? 0;
+    sub = `de ${interp.max} pontos`;
+    pct = interp.pct ?? 0;
+    nivel = interp.classificacao;
+  }
+  return (
+    <div className="text-center">
+      <span className="rounded-full bg-[var(--c-accent)]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[var(--c-accent)]">{interp.sigla}</span>
+      <p className="mt-3 text-4xl font-bold" style={{ color: cor }}>{valor}</p>
+      <p className="text-xs text-[var(--c-muted)]">{sub}</p>
+      <div className="mx-auto mt-3 h-2 w-full overflow-hidden rounded-full bg-[var(--c-border)]">
+        <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(100, pct)}%` }} transition={{ duration: 0.8, ease: "easeOut" }}
+          className="h-full rounded-full" style={{ background: cor }} />
+      </div>
+      {nivel && <p className="mt-2 text-sm font-semibold" style={{ color: cor }}>{nivel}</p>}
+    </div>
+  );
+}
+
+function InterpretBlock({ interp }: { interp: RespostaInterpretada }) {
+  const cores = ["#B05D3A", "#3A6B8C", "#6B3A8C", "#4A6B47"];
+
+  if (interp.familia === "schema") {
+    return (
+      <div className="space-y-5">
+        {interp.rodadas!.map((rd, ri) => {
+          const cor = cores[ri % cores.length];
+          const naoPositivos = rd.esquemas.filter((e) => !e.positivo).length;
+          return (
+            <div key={rd.label || ri}>
+              <div className="mb-2 flex items-center gap-2">
+                {(interp.rodadas!.length > 1 || rd.label) && (
+                  <span className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider" style={{ background: cor + "1A", color: cor }}>{rd.label || "Resultado"}</span>
+                )}
+                <span className="text-xs text-[var(--c-muted)]">{rd.ativos.length} de {naoPositivos} {interp.unidade}s ativos</span>
+              </div>
+              {rd.ativos.length > 0 ? (
+                <div className="mb-3 flex flex-wrap gap-1.5">
+                  {rd.ativos.map((e) => (
+                    <span key={e.id} className="rounded-lg px-2.5 py-1 text-[11px] font-semibold" style={{ background: cor + "1A", color: cor }} title={e.dominio}>
+                      {e.nome} · {e.media.toFixed(1)}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="mb-3 text-xs text-[var(--c-muted)]">Nenhum {interp.unidade} ativo (média acima de {LIMIAR_TXT}).</p>
+              )}
+              {rd.saudavelAtivo && (
+                <p className="mb-3 text-[11px] font-medium" style={{ color: "#4A8B6B" }}>
+                  Modo saudável presente: {rd.saudavelAtivo.nome} ({rd.saudavelAtivo.media.toFixed(1)}) — recurso protetor.
+                </p>
+              )}
+              <SchemaDrill rodada={rd} cor={cor} />
+            </div>
+          );
+        })}
+        <RawItens interp={interp} />
+      </div>
+    );
+  }
+
+  if (interp.familia === "threshold") {
+    return (
+      <div className="space-y-3">
+        {(!interp.flagged || interp.flagged.length === 0) ? (
+          <p className="text-xs text-[var(--c-muted)]">Nenhuma {interp.unidadeDefesa} ativada (nenhum item com nota ≥ 5).</p>
+        ) : (
+          <ul className="space-y-2">
+            {interp.flagged.map((f) => (
+              <li key={f.index} className="flex items-start gap-3 text-xs">
+                <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg text-[10px] font-bold text-white" style={{ background: f.valor >= 6 ? "#c53030" : "var(--c-accent)" }}>{f.valor}</span>
+                <span className="leading-snug text-[var(--c-text)]">{f.texto}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <RawItens interp={interp} />
+      </div>
+    );
+  }
+
+  // faixa / dominio
+  return (
+    <div className="space-y-3">
+      {interp.classificacao && (
+        <div className="rounded-lg bg-[var(--c-surface)] p-3">
+          <p className="text-xs font-semibold text-[var(--c-accent)]">{interp.classificacao}</p>
+          {interp.descricao && <p className="mt-0.5 text-xs text-[var(--c-muted)]">{interp.descricao}</p>}
+        </div>
+      )}
+      {interp.dominios && interp.dominios.length > 0 && (
+        <div className="space-y-2.5">
+          {interp.dominios.map((d, i) => (
+            <div key={d.id}>
+              <div className="mb-1 flex items-center justify-between text-xs">
+                <span className="font-medium text-[var(--c-text)]">{d.nome}</span>
+                <span className="font-semibold text-[var(--c-accent)]">{d.media.toFixed(1)} <span className="text-[var(--c-muted)]">(soma {d.soma})</span></span>
+              </div>
+              <BarraMini pct={(d.media / 6) * 100} cor="var(--c-accent)" delay={i * 0.05} />
+            </div>
+          ))}
+        </div>
+      )}
+      <RawItens interp={interp} />
+    </div>
+  );
+}
+
+const LIMIAR_TXT = "3.5";
+
+// ===== Perfil por paciente (lista + perfil) =====
+function chavePaciente(r: Resposta): string {
+  return r.nome.trim().toLowerCase() + "|" + (r.nascimento ?? "");
+}
+
+function PacientesLista({ respostas, onAbrir }: { respostas: Resposta[]; onAbrir: (chave: string) => void }) {
+  const grupos = (() => {
+    const m = new Map<string, Resposta[]>();
+    for (const r of respostas) { const k = chavePaciente(r); const a = m.get(k) ?? []; a.push(r); m.set(k, a); }
+    return Array.from(m.entries())
+      .map(([chave, rs]) => ({ chave, nome: rs[0].nome, nascimento: rs[0].nascimento, rs: [...rs].sort((a, b) => new Date(b.criado_em).getTime() - new Date(a.criado_em).getTime()) }))
+      .sort((a, b) => new Date(b.rs[0].criado_em).getTime() - new Date(a.rs[0].criado_em).getTime());
+  })();
+  if (grupos.length === 0) return <p className="py-12 text-center text-[var(--c-muted)]">Nenhum paciente.</p>;
+  return (
+    <div className="grid gap-3 md:grid-cols-2">
+      {grupos.map((g) => {
+        const tipos = Array.from(new Set(g.rs.map((r) => r.tipo)));
+        const risco = detectarRiscos(g.rs);
+        const ultima = new Date(g.rs[0].criado_em).toLocaleDateString("pt-BR");
+        return (
+          <div key={g.chave} onClick={() => onAbrir(g.chave)} className="glass-card cursor-pointer rounded-2xl p-5 transition-colors hover:border-[var(--c-accent)]/30">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <h3 className="truncate text-sm font-semibold text-[var(--c-text)]">{g.nome}</h3>
+                <p className="text-[10px] text-[var(--c-muted)]">{g.nascimento ?? "—"} · última {ultima}</p>
+              </div>
+              {risco.length > 0 && <span className="flex-shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase" style={{ background: "#dc26261A", color: "#dc2626" }}>risco</span>}
+            </div>
+            <div className="mt-2 flex flex-wrap gap-1">
+              {tipos.map((t) => <span key={t} className="rounded-full bg-[var(--c-accent)]/10 px-2 py-0.5 text-[9px] font-bold uppercase text-[var(--c-accent)]">{t}</span>)}
+            </div>
+            <p className="mt-2 text-[10px] text-[var(--c-muted)]">{g.rs.length} resposta{g.rs.length !== 1 ? "s" : ""} · {tipos.length} escala{tipos.length !== 1 ? "s" : ""}</p>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function PainelCorrelacoes({ correls }: { correls: Correlacao[] }) {
+  if (correls.length === 0) return null;
+  return (
+    <motion.div variants={fadeUp} className="glass-card mb-6 rounded-2xl p-5">
+      <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Correlações entre escalas <span className="normal-case text-[var(--c-muted)]">(factual — confirme clinicamente)</span></p>
+      <ul className="space-y-2">
+        {correls.map((c, i) => (
+          <li key={i} className="flex items-start gap-2 text-xs">
+            <span className="mt-0.5 flex-shrink-0 font-bold" style={{ color: c.nivel === "atencao" ? "#f59e0b" : "var(--c-accent)" }}>•</span>
+            <span className="leading-snug text-[var(--c-text)]">{c.texto}</span>
+          </li>
+        ))}
+      </ul>
+    </motion.div>
+  );
+}
+
+function PerfilPaciente({ respostas, onVoltar, onAbrirResposta }: { respostas: Resposta[]; onVoltar: () => void; onAbrirResposta: (r: Resposta) => void }) {
+  const ordenado = [...respostas].sort((a, b) => new Date(b.criado_em).getTime() - new Date(a.criado_em).getTime());
+  const nome = ordenado[0]?.nome ?? "Paciente";
+  const nascimento = ordenado[0]?.nascimento;
+  const riscos = detectarRiscos(ordenado);
+  const latestPorTipo = (() => {
+    const m = new Map<string, Resposta>();
+    for (const r of ordenado) if (!m.has(r.tipo)) m.set(r.tipo, r); // ordenado desc → primeiro é o mais recente
+    return Array.from(m.values());
+  })();
+  const interps = latestPorTipo.map((r) => interpretarResposta(r.tipo, r.respostas, r.pontuacao));
+  const correls = correlacoesFactuais(interps);
+
+  return (
+    <>
+      <motion.div variants={fadeUp} className="mb-6 flex items-center gap-3">
+        <button onClick={onVoltar} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]"><X size={15} /></button>
+        <div>
+          <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{nome}</h2>
+          <p className="text-[10px] text-[var(--c-muted)]">{nascimento ?? "—"} · {ordenado.length} resposta{ordenado.length !== 1 ? "s" : ""} · {latestPorTipo.length} escala{latestPorTipo.length !== 1 ? "s" : ""}</p>
+        </div>
+      </motion.div>
+
+      {riscos.length > 0 && (
+        <motion.div variants={fadeUp} className="mb-6 space-y-2">
+          {riscos.map((r, i) => (
+            <div key={i} className="flex items-start gap-3 rounded-2xl border-2 p-4" style={{ borderColor: r.nivel === "critico" ? "#dc2626" : "#f59e0b", background: r.nivel === "critico" ? "#dc26260A" : "#f59e0b0A" }}>
+              <AlertTriangle size={18} className="mt-0.5 flex-shrink-0" style={{ color: r.nivel === "critico" ? "#dc2626" : "#f59e0b" }} />
+              <div>
+                <p className="text-xs font-bold" style={{ color: r.nivel === "critico" ? "#dc2626" : "#f59e0b" }}>{r.nivel === "critico" ? "ALERTA CRITICO" : "ALERTA DE RISCO"}</p>
+                <p className="text-xs text-[var(--c-text)]">{r.mensagem}</p>
+              </div>
+            </div>
+          ))}
+        </motion.div>
+      )}
+
+      <PainelCorrelacoes correls={correls} />
+
+      <motion.div variants={fadeUp} className="mb-4 grid gap-4 md:grid-cols-2">
+        {latestPorTipo.map((r) => {
+          const interp = interpretarResposta(r.tipo, r.respostas, r.pontuacao);
+          return (
+            <div key={r.tipo} className="glass-card rounded-2xl p-5">
+              <div className="mb-3 flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <span className="rounded-full bg-[var(--c-accent)]/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[var(--c-accent)]">{interp.sigla}</span>
+                  <p className="mt-1.5 text-xs font-semibold text-[var(--c-text)]">{interp.resumo}</p>
+                  <p className="text-[10px] text-[var(--c-muted)]">{new Date(r.criado_em).toLocaleDateString("pt-BR")}</p>
+                </div>
+                <button onClick={() => onAbrirResposta(r)} className="flex-shrink-0 text-[10px] font-medium text-[var(--c-accent)] hover:underline">Abrir / parecer</button>
+              </div>
+              <InterpretBlock interp={interp} />
+            </div>
+          );
+        })}
+      </motion.div>
+
+      <motion.div variants={fadeUp} className="glass-card rounded-2xl p-5">
+        <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Linha do tempo ({ordenado.length})</p>
+        <div className="space-y-1.5">
+          {ordenado.map((r) => {
+            const interp = interpretarResposta(r.tipo, r.respostas, r.pontuacao);
+            return (
+              <div key={r.id} onClick={() => onAbrirResposta(r)} className="flex items-center justify-between rounded-lg px-3 py-2 text-xs transition-colors cursor-pointer hover:bg-[var(--c-surface)]/40">
+                <div className="flex items-center gap-2">
+                  <span className="rounded bg-[var(--c-accent)]/10 px-1.5 py-0.5 text-[9px] font-bold uppercase text-[var(--c-accent)]">{r.tipo}</span>
+                  <span className="text-[var(--c-muted)]">{new Date(r.criado_em).toLocaleDateString("pt-BR")}</span>
+                </div>
+                <span className="font-medium text-[var(--c-text)]">{interp.resumo}</span>
+              </div>
+            );
+          })}
+        </div>
+      </motion.div>
+    </>
+  );
+}
+
 export default function BrunoPainel() {
   const [auth, setAuth] = useState(false);
   const [email, setEmail] = useState("");
@@ -128,6 +478,8 @@ export default function BrunoPainel() {
   const [erro, setErro] = useState("");
   const [loginLoading, setLoginLoading] = useState(true);
   const [tab, setTab] = useState<"respostas" | "blog" | "ferramentas">("respostas");
+  const [respView, setRespView] = useState<"lista" | "pacientes">("lista");
+  const [pacienteChave, setPacienteChave] = useState<string | null>(null);
   const [respostaAberta, setRespostaAberta] = useState<Resposta | null>(null);
   const [historicoAberto, setHistoricoAberto] = useState<Resposta[]>([]);
   const [parecerAvulso, setParecerAvulso] = useState(false);
@@ -268,7 +620,7 @@ export default function BrunoPainel() {
       const perguntas = cfg?.itens?.map((item, i) => getItemText(item, i)) ?? r.respostas.map((_, i) => `Item ${i + 1}`);
       const dt = new Date(r.criado_em).toLocaleDateString("pt-BR");
       const sigla = testesDisponiveis.find((t) => t.id === r.tipo)?.sigla ?? r.tipo.toUpperCase();
-      const doc = gerarPDF({ tipo: sigla, nome: r.nome, pontuacao: r.pontuacao, nivel: classNivel(r.tipo, r.pontuacao), respostas: r.respostas, perguntas, data: dt });
+      const doc = gerarPDF({ tipo: sigla, nome: r.nome, pontuacao: r.pontuacao, nivel: interpretarResposta(r.tipo, r.respostas, r.pontuacao).resumo, respostas: r.respostas, perguntas, data: dt });
       zip.file(sigla + "_" + r.nome.replace(/\s+/g, "_") + "_" + dt.replace(/\//g, "-") + ".pdf", doc.output("arraybuffer"));
     }
     const blob = await zip.generateAsync({ type: "blob" });
@@ -426,9 +778,10 @@ export default function BrunoPainel() {
 
             {tab === "respostas" && !respostaAberta && !parecerAvulso && (() => {
               const riscos = detectarRiscos(respostas);
+              const emPerfil = respView === "pacientes" && pacienteChave;
               return (
               <>
-                {riscos.length > 0 && (
+                {riscos.length > 0 && !emPerfil && (
                   <motion.div variants={fadeUp} className="mb-4 space-y-2">
                     {riscos.map((r, i) => (
                       <div key={i} className="flex items-start gap-3 rounded-2xl border-2 p-4"
@@ -445,8 +798,17 @@ export default function BrunoPainel() {
                   </motion.div>
                 )}
 
-                <motion.div variants={fadeUp} className="mb-6 flex items-center justify-between">
-                  <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Respostas</h2>
+                <motion.div variants={fadeUp} className="mb-6 flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Respostas</h2>
+                    <div className="flex gap-0.5 rounded-full bg-[var(--c-surface)]/60 p-0.5">
+                      {(["lista", "pacientes"] as const).map((v) => (
+                        <button key={v} onClick={() => { setRespView(v); setPacienteChave(null); }}
+                          className={"rounded-full px-3 py-1 text-[11px] font-semibold capitalize transition-all " + (respView === v ? "text-white" : "text-[var(--c-muted)] hover:text-[var(--c-text)]")}
+                          style={respView === v ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>{v}</button>
+                      ))}
+                    </div>
+                  </div>
                   <div className="flex gap-2">
                     <button onClick={abrirParecerAvulso}
                       className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white"
@@ -454,20 +816,29 @@ export default function BrunoPainel() {
                       <Plus size={14} /> Novo Parecer
                     </button>
                     <button onClick={carregar} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]"><RefreshCw size={15} /></button>
-                    <motion.button whileTap={{ scale: 0.96 }} onClick={exportar} disabled={!selecionados.size || exportando}
+                    {respView === "lista" && <motion.button whileTap={{ scale: 0.96 }} onClick={exportar} disabled={!selecionados.size || exportando}
                       className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white transition-opacity disabled:opacity-40"
                       style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
                       <Download size={14} /> {exportando ? "..." : "PDF (" + selecionados.size + ")"}
-                    </motion.button>
-                    <button onClick={deletar} disabled={!selecionados.size}
+                    </motion.button>}
+                    {respView === "lista" && <button onClick={deletar} disabled={!selecionados.size}
                       className="flex items-center gap-1.5 rounded-full border border-red-300 px-4 py-2 text-xs font-semibold text-red-500 transition-all hover:bg-red-50 disabled:opacity-40">
                       <Trash2 size={14} /> ({selecionados.size})
-                    </button>
+                    </button>}
                   </div>
                 </motion.div>
 
                 {loading ? (
                   <p className="py-12 text-center text-[var(--c-muted)]">Carregando...</p>
+                ) : respView === "pacientes" ? (
+                  pacienteChave ? (
+                    <PerfilPaciente
+                      respostas={respostas.filter((r) => chavePaciente(r) === pacienteChave)}
+                      onVoltar={() => setPacienteChave(null)}
+                      onAbrirResposta={(r) => abrirDashboard(r)} />
+                  ) : (
+                    <PacientesLista respostas={respostas} onAbrir={(k) => setPacienteChave(k)} />
+                  )
                 ) : respostas.length === 0 ? (
                   <p className="py-12 text-center text-[var(--c-muted)]">Nenhuma resposta.</p>
                 ) : (
@@ -496,7 +867,7 @@ export default function BrunoPainel() {
                               <td className="px-4 py-3 font-medium text-[var(--c-text)]">{r.nome}</td>
                               <td className="px-4 py-3 text-xs text-[var(--c-muted)]">{r.nascimento ?? "-"}</td>
                               <td className="px-4 py-3 font-semibold text-[var(--c-text)]">{r.pontuacao}</td>
-                              <td className="px-4 py-3 text-xs text-[var(--c-muted)]">{classNivel(r.tipo, r.pontuacao)}</td>
+                              <td className="px-4 py-3 text-xs text-[var(--c-muted)]">{interpretarResposta(r.tipo, r.respostas, r.pontuacao).resumo}</td>
                               <td className="px-4 py-3 text-xs text-[var(--c-muted)]">{new Date(r.criado_em).toLocaleDateString("pt-BR")}</td>
                             </tr>
                           );
@@ -546,26 +917,7 @@ export default function BrunoPainel() {
 
                   {respostaAberta && <motion.div variants={fadeUp} className="glass-card rounded-2xl p-5">
                     <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Resultado Atual</p>
-                    {(() => {
-                      const corMap: Record<string, string> = { phq9: "#B05D3A", gad7: "#4A6B47", bai: "#5B7DB1", bdi: "#7B5EA7", bhs: "#8B6F47", asrs: "#4A8B6B" };
-                      const cor = corMap[respostaAberta.tipo] ?? "var(--c-accent)";
-                      const nivel = classNivel(respostaAberta.tipo, respostaAberta.pontuacao);
-                      const maxMap: Record<string, number> = { phq9: 27, gad7: 21, bai: 63, bdi: 63, bhs: 20, asrs: 72 };
-                      const max = maxMap[respostaAberta.tipo] ?? respostaAberta.pontuacao;
-                      const pct = Math.min(100, (respostaAberta.pontuacao / max) * 100);
-                      return (
-                        <div className="text-center">
-                          <span className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider" style={{ background: cor + "1A", color: cor }}>{respostaAberta.tipo.toUpperCase()}</span>
-                          <p className="mt-3 text-4xl font-bold" style={{ color: cor }}>{respostaAberta.pontuacao}</p>
-                          <p className="text-xs text-[var(--c-muted)]">de {max} pontos</p>
-                          <div className="mx-auto mt-3 h-2 w-full overflow-hidden rounded-full bg-[var(--c-border)]">
-                            <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, ease: "easeOut" }}
-                              className="h-full rounded-full" style={{ background: cor }} />
-                          </div>
-                          <p className="mt-2 text-sm font-semibold" style={{ color: cor }}>{nivel}</p>
-                        </div>
-                      );
-                    })()}
+                    <ResumoCard interp={interpretarResposta(respostaAberta.tipo, respostaAberta.respostas, respostaAberta.pontuacao)} />
                   </motion.div>}
 
                   {respostaAberta && <motion.div variants={fadeUp} className="glass-card rounded-2xl p-5">
@@ -592,39 +944,21 @@ export default function BrunoPainel() {
                   </motion.div>}
                 </div>
 
-                {respostaAberta && historicoAberto.length >= 2 && (
-                  <div className="mb-6">
-                    <EvolucaoChart historico={historicoAberto.filter((h) => h.tipo === respostaAberta.tipo)} tipo={respostaAberta.tipo} />
-                  </div>
-                )}
+                {respostaAberta && (() => {
+                  const ev = serieEvolucao(historicoAberto.filter((h) => h.tipo === respostaAberta.tipo));
+                  return ev ? <div className="mb-6"><EvolucaoChart serie={ev.serie} maxVal={ev.maxVal} titulo={ev.titulo} /></div> : null;
+                })()}
 
-                {/* Detalhes das respostas individuais */}
-                {respostaAberta && (
-                <motion.div variants={fadeUp} className="glass-card mb-6 rounded-2xl p-5">
-                  <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Respostas Detalhadas</p>
-                  <div className="grid gap-2 md:grid-cols-2">
-                    {respostaAberta.respostas.map((val, i) => {
-                      const cfg = allScaleConfigs[respostaAberta.tipo];
-                      const itemRaw = cfg?.itens?.[i];
-                      const pergunta = itemRaw ? getItemText(itemRaw, i) : `Item ${i + 1}`;
-                      const optLabel = getOptionLabel(respostaAberta.tipo, val);
-                      const maxOp = cfg?.opcoes ? Math.max(...cfg.opcoes.map((o) => o.valor)) : 3;
-                      const ratio = maxOp > 0 ? val / maxOp : 0;
-                      return (
-                        <div key={i} className="flex items-start gap-3 rounded-lg p-2 hover:bg-[var(--c-surface)]/30">
-                          <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-[var(--c-accent)]/10 text-[10px] font-bold text-[var(--c-accent)]">{i + 1}</span>
-                          <div className="min-w-0">
-                            <p className="text-xs text-[var(--c-text)]">{pergunta}</p>
-                            <p className="text-[10px] font-medium" style={{ color: ratio >= 0.75 ? "#c53030" : ratio >= 0.5 ? "#d69e2e" : ratio > 0 ? "#38a169" : "var(--c-muted)" }}>
-                              {optLabel ? `${optLabel} (${val})` : `${val}`}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </motion.div>
-                )}
+                {/* Interpretação clínica da escala */}
+                {respostaAberta && (() => {
+                  const interp = interpretarResposta(respostaAberta.tipo, respostaAberta.respostas, respostaAberta.pontuacao);
+                  return (
+                    <motion.div variants={fadeUp} className="glass-card mb-6 rounded-2xl p-5">
+                      <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">Interpretacao — {interp.nomeEscala}</p>
+                      <InterpretBlock interp={interp} />
+                    </motion.div>
+                  );
+                })()}
 
                 {/* Parecer — instrumentos + texto + síntese */}
                 <motion.div variants={fadeUp} className="glass-card mb-6 rounded-2xl p-6">
