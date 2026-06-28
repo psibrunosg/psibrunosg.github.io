@@ -5,7 +5,7 @@ import { TextGenerateEffect } from "@/components/ui/TextGenerateEffect";
 import { Spotlight } from "@/components/ui/Spotlight";
 import { CardHoverEffect } from "@/components/ui/CardHoverEffect";
 import { AnimatedCTA } from "@/components/ui/AnimatedCTA";
-import { FloatingNav } from "@/components/ui/FloatingNav";
+import { MobileMenu } from "@/components/ui/MobileMenu";
 import { MagneticCursor } from "@/components/ui/MagneticCursor";
 import { WhatsAppFloat } from "@/components/shared/WhatsAppFloat";
 import { SkipLink } from "@/components/shared/SkipLink";
@@ -35,7 +35,7 @@ export default function VariantA() {
     <>
       <SkipLink />
       <MagneticCursor />
-      <FloatingNav items={navItems} crp={contato.crp} />
+      <MobileMenu items={navItems} crp={contato.crp} whatsappLink={contato.whatsappLink} />
       <WhatsAppFloat />
 
       <main id="main">

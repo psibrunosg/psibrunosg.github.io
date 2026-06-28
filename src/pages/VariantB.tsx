@@ -5,7 +5,7 @@ import { TextGenerateEffect } from "@/components/ui/TextGenerateEffect";
 import { BentoGrid } from "@/components/ui/BentoGrid";
 import { StickyScrollReveal } from "@/components/ui/StickyScrollReveal";
 import { AnimatedCTA } from "@/components/ui/AnimatedCTA";
-import { FloatingNav } from "@/components/ui/FloatingNav";
+import { MobileMenu } from "@/components/ui/MobileMenu";
 import { WhatsAppFloat } from "@/components/shared/WhatsAppFloat";
 import { SkipLink } from "@/components/shared/SkipLink";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
@@ -34,7 +34,7 @@ export default function VariantB() {
   return (
     <>
       <SkipLink />
-      <FloatingNav items={navItems} crp={contato.crp} />
+      <MobileMenu items={navItems} crp={contato.crp} whatsappLink={contato.whatsappLink} />
       <WhatsAppFloat />
 
       <main id="main">

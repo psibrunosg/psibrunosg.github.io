@@ -7,7 +7,6 @@ import { TextGenerateEffect } from "@/components/ui/TextGenerateEffect";
 import { BentoGrid } from "@/components/ui/BentoGrid";
 import { InfiniteMovingCards } from "@/components/ui/InfiniteMovingCards";
 import { AnimatedCTA } from "@/components/ui/AnimatedCTA";
-import { FloatingNav } from "@/components/ui/FloatingNav";
 import { WaveDivider } from "@/components/ui/WaveDivider";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { FloatingBlobs } from "@/components/ui/FloatingBlobs";
@@ -46,7 +45,6 @@ export default function VariantC() {
     <>
       <SkipLink />
       <ScrollProgress />
-      <FloatingNav items={navItems} crp={contato.crp} />
       <MobileMenu items={navItems} crp={contato.crp} whatsappLink={contato.whatsappLink} />
       <WhatsAppFloat />
 

@@ -156,12 +156,12 @@ export const contato = {
 };
 
 export const principiosEticos = [
-  "Sigilo e privacidade em todas as sessões",
-  "Sem julgamentos e sem imposição de valores",
+  "Sigilo profissional garantido em todas as sessões",
+  "Acolhimento sem julgamento e sem imposição de valores",
   "Respeito à sua autonomia e ao seu ritmo",
-  "Abordagens fundamentadas em evidências científicas",
-  "Sem promessas de cura, com compromisso ético real",
-  "Um espaço genuinamente seguro para falar",
+  "Intervenções baseadas em evidências científicas",
+  "Ética e transparência em cada etapa do processo",
+  "Um espaço seguro para você se expressar",
   "Registro profissional ativo: CRP 07/44472",
-  "Exercício profissional conforme CFP / Resolução 11/2018",
+  "Atuação conforme o Código de Ética do Psicólogo (CFP)",
 ];

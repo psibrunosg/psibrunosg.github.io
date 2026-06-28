@@ -4,7 +4,7 @@ import { ArrowLeft, Clock, ArrowRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getAllPosts, loadDynamicPosts, isDynamicLoaded, type BlogPost } from "@/content/posts-loader";
 import { areaDe, areasLista } from "@/content/areas-blog";
-import { FloatingNav } from "@/components/ui/FloatingNav";
+import { MobileMenu } from "@/components/ui/MobileMenu";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
 import { SkipLink } from "@/components/shared/SkipLink";
 import { WhatsAppFloat } from "@/components/shared/WhatsAppFloat";
@@ -39,7 +39,7 @@ export default function Blog() {
   return (
     <>
       <SkipLink />
-      <FloatingNav items={navItems} crp={contato.crp} />
+      <MobileMenu items={navItems} crp={contato.crp} whatsappLink={contato.whatsappLink} />
       <WhatsAppFloat />
 
       <main id="main" className="min-h-screen bg-[var(--c-bg)] pt-28 pb-24 px-6">

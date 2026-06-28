@@ -6,7 +6,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getPost, loadDynamicPosts, isDynamicLoaded, type BlogPost as BlogPostType } from "@/content/posts-loader";
 import { areaDe } from "@/content/areas-blog";
-import { FloatingNav } from "@/components/ui/FloatingNav";
+import { MobileMenu } from "@/components/ui/MobileMenu";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
 import { SkipLink } from "@/components/shared/SkipLink";
 import { WhatsAppFloat } from "@/components/shared/WhatsAppFloat";
@@ -100,7 +100,7 @@ export default function BlogPost() {
   return (
     <>
       <SkipLink />
-      <FloatingNav items={navItems} crp={contato.crp} />
+      <MobileMenu items={navItems} crp={contato.crp} whatsappLink={contato.whatsappLink} />
       <WhatsAppFloat />
 
       {/* barra de progresso de leitura */}

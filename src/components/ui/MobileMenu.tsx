@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -12,16 +12,34 @@ interface Props {
 
 export function MobileMenu({ items, crp, whatsappLink }: Props) {
   const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    function onEscape(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    document.addEventListener("keydown", onEscape);
+    return () => {
+      document.removeEventListener("mousedown", onClickOutside);
+      document.removeEventListener("keydown", onEscape);
+    };
+  }, [open]);
 
   return (
-    <>
-      {/* Hamburger trigger — fixed top-right, only on mobile */}
+    <div ref={menuRef} className="fixed top-4 right-4 z-[70]">
+      {/* Hamburger button */}
       <button
         onClick={() => setOpen(!open)}
         aria-label={open ? "Fechar menu" : "Abrir menu"}
         aria-expanded={open}
         className={cn(
-          "fixed top-4 right-4 z-[70]",
           "w-11 h-11 rounded-full flex flex-col items-center justify-center gap-1.5",
           "bg-[var(--c-bg)]/90 backdrop-blur-md border border-[var(--c-border)] shadow-md",
           "transition-colors hover:border-[var(--c-accent)]"
@@ -44,65 +62,57 @@ export function MobileMenu({ items, crp, whatsappLink }: Props) {
         />
       </button>
 
-      {/* Full-screen overlay menu */}
+      {/* Dropdown panel */}
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, x: "100%" }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: "100%" }}
-            transition={{ type: "spring", stiffness: 300, damping: 32 }}
+            initial={{ opacity: 0, y: -8, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
             className={cn(
-              "fixed inset-0 z-[65]",
-              "bg-[var(--c-bg)] flex flex-col items-center justify-center gap-8"
+              "absolute top-14 right-0 w-56",
+              "rounded-2xl overflow-hidden",
+              "bg-[var(--c-bg)]/95 backdrop-blur-xl border border-[var(--c-border)]",
+              "shadow-xl"
             )}
           >
-            <nav aria-label="Menu mobile">
-              <ul className="flex flex-col items-center gap-6">
-                {items.map((item, i) => (
-                  <motion.li
-                    key={item.href}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.07 + 0.1 }}
-                  >
+            <nav aria-label="Menu de navegação" className="py-2">
+              <ul className="flex flex-col">
+                {items.map((item) => (
+                  <li key={item.href}>
                     <a
                       href={item.href}
                       onClick={() => setOpen(false)}
-                      className="text-2xl font-light text-[var(--c-text)] hover:text-[var(--c-accent)] transition-colors"
-                      style={{ fontFamily: "var(--font-display)" }}
+                      className="block px-5 py-2.5 text-sm text-[var(--c-text)] hover:bg-[var(--c-accent)]/10 hover:text-[var(--c-accent)] transition-colors"
                     >
                       {item.label}
                     </a>
-                  </motion.li>
+                  </li>
                 ))}
               </ul>
             </nav>
 
-            <motion.a
-              href={whatsappLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: items.length * 0.07 + 0.2 }}
-              className="px-8 py-3 rounded-full bg-[var(--c-accent)] text-white font-medium text-lg"
-              onClick={() => setOpen(false)}
-            >
-              Agendar conversa
-            </motion.a>
+            <div className="border-t border-[var(--c-border)] px-5 py-3">
+              <a
+                href={whatsappLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setOpen(false)}
+                className="block w-full text-center py-2 rounded-full bg-[var(--c-accent)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+              >
+                Agendar conversa
+              </a>
+            </div>
 
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="text-xs text-[var(--c-muted)] tracking-widest uppercase"
-            >
-              {crp}
-            </motion.p>
+            <div className="px-5 pb-3">
+              <p className="text-[10px] text-[var(--c-muted)] tracking-widest uppercase text-center">
+                {crp}
+              </p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </div>
   );
 }
