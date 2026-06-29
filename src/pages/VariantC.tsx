@@ -29,6 +29,8 @@ const navItems = [
   { label: "Processo",    href: "#processo" },
   { label: "Abordagens",  href: "#abordagens" },
   { label: "FAQ",         href: "#faq" },
+  { label: "Psicoeducação", href: "/psicoeducacao" },
+  { label: "Exercícios",  href: "/exercicios" },
   { label: "Blog",        href: "/blog" },
   { label: "Paciente",    href: "/paciente" },
 ];
