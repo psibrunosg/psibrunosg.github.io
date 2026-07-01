@@ -17,7 +17,7 @@ import { escalas } from "@/content/escalas";
 import { escalasGerais } from "@/content/escalas-gerais";
 import type { BDIItem } from "@/content/escalas-gerais";
 import { ferramentas, type FerramentaTerapeuta } from "@/content/ferramentas-terapeuta";
-import { posts as staticPosts } from "@/content/posts-loader";
+import { posts as staticPosts, type BlogPost } from "@/content/posts-loader";
 import { fadeUp, stagger } from "@/lib/motion";
 import { AppAurora } from "@/components/ui/AppAurora";
 import { detectarRiscos, type RespostaRegistro as Resposta } from "@/lib/scoring";
@@ -557,6 +557,19 @@ export default function BrunoPainel() {
     setBlogMsg("");
   }
 
+  // Edita um post estatico (JSON): abre o editor pre-preenchido. Ao salvar, cria uma
+  // linha no Supabase com o MESMO slug, que sobrepoe o estatico no blog (getAllPosts
+  // deduplica por slug com o dinamico primeiro). setEditando(null) forca INSERT.
+  function editarEstatico(p: BlogPost) {
+    setEditando(null);
+    setBlogForm({
+      slug: p.slug, titulo: p.titulo, subtitulo: p.subtitulo, categoria: p.categoria,
+      tempo_leitura: p.tempoLeitura, resumo: p.resumo, tags: p.tags.join(", "),
+      conteudo: p.conteudo, publicado: true,
+    });
+    setBlogMsg("Editando copia do post estatico — ao salvar, cria versao editavel no Supabase que sobrepoe o original no site.");
+  }
+
   function gerarSlug(titulo: string) {
     return titulo.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   }
@@ -620,7 +633,8 @@ export default function BrunoPainel() {
       const perguntas = cfg?.itens?.map((item, i) => getItemText(item, i)) ?? r.respostas.map((_, i) => `Item ${i + 1}`);
       const dt = new Date(r.criado_em).toLocaleDateString("pt-BR");
       const sigla = testesDisponiveis.find((t) => t.id === r.tipo)?.sigla ?? r.tipo.toUpperCase();
-      const doc = gerarPDF({ tipo: sigla, nome: r.nome, pontuacao: r.pontuacao, nivel: interpretarResposta(r.tipo, r.respostas, r.pontuacao).resumo, respostas: r.respostas, perguntas, data: dt });
+      const interp = interpretarResposta(r.tipo, r.respostas, r.pontuacao);
+      const doc = gerarPDF({ tipo: sigla, nome: r.nome, pontuacao: r.pontuacao, nivel: interp.resumo, respostas: r.respostas, perguntas, data: dt, interp, optionLabel: (v) => getOptionLabel(r.tipo, v) });
       zip.file(sigla + "_" + r.nome.replace(/\s+/g, "_") + "_" + dt.replace(/\//g, "-") + ".pdf", doc.output("arraybuffer"));
     }
     const blob = await zip.generateAsync({ type: "blob" });
@@ -1314,10 +1328,10 @@ export default function BrunoPainel() {
                           </div>
                         ))}
 
-                        {staticPosts.length > 0 && (
-                          <p className="mb-2 mt-6 text-xs font-medium uppercase tracking-wider text-[var(--c-muted)]">Estaticos ({staticPosts.length})</p>
+                        {staticPosts.filter((p) => !blogPosts.some((b) => b.slug === p.slug)).length > 0 && (
+                          <p className="mb-2 mt-6 text-xs font-medium uppercase tracking-wider text-[var(--c-muted)]">Estaticos ({staticPosts.filter((p) => !blogPosts.some((b) => b.slug === p.slug)).length})</p>
                         )}
-                        {staticPosts.map((p) => (
+                        {staticPosts.filter((p) => !blogPosts.some((b) => b.slug === p.slug)).map((p) => (
                           <div key={"static-" + p.slug} className="glass-card flex items-center justify-between rounded-2xl p-5 opacity-70">
                             <div className="flex items-start gap-4">
                               <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-[var(--c-surface)]">
@@ -1332,9 +1346,14 @@ export default function BrunoPainel() {
                                 </div>
                               </div>
                             </div>
-                            <Link to={"/blog/" + p.slug} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]" title="Ver post">
-                              <ExternalLink size={14} />
-                            </Link>
+                            <div className="flex gap-1">
+                              <button onClick={() => editarEstatico(p)} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]" title="Editar (cria copia editavel no Supabase)">
+                                <Edit3 size={14} />
+                              </button>
+                              <Link to={"/blog/" + p.slug} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]" title="Ver post">
+                                <ExternalLink size={14} />
+                              </Link>
+                            </div>
                           </div>
                         ))}
                       </motion.div>
