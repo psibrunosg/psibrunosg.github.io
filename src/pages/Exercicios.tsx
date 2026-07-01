@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Wind, Anchor, NotebookPen, Footprints } from "lucide-react";
+import { ArrowLeft, ArrowRight, Wind, Anchor, NotebookPen, Footprints, Layers } from "lucide-react";
 import { useEffect } from "react";
 import { MobileMenu } from "@/components/ui/MobileMenu";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
@@ -20,26 +20,30 @@ const exercicios = [
   {
     Icon: Wind,
     titulo: "Respiracao 4-7-8",
-    resumo: "Tecnica de respiracao para acalmar o sistema nervoso em momentos de ansiedade aguda.",
+    resumo: "Pratica guiada com circulo animado: inspire, segure e solte no ritmo certo para acalmar o sistema nervoso.",
     tempo: "3 min",
+    href: "/exercicios/respiracao",
   },
   {
     Icon: Anchor,
     titulo: "Ancoragem 5-4-3-2-1",
-    resumo: "Exercicio de grounding usando os cinco sentidos para voltar ao presente.",
+    resumo: "Percurso interativo pelos cinco sentidos para sair do piloto automatico e voltar ao presente.",
     tempo: "5 min",
+    href: "/exercicios/ancoragem",
   },
   {
     Icon: NotebookPen,
     titulo: "Registro de pensamentos",
-    resumo: "Estrutura para identificar, questionar e reformular pensamentos automaticos.",
+    resumo: "Conversa guiada passo a passo para identificar, questionar e reformular um pensamento dificil.",
     tempo: "10 min",
+    href: "/exercicios/registro",
   },
   {
     Icon: Footprints,
     titulo: "Ativacao comportamental",
-    resumo: "Como planejar pequenas acoes que devolvem energia e sentido ao dia.",
+    resumo: "Como planejar pequenas acoes que devolvem energia e sentido ao dia. Em breve em versao interativa.",
     tempo: "15 min",
+    href: null,
   },
 ];
 
@@ -81,17 +85,49 @@ export default function Exercicios() {
               Praticas guiadas para usar no dia a dia. Pequenas ferramentas, baseadas em evidencia, para regular emocoes e construir habitos mais saudaveis.
             </motion.p>
 
+            {/* Destaque: Baralho das Distorcoes */}
+            <motion.div variants={fadeUp} className="mb-8">
+              <Link
+                to="/exercicios/baralho"
+                className="group flex flex-col md:flex-row items-stretch rounded-2xl border border-[var(--c-accent)]/40 bg-[var(--c-bg-dark)] overflow-hidden hover:border-[var(--c-accent)] transition-colors"
+              >
+                <div className="flex md:w-56 shrink-0">
+                  {["pretoebranco", "dramatizador", "leitor"].map((id) => (
+                    <img
+                      key={id}
+                      src={`/img/monstros/${id}.webp`}
+                      alt=""
+                      loading="lazy"
+                      className="w-1/3 md:w-full object-cover aspect-square md:aspect-auto md:h-full md:[&:not(:first-child)]:hidden"
+                    />
+                  ))}
+                </div>
+                <div className="p-7 flex flex-col justify-center">
+                  <span className="inline-flex items-center gap-2 text-xs font-semibold tracking-[0.2em] uppercase text-[var(--c-warm)] mb-2">
+                    <Layers size={14} /> Novo · Jogo
+                  </span>
+                  <h2
+                    className="text-2xl font-semibold text-[var(--c-warm-lt)] mb-2"
+                    style={{ fontFamily: "var(--font-heading)" }}
+                  >
+                    Baralho das Distorcoes
+                  </h2>
+                  <p className="text-[var(--c-warm)]/90 text-sm leading-relaxed mb-3 max-w-md">
+                    Conheca os 12 monstros que distorcem seus pensamentos — e jogue para aprender a reconhecer a voz de
+                    cada um.
+                  </p>
+                  <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--c-warm-lt)] group-hover:gap-2.5 transition-all">
+                    Abrir o baralho <ArrowRight size={16} />
+                  </span>
+                </div>
+              </Link>
+            </motion.div>
+
             <div className="grid md:grid-cols-2 gap-6">
               {exercicios.map((e, i) => {
                 const Icon = e.Icon;
-                return (
-                  <motion.article
-                    key={e.titulo}
-                    variants={fadeUp}
-                    custom={i}
-                    className="group rounded-2xl border border-[var(--c-border)] bg-[var(--c-surface)] p-7 transition-colors"
-                    style={{ borderLeftWidth: 4, borderLeftColor: "var(--c-accent)" }}
-                  >
+                const conteudo = (
+                  <>
                     <div className="flex items-center justify-between mb-4">
                       <span className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-[var(--c-accent)]/10 text-[var(--c-accent)]">
                         <Icon size={20} />
@@ -107,6 +143,27 @@ export default function Exercicios() {
                       {e.titulo}
                     </h2>
                     <p className="text-[var(--c-muted)] text-sm leading-relaxed">{e.resumo}</p>
+                    {e.href && (
+                      <span className="inline-flex items-center gap-1.5 mt-4 text-sm font-semibold text-[var(--c-accent)] group-hover:gap-2.5 transition-all">
+                        Comecar <ArrowRight size={15} />
+                      </span>
+                    )}
+                  </>
+                );
+                const classes =
+                  "group rounded-2xl border border-[var(--c-border)] bg-[var(--c-surface)] p-7 transition-colors";
+                const estilo = { borderLeftWidth: 4, borderLeftColor: "var(--c-accent)" };
+                return (
+                  <motion.article key={e.titulo} variants={fadeUp} custom={i}>
+                    {e.href ? (
+                      <Link to={e.href} className={`block h-full ${classes} hover:border-[var(--c-accent)]`} style={estilo}>
+                        {conteudo}
+                      </Link>
+                    ) : (
+                      <div className={`h-full ${classes} opacity-80`} style={estilo}>
+                        {conteudo}
+                      </div>
+                    )}
                   </motion.article>
                 );
               })}
