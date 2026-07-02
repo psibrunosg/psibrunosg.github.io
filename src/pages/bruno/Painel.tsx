@@ -533,29 +533,29 @@ export default function BrunoPainel() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "c");
     document.title = "Painel | Bruno SG";
-    if (supabase) {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) { setAuth(true); carregar(); carregarBlog(); }
-        setLoginLoading(false);
-      });
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-        setAuth(!!session);
-      });
-      const channel = supabase.channel("respostas-realtime").on(
-        "postgres_changes", { event: "INSERT", schema: "public", table: "respostas_questionarios" },
-        (payload: { new: { id: number; tipo: string; nome: string; criado_em: string; respostas: number[]; pontuacao: number } }) => {
-          const r = payload.new;
-          const riscos = detectarRiscos([{ id: r.id, tipo: r.tipo, nome: r.nome, respostas: r.respostas ?? [], pontuacao: r.pontuacao ?? 0, criado_em: r.criado_em }]);
-          const critico = riscos.some((x) => x.nivel === "critico");
-          const nota: Notificacao = { id: r.id, tipo: r.tipo, nome: r.nome, tempo: "agora", critico };
-          setNotificacoes((prev) => [nota, ...prev].slice(0, 5));
-          if (!critico) setTimeout(() => setNotificacoes((prev) => prev.filter((n) => n.id !== r.id)), 8000);
-        }
-      ).subscribe();
-      return () => { document.documentElement.removeAttribute("data-theme"); subscription.unsubscribe(); channel.unsubscribe(); };
+    if (!supabase) {
+      setLoginLoading(false);
+      return () => document.documentElement.removeAttribute("data-theme");
     }
-    setLoginLoading(false);
-    return () => document.documentElement.removeAttribute("data-theme");
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) { setAuth(true); carregar(); carregarBlog(); }
+      setLoginLoading(false);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuth(!!session);
+    });
+    const channel = supabase.channel("respostas-realtime").on(
+      "postgres_changes", { event: "INSERT", schema: "public", table: "respostas_questionarios" },
+      (payload: { new: { id: number; tipo: string; nome: string; criado_em: string; respostas: number[]; pontuacao: number } }) => {
+        const r = payload.new;
+        const riscos = detectarRiscos([{ id: r.id, tipo: r.tipo, nome: r.nome, respostas: r.respostas ?? [], pontuacao: r.pontuacao ?? 0, criado_em: r.criado_em }]);
+        const critico = riscos.some((x) => x.nivel === "critico");
+        const nota: Notificacao = { id: r.id, tipo: r.tipo, nome: r.nome, tempo: "agora", critico };
+        setNotificacoes((prev) => [nota, ...prev].slice(0, 5));
+        if (!critico) setTimeout(() => setNotificacoes((prev) => prev.filter((n) => n.id !== r.id)), 8000);
+      }
+    ).subscribe();
+    return () => { document.documentElement.removeAttribute("data-theme"); subscription.unsubscribe(); channel.unsubscribe(); };
   }, []);
 
   async function carregar() {
