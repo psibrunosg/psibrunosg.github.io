@@ -72,7 +72,7 @@ function getOptionLabel(tipo: string, valor: number): string | null {
   return cfg.opcoes.find((o) => o.valor === valor)?.label ?? null;
 }
 
-interface Notificacao { id: number; tipo: string; nome: string; tempo: string; }
+interface Notificacao { id: number; tipo: string; nome: string; tempo: string; critico?: boolean; }
 
 function EvolucaoChart({ serie, maxVal, titulo }: { serie: { data: string; valor: number }[]; maxVal: number; titulo: string }) {
   if (serie.length < 2) return null;
@@ -392,7 +392,9 @@ function PainelCorrelacoes({ correls }: { correls: Correlacao[] }) {
   );
 }
 
-function PerfilPaciente({ respostas, onVoltar, onAbrirResposta }: { respostas: Resposta[]; onVoltar: () => void; onAbrirResposta: (r: Resposta) => void }) {
+function PerfilPaciente({ respostas, onVoltar, onAbrirResposta, onExcluir }: { respostas: Resposta[]; onVoltar: () => void; onAbrirResposta: (r: Resposta) => void; onExcluir: () => void }) {
+  const [confirmNome, setConfirmNome] = useState("");
+  const [confirmando, setConfirmando] = useState(false);
   const ordenado = [...respostas].sort((a, b) => new Date(b.criado_em).getTime() - new Date(a.criado_em).getTime());
   const nome = ordenado[0]?.nome ?? "Paciente";
   const nascimento = ordenado[0]?.nascimento;
@@ -467,6 +469,29 @@ function PerfilPaciente({ respostas, onVoltar, onAbrirResposta }: { respostas: R
           })}
         </div>
       </motion.div>
+
+      <motion.div variants={fadeUp} className="glass-card mt-4 rounded-2xl border border-red-200/50 p-5">
+        <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-red-500">LGPD — Direito ao esquecimento</p>
+        {!confirmando ? (
+          <button onClick={() => setConfirmando(true)} className="rounded-full border border-red-300 px-4 py-2 text-xs font-semibold text-red-500 transition-all hover:bg-red-50">
+            Excluir todos os dados deste paciente
+          </button>
+        ) : (
+          <div className="space-y-2">
+            <p className="text-xs text-[var(--c-muted)]">Digite o nome para confirmar: <span className="font-semibold text-[var(--c-text)]">{nome}</span></p>
+            <input value={confirmNome} onChange={(e) => setConfirmNome(e.target.value)} placeholder={nome}
+              className="w-full rounded-xl border border-red-300 bg-[var(--c-bg)]/60 px-4 py-2 text-sm text-[var(--c-text)] focus:outline-none focus:border-red-500" />
+            <div className="flex gap-2">
+              <button onClick={() => { setConfirmando(false); setConfirmNome(""); }}
+                className="rounded-full border border-[var(--c-border)] px-4 py-2 text-xs text-[var(--c-muted)]">Cancelar</button>
+              <button onClick={onExcluir} disabled={confirmNome.trim().toLowerCase() !== nome.trim().toLowerCase()}
+                className="rounded-full bg-red-500 px-4 py-2 text-xs font-semibold text-white disabled:opacity-40">
+                Confirmar exclusão permanente
+              </button>
+            </div>
+          </div>
+        )}
+      </motion.div>
     </>
   );
 }
@@ -486,6 +511,7 @@ export default function BrunoPainel() {
   const [respostas, setRespostas] = useState<Resposta[]>([]);
   const [loading, setLoading] = useState(false);
   const [exportando, setExportando] = useState(false);
+  const [exportProgress, setExportProgress] = useState("");
   const [selecionados, setSelecionados] = useState<Set<number>>(new Set());
 
   const [blogPosts, setBlogPosts] = useState<BlogPostDB[]>([]);
@@ -517,11 +543,13 @@ export default function BrunoPainel() {
       });
       const channel = supabase.channel("respostas-realtime").on(
         "postgres_changes", { event: "INSERT", schema: "public", table: "respostas_questionarios" },
-        (payload: { new: { id: number; tipo: string; nome: string; criado_em: string } }) => {
+        (payload: { new: { id: number; tipo: string; nome: string; criado_em: string; respostas: number[]; pontuacao: number } }) => {
           const r = payload.new;
-          const nota: Notificacao = { id: r.id, tipo: r.tipo, nome: r.nome, tempo: "agora" };
+          const riscos = detectarRiscos([{ id: r.id, tipo: r.tipo, nome: r.nome, respostas: r.respostas ?? [], pontuacao: r.pontuacao ?? 0, criado_em: r.criado_em }]);
+          const critico = riscos.some((x) => x.nivel === "critico");
+          const nota: Notificacao = { id: r.id, tipo: r.tipo, nome: r.nome, tempo: "agora", critico };
           setNotificacoes((prev) => [nota, ...prev].slice(0, 5));
-          setTimeout(() => setNotificacoes((prev) => prev.filter((n) => n.id !== r.id)), 8000);
+          if (!critico) setTimeout(() => setNotificacoes((prev) => prev.filter((n) => n.id !== r.id)), 8000);
         }
       ).subscribe();
       return () => { document.documentElement.removeAttribute("data-theme"); subscription.unsubscribe(); channel.unsubscribe(); };
@@ -628,9 +656,11 @@ export default function BrunoPainel() {
     if (!items.length) return;
     setExportando(true);
     const zip = new JSZip();
-    for (const r of items) {
+    for (let i = 0; i < items.length; i++) {
+      const r = items[i];
+      setExportProgress(`${i + 1}/${items.length}`);
       const cfg = allScaleConfigs[r.tipo];
-      const perguntas = cfg?.itens?.map((item, i) => getItemText(item, i)) ?? r.respostas.map((_, i) => `Item ${i + 1}`);
+      const perguntas = cfg?.itens?.map((item, idx) => getItemText(item, idx)) ?? r.respostas.map((_, idx) => `Item ${idx + 1}`);
       const dt = new Date(r.criado_em).toLocaleDateString("pt-BR");
       const sigla = testesDisponiveis.find((t) => t.id === r.tipo)?.sigla ?? r.tipo.toUpperCase();
       const interp = interpretarResposta(r.tipo, r.respostas, r.pontuacao);
@@ -641,12 +671,22 @@ export default function BrunoPainel() {
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
     a.download = "respostas_" + new Date().toISOString().slice(0, 10) + ".zip"; a.click();
     setExportando(false);
+    setExportProgress("");
   }
 
   async function deletar() {
     if (!supabase || !selecionados.size) return;
     await supabase.from("respostas_questionarios").delete().in("id", Array.from(selecionados));
     setSelecionados(new Set()); carregar();
+  }
+
+  async function excluirPaciente(chave: string) {
+    if (!supabase) return;
+    const ids = respostas.filter((r) => chavePaciente(r) === chave).map((r) => r.id);
+    if (!ids.length) return;
+    await supabase.from("respostas_questionarios").delete().in("id", ids);
+    setPacienteChave(null);
+    carregar();
   }
 
 
@@ -833,7 +873,7 @@ export default function BrunoPainel() {
                     {respView === "lista" && <motion.button whileTap={{ scale: 0.96 }} onClick={exportar} disabled={!selecionados.size || exportando}
                       className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white transition-opacity disabled:opacity-40"
                       style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
-                      <Download size={14} /> {exportando ? "..." : "PDF (" + selecionados.size + ")"}
+                      <Download size={14} /> {exportando ? (exportProgress ? `Gerando ${exportProgress}...` : "...") : "PDF (" + selecionados.size + ")"}
                     </motion.button>}
                     {respView === "lista" && <button onClick={deletar} disabled={!selecionados.size}
                       className="flex items-center gap-1.5 rounded-full border border-red-300 px-4 py-2 text-xs font-semibold text-red-500 transition-all hover:bg-red-50 disabled:opacity-40">
@@ -849,7 +889,8 @@ export default function BrunoPainel() {
                     <PerfilPaciente
                       respostas={respostas.filter((r) => chavePaciente(r) === pacienteChave)}
                       onVoltar={() => setPacienteChave(null)}
-                      onAbrirResposta={(r) => abrirDashboard(r)} />
+                      onAbrirResposta={(r) => abrirDashboard(r)}
+                      onExcluir={() => excluirPaciente(pacienteChave!)} />
                   ) : (
                     <PacientesLista respostas={respostas} onAbrir={(k) => setPacienteChave(k)} />
                   )
@@ -1372,16 +1413,22 @@ export default function BrunoPainel() {
         <AnimatePresence>
           {notificacoes.map((n) => (
             <motion.div key={n.id} initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, x: 80, scale: 0.9 }} transition={{ type: "spring", stiffness: 300, damping: 25 }}
-              className="glass-card flex items-center gap-3 rounded-2xl p-4 shadow-lg" style={{ borderLeft: `3px solid var(--c-accent)` }}>
-              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[var(--c-accent)]/15">
-                <Bell size={14} className="text-[var(--c-accent)]" />
+              className="glass-card flex items-center gap-3 rounded-2xl p-4 shadow-lg"
+              style={{ borderLeft: n.critico ? "3px solid #dc2626" : "3px solid var(--c-accent)", background: n.critico ? "#dc26260D" : undefined }}>
+              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full" style={{ background: n.critico ? "#dc26261A" : "var(--c-accent)/15" }}>
+                {n.critico ? <AlertTriangle size={14} style={{ color: "#dc2626" }} /> : <Bell size={14} className="text-[var(--c-accent)]" />}
               </div>
               <div className="min-w-0">
+                {n.critico && <p className="text-[9px] font-bold uppercase tracking-wider" style={{ color: "#dc2626" }}>Alerta Crítico</p>}
                 <p className="text-xs font-semibold text-[var(--c-text)] truncate">{n.nome} respondeu</p>
                 <p className="text-[10px] text-[var(--c-muted)]">{n.tipo.toUpperCase()} · {n.tempo}</p>
               </div>
-              <button onClick={() => { setNotificacoes((prev) => prev.filter((x) => x.id !== n.id)); setTab("respostas"); carregar(); }}
-                className="ml-auto flex-shrink-0 text-[10px] font-medium text-[var(--c-accent)] hover:underline">Ver</button>
+              <div className="ml-auto flex flex-col gap-1 flex-shrink-0">
+                <button onClick={() => { setNotificacoes((prev) => prev.filter((x) => x.id !== n.id)); setTab("respostas"); carregar(); }}
+                  className="text-[10px] font-medium text-[var(--c-accent)] hover:underline">Ver</button>
+                {n.critico && <button onClick={() => setNotificacoes((prev) => prev.filter((x) => x.id !== n.id))}
+                  className="text-[10px] text-[var(--c-muted)] hover:underline">Dispensar</button>}
+              </div>
             </motion.div>
           ))}
         </AnimatePresence>
