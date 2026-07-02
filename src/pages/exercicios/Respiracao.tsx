@@ -46,7 +46,7 @@ export default function Respiracao() {
       maxWidth="max-w-2xl"
     >
       <div className="flex flex-col items-center">
-        <div className="relative flex items-center justify-center w-72 h-72 md:w-80 md:h-80 mb-8">
+        <div className="relative flex items-center justify-center w-72 h-72 md:w-80 md:h-80 mb-8 overflow-hidden rounded-full">
           <motion.div
             className="absolute inset-0 rounded-full bg-[var(--c-accent)]/10"
             animate={{ scale: rodando ? FASES[s.fase].escala : 1 }}
