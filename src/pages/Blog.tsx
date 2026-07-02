@@ -88,7 +88,7 @@ export default function Blog() {
 
             <div className="grid md:grid-cols-2 gap-6">
               {filtered.map((post, i) => {
-                const area = areaDe(post.area);
+                const area = areaDe(post.area ?? undefined);
                 const cor = area?.cor ?? categoriaCor[post.categoria] ?? "var(--c-accent)";
                 const AreaIcon = area?.Icon;
                 return (
