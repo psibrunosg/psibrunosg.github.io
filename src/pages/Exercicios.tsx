@@ -45,6 +45,41 @@ const exercicios = [
     tempo: "1 min",
     href: "/exercicios/jardim",
   },
+  {
+    Icon: NotebookPen,
+    titulo: "Baralho Adulto",
+    resumo: "12 distorções como arquétipos sóbrios. Explore em contextos profissionais e pessoais.",
+    tempo: "5 min",
+    href: "/exercicios/baralho-adulto",
+  },
+  {
+    Icon: Wind,
+    titulo: "Pares da Mente",
+    resumo: "Jogo de memória: empareille distorções com seus exemplos reais. Identifique padrões.",
+    tempo: "4 min",
+    href: "/exercicios/pares",
+  },
+  {
+    Icon: Footprints,
+    titulo: "Chuva de Preocupações",
+    resumo: "Sorting arcade: preocupações caem, arraste para 'ação hoje' ou 'estacionamento'.",
+    tempo: "3 min",
+    href: "/exercicios/chuva",
+  },
+  {
+    Icon: Anchor,
+    titulo: "Balão de Pensamentos",
+    resumo: "Digite pensamento, segure, solte. Observe passar sem lutar com 5 metáforas.",
+    tempo: "3 min",
+    href: "/exercicios/balao",
+  },
+  {
+    Icon: Wind,
+    titulo: "Caça aos Fatos",
+    resumo: "Encontre fatos favoráveis que o pensamento negativo ignora. Desafie conclusões.",
+    tempo: "4 min",
+    href: "/exercicios/fatos",
+  },
 ];
 
 export default function Exercicios() {
