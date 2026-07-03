@@ -19,6 +19,11 @@ import MaquinaTempoPage from "./pages/exercicios/MaquinaTempoPage";
 import TortaPage from "./pages/exercicios/TortaPage";
 import LabPrevisaoPage from "./pages/exercicios/LabPrevisaoPage";
 import ConecteABCPage from "./pages/exercicios/ConecteABCPage";
+import AEscavacaoPage from "./pages/exercicios/AEscavacaoPage";
+import TedioPage from "./pages/exercicios/TedioPage";
+import InundacaoPage from "./pages/exercicios/InundacaoPage";
+import FantasiaPage from "./pages/exercicios/FantasiaPage";
+import LESSPage from "./pages/exercicios/LESSPage";
 import PacienteHub from "./pages/paciente/Hub";
 import PHQ9 from "./pages/paciente/PHQ9";
 import GAD7 from "./pages/paciente/GAD7";
@@ -49,6 +54,11 @@ export default function App() {
         <Route path="/exercicios/torta" element={<TortaPage />} />
         <Route path="/exercicios/previsoes" element={<LabPrevisaoPage />} />
         <Route path="/exercicios/conecte" element={<ConecteABCPage />} />
+        <Route path="/exercicios/escavacao" element={<AEscavacaoPage />} />
+        <Route path="/exercicios/tedio" element={<TedioPage />} />
+        <Route path="/exercicios/inundacao" element={<InundacaoPage />} />
+        <Route path="/exercicios/fantasia" element={<FantasiaPage />} />
+        <Route path="/exercicios/less" element={<LESSPage />} />
         <Route path="/paciente" element={<PacienteHub />} />
         <Route path="/paciente/phq9" element={<PHQ9 />} />
         <Route path="/paciente/gad7" element={<GAD7 />} />

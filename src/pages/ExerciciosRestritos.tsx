@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Lock, AlertCircle } from "lucide-react";
+import { ArrowLeft, Lock, AlertCircle, Wind, Footprints, NotebookPen } from "lucide-react";
 import { useEffect, useState } from "react";
 import { MobileMenu } from "@/components/ui/MobileMenu";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
@@ -14,6 +14,49 @@ const navItems = [
   { label: "Psicoeducacao", href: "/psicoeducacao" },
   { label: "Exercicios", href: "/exercicios" },
   { label: "Blog", href: "/blog" },
+];
+
+const exerciciosRestritos = [
+  {
+    Icon: Wind,
+    titulo: "A Escavação",
+    resumo: "Cave camadas: e se fosse verdade? Descubra as crenças-núcleo profundas.",
+    tempo: "8 min",
+    href: "/exercicios/escavacao",
+    slug: "escavacao",
+  },
+  {
+    Icon: Footprints,
+    titulo: "Técnica do Tédio",
+    resumo: "Observe a sensação sem evitar. O tédio é uma onda que sobe, fica e desce.",
+    tempo: "5 min",
+    href: "/exercicios/tedio",
+    slug: "tedio",
+  },
+  {
+    Icon: Wind,
+    titulo: "Inundação com Incertezas",
+    resumo: "Explore cenários; ajuste quanto de incerteza você aguenta. Gradualmente aumente tolerância.",
+    tempo: "7 min",
+    href: "/exercicios/inundacao",
+    slug: "inundacao",
+  },
+  {
+    Icon: NotebookPen,
+    titulo: "Fantasia Temida",
+    resumo: "Redija o pior caso, o melhor, e o realista. Compare: seu medo vs. realidade.",
+    tempo: "10 min",
+    href: "/exercicios/fantasia",
+    slug: "fantasia",
+  },
+  {
+    Icon: Footprints,
+    titulo: "LESS-II: Mapa de Esquemas",
+    resumo: "Questionário de 10 itens mapeando seus esquemas núcleo mais ativados. Acompanhe evolução.",
+    tempo: "6 min",
+    href: "/exercicios/less",
+    slug: "less",
+  },
 ];
 
 export default function ExerciciosRestritos() {
@@ -135,10 +178,60 @@ export default function ExerciciosRestritos() {
                 <p className="text-sm text-[var(--c-muted)]">Peça ao seu terapeuta para liberar exercícios restritos conforme necessário.</p>
               </motion.div>
             ) : (
-              <div className="grid md:grid-cols-2 gap-6">
-                <p className="text-sm text-[var(--c-muted)] md:col-span-2">
+              <div>
+                <motion.p variants={fadeUp} className="text-sm text-[var(--c-muted)] mb-6">
                   {restricted.length} exercício{restricted.length !== 1 ? "s" : ""} liberado{restricted.length !== 1 ? "s" : ""}
-                </p>
+                </motion.p>
+                <div className="grid md:grid-cols-2 gap-6">
+                  {exerciciosRestritos.map((e, i) => {
+                    const Icon = e.Icon;
+                    const isUnlocked = restricted.includes(e.slug);
+                    return (
+                      <motion.div
+                        key={e.titulo}
+                        variants={fadeUp}
+                        custom={i}
+                        className={isUnlocked ? "cursor-pointer" : "cursor-not-allowed opacity-60"}
+                      >
+                        {isUnlocked ? (
+                          <Link to={e.href as string}>
+                            <div className="group rounded-2xl border border-[var(--c-border)] bg-[var(--c-surface)] p-7 transition-all hover:border-[var(--c-accent)] hover:shadow-lg"
+                              style={{ borderLeftWidth: 4, borderLeftColor: "var(--c-accent)" }}>
+                              <div className="flex items-center justify-between mb-4">
+                                <span className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-[var(--c-accent)]/10 text-[var(--c-accent)]">
+                                  <Icon size={20} />
+                                </span>
+                                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[var(--c-accent)]/10 text-[var(--c-accent)]">
+                                  {e.tempo}
+                                </span>
+                              </div>
+                              <h2 className="text-xl font-semibold text-[var(--c-text)] mb-2" style={{ fontFamily: "var(--font-heading)" }}>
+                                {e.titulo}
+                              </h2>
+                              <p className="text-[var(--c-muted)] text-sm leading-relaxed">{e.resumo}</p>
+                            </div>
+                          </Link>
+                        ) : (
+                          <div className="rounded-2xl border border-[var(--c-border)] bg-[var(--c-surface)] p-7"
+                            style={{ borderLeftWidth: 4, borderLeftColor: "var(--c-border)" }}>
+                            <div className="flex items-center justify-between mb-4">
+                              <span className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-[var(--c-border)] text-[var(--c-muted)]">
+                                <Lock size={20} />
+                              </span>
+                              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[var(--c-border)] text-[var(--c-muted)]">
+                                Bloqueado
+                              </span>
+                            </div>
+                            <h2 className="text-xl font-semibold text-[var(--c-text)] mb-2" style={{ fontFamily: "var(--font-heading)" }}>
+                              {e.titulo}
+                            </h2>
+                            <p className="text-[var(--c-muted)] text-sm leading-relaxed">{e.resumo}</p>
+                          </div>
+                        )}
+                      </motion.div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </motion.div>
