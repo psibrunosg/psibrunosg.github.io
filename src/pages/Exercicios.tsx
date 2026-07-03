@@ -80,6 +80,41 @@ const exercicios = [
     tempo: "4 min",
     href: "/exercicios/fatos",
   },
+  {
+    Icon: Footprints,
+    titulo: "GPS de Decisões",
+    resumo: "Chat ramificado mapeando decisão: curto/longo prazo, custos, humor, perdas, arrependimento.",
+    tempo: "6 min",
+    href: "/exercicios/gps",
+  },
+  {
+    Icon: Anchor,
+    titulo: "Máquina do Tempo",
+    resumo: "Viaje 1sem/1mês/1ano/5anos. Veja como a preocupação decai naturalmente com o tempo.",
+    tempo: "5 min",
+    href: "/exercicios/maquina-tempo",
+  },
+  {
+    Icon: NotebookPen,
+    titulo: "Torta da Responsabilidade",
+    resumo: "Distribua culpa entre fatores (seu comportamento, circunstâncias, outros, sorte). Reduza culpa realista.",
+    tempo: "4 min",
+    href: "/exercicios/torta",
+  },
+  {
+    Icon: Wind,
+    titulo: "Laboratório de Previsões",
+    resumo: "Registre previsões testáveis com prazo. Revise resultados e calcule taxa de acerto. Desafie catastrofização.",
+    tempo: "5 min",
+    href: "/exercicios/previsoes",
+  },
+  {
+    Icon: Anchor,
+    titulo: "Conecte A-B-C",
+    resumo: "Mapeie cadeia: Evento→Pensamento→Emoção→Comportamento. Veja como mudar B transforma tudo.",
+    tempo: "5 min",
+    href: "/exercicios/conecte",
+  },
 ];
 
 export default function Exercicios() {

@@ -14,6 +14,11 @@ import ParesMentePage from "./pages/exercicios/ParesMentePage";
 import ChuvaPreocupacoesPage from "./pages/exercicios/ChuvaPreocupacoesPage";
 import BalaoPensamentosPage from "./pages/exercicios/BalaoPensamentosPage";
 import CacaFatosPage from "./pages/exercicios/CacaFatosPage";
+import GPSPage from "./pages/exercicios/GPSPage";
+import MaquinaTempoPage from "./pages/exercicios/MaquinaTempoPage";
+import TortaPage from "./pages/exercicios/TortaPage";
+import LabPrevisaoPage from "./pages/exercicios/LabPrevisaoPage";
+import ConecteABCPage from "./pages/exercicios/ConecteABCPage";
 import PacienteHub from "./pages/paciente/Hub";
 import PHQ9 from "./pages/paciente/PHQ9";
 import GAD7 from "./pages/paciente/GAD7";
@@ -39,6 +44,11 @@ export default function App() {
         <Route path="/exercicios/chuva" element={<ChuvaPreocupacoesPage />} />
         <Route path="/exercicios/balao" element={<BalaoPensamentosPage />} />
         <Route path="/exercicios/fatos" element={<CacaFatosPage />} />
+        <Route path="/exercicios/gps" element={<GPSPage />} />
+        <Route path="/exercicios/maquina-tempo" element={<MaquinaTempoPage />} />
+        <Route path="/exercicios/torta" element={<TortaPage />} />
+        <Route path="/exercicios/previsoes" element={<LabPrevisaoPage />} />
+        <Route path="/exercicios/conecte" element={<ConecteABCPage />} />
         <Route path="/paciente" element={<PacienteHub />} />
         <Route path="/paciente/phq9" element={<PHQ9 />} />
         <Route path="/paciente/gad7" element={<GAD7 />} />
