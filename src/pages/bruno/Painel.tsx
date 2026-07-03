@@ -2,6 +2,7 @@
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Download, Trash2, Lock, FileText, ExternalLink, RefreshCw, Plus, Save, Eye, EyeOff, Edit3, X, Bold, Italic, Heading2, List, RotateCcw, Bell, AlertTriangle } from "lucide-react";
+import { PainelPacientes } from "@/components/painelPacientes";
 import jsPDF from "jspdf";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -477,7 +478,7 @@ export default function BrunoPainel() {
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [loginLoading, setLoginLoading] = useState(true);
-  const [tab, setTab] = useState<"respostas" | "blog" | "ferramentas">("respostas");
+  const [tab, setTab] = useState<"respostas" | "pacientes" | "blog" | "ferramentas">("respostas");
   const [respView, setRespView] = useState<"lista" | "pacientes">("lista");
   const [pacienteChave, setPacienteChave] = useState<string | null>(null);
   const [respostaAberta, setRespostaAberta] = useState<Resposta | null>(null);
@@ -751,7 +752,7 @@ export default function BrunoPainel() {
     doc.save(`${f.id}_${new Date().toISOString().slice(0, 10)}.pdf`);
   }
 
-  const tabBtn = (id: "respostas" | "blog" | "ferramentas") =>
+  const tabBtn = (id: "respostas" | "pacientes" | "blog" | "ferramentas") =>
     "px-4 py-1.5 rounded-full text-xs font-semibold transition-all " + (tab === id ? "text-white shadow-[0_8px_20px_-8px_var(--c-accent)]" : "text-[var(--c-muted)] hover:text-[var(--c-text)]");
 
   return (
@@ -766,6 +767,7 @@ export default function BrunoPainel() {
           </div>
           <div className="flex gap-1">
             <button onClick={() => { setTab("respostas"); fecharDashboard(); }} className={tabBtn("respostas")} style={tab === "respostas" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Respostas</button>
+            <button onClick={() => setTab("pacientes")} className={tabBtn("pacientes")} style={tab === "pacientes" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Pacientes</button>
             <button onClick={() => { setTab("ferramentas"); setFerramentaAberta(null); }} className={tabBtn("ferramentas")} style={tab === "ferramentas" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Ferramentas</button>
             <button onClick={() => setTab("blog")} className={tabBtn("blog")} style={tab === "blog" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Blog</button>
           </div>
@@ -1089,6 +1091,10 @@ export default function BrunoPainel() {
                   </motion.div>
                 )}
               </>
+            )}
+
+            {tab === "pacientes" && (
+              <PainelPacientes />
             )}
 
             {tab === "ferramentas" && (
