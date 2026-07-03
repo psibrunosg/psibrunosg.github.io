@@ -36,6 +36,9 @@ export interface BlogPostDB {
   tags: string[];
   conteudo: string;
   publicado: boolean;
+  area?: string | null;
+  referencias?: string[] | null;
+  narracao_url?: string | null;
   criado_em?: string;
   atualizado_em?: string;
 }

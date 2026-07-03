@@ -18,7 +18,7 @@ import { escalas } from "@/content/escalas";
 import { escalasGerais } from "@/content/escalas-gerais";
 import type { BDIItem } from "@/content/escalas-gerais";
 import { ferramentas, type FerramentaTerapeuta } from "@/content/ferramentas-terapeuta";
-import { posts as staticPosts } from "@/content/posts-loader";
+import { posts as staticPosts, type BlogPost } from "@/content/posts-loader";
 import { fadeUp, stagger } from "@/lib/motion";
 import { AppAurora } from "@/components/ui/AppAurora";
 import { detectarRiscos, type RespostaRegistro as Resposta } from "@/lib/scoring";
@@ -73,7 +73,7 @@ function getOptionLabel(tipo: string, valor: number): string | null {
   return cfg.opcoes.find((o) => o.valor === valor)?.label ?? null;
 }
 
-interface Notificacao { id: number; tipo: string; nome: string; tempo: string; }
+interface Notificacao { id: number; tipo: string; nome: string; tempo: string; critico?: boolean; }
 
 function EvolucaoChart({ serie, maxVal, titulo }: { serie: { data: string; valor: number }[]; maxVal: number; titulo: string }) {
   if (serie.length < 2) return null;
@@ -393,7 +393,9 @@ function PainelCorrelacoes({ correls }: { correls: Correlacao[] }) {
   );
 }
 
-function PerfilPaciente({ respostas, onVoltar, onAbrirResposta }: { respostas: Resposta[]; onVoltar: () => void; onAbrirResposta: (r: Resposta) => void }) {
+function PerfilPaciente({ respostas, onVoltar, onAbrirResposta, onExcluir }: { respostas: Resposta[]; onVoltar: () => void; onAbrirResposta: (r: Resposta) => void; onExcluir: () => void }) {
+  const [confirmNome, setConfirmNome] = useState("");
+  const [confirmando, setConfirmando] = useState(false);
   const ordenado = [...respostas].sort((a, b) => new Date(b.criado_em).getTime() - new Date(a.criado_em).getTime());
   const nome = ordenado[0]?.nome ?? "Paciente";
   const nascimento = ordenado[0]?.nascimento;
@@ -468,6 +470,29 @@ function PerfilPaciente({ respostas, onVoltar, onAbrirResposta }: { respostas: R
           })}
         </div>
       </motion.div>
+
+      <motion.div variants={fadeUp} className="glass-card mt-4 rounded-2xl border border-red-200/50 p-5">
+        <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-red-500">LGPD — Direito ao esquecimento</p>
+        {!confirmando ? (
+          <button onClick={() => setConfirmando(true)} className="rounded-full border border-red-300 px-4 py-2 text-xs font-semibold text-red-500 transition-all hover:bg-red-50">
+            Excluir todos os dados deste paciente
+          </button>
+        ) : (
+          <div className="space-y-2">
+            <p className="text-xs text-[var(--c-muted)]">Digite o nome para confirmar: <span className="font-semibold text-[var(--c-text)]">{nome}</span></p>
+            <input value={confirmNome} onChange={(e) => setConfirmNome(e.target.value)} placeholder={nome}
+              className="w-full rounded-xl border border-red-300 bg-[var(--c-bg)]/60 px-4 py-2 text-sm text-[var(--c-text)] focus:outline-none focus:border-red-500" />
+            <div className="flex gap-2">
+              <button onClick={() => { setConfirmando(false); setConfirmNome(""); }}
+                className="rounded-full border border-[var(--c-border)] px-4 py-2 text-xs text-[var(--c-muted)]">Cancelar</button>
+              <button onClick={onExcluir} disabled={confirmNome.trim().toLowerCase() !== nome.trim().toLowerCase()}
+                className="rounded-full bg-red-500 px-4 py-2 text-xs font-semibold text-white disabled:opacity-40">
+                Confirmar exclusão permanente
+              </button>
+            </div>
+          </div>
+        )}
+      </motion.div>
     </>
   );
 }
@@ -487,6 +512,7 @@ export default function BrunoPainel() {
   const [respostas, setRespostas] = useState<Resposta[]>([]);
   const [loading, setLoading] = useState(false);
   const [exportando, setExportando] = useState(false);
+  const [exportProgress, setExportProgress] = useState("");
   const [selecionados, setSelecionados] = useState<Set<number>>(new Set());
 
   const [blogPosts, setBlogPosts] = useState<BlogPostDB[]>([]);
@@ -508,27 +534,29 @@ export default function BrunoPainel() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "c");
     document.title = "Painel | Bruno SG";
-    if (supabase) {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) { setAuth(true); carregar(); carregarBlog(); }
-        setLoginLoading(false);
-      });
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-        setAuth(!!session);
-      });
-      const channel = supabase.channel("respostas-realtime").on(
-        "postgres_changes", { event: "INSERT", schema: "public", table: "respostas_questionarios" },
-        (payload: { new: { id: number; tipo: string; nome: string; criado_em: string } }) => {
-          const r = payload.new;
-          const nota: Notificacao = { id: r.id, tipo: r.tipo, nome: r.nome, tempo: "agora" };
-          setNotificacoes((prev) => [nota, ...prev].slice(0, 5));
-          setTimeout(() => setNotificacoes((prev) => prev.filter((n) => n.id !== r.id)), 8000);
-        }
-      ).subscribe();
-      return () => { document.documentElement.removeAttribute("data-theme"); subscription.unsubscribe(); channel.unsubscribe(); };
+    if (!supabase) {
+      setLoginLoading(false);
+      return () => document.documentElement.removeAttribute("data-theme");
     }
-    setLoginLoading(false);
-    return () => document.documentElement.removeAttribute("data-theme");
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) { setAuth(true); carregar(); carregarBlog(); }
+      setLoginLoading(false);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuth(!!session);
+    });
+    const channel = supabase.channel("respostas-realtime").on(
+      "postgres_changes", { event: "INSERT", schema: "public", table: "respostas_questionarios" },
+      (payload: { new: { id: number; tipo: string; nome: string; criado_em: string; respostas: number[]; pontuacao: number } }) => {
+        const r = payload.new;
+        const riscos = detectarRiscos([{ id: r.id, tipo: r.tipo, nome: r.nome, respostas: r.respostas ?? [], pontuacao: r.pontuacao ?? 0, criado_em: r.criado_em }]);
+        const critico = riscos.some((x) => x.nivel === "critico");
+        const nota: Notificacao = { id: r.id, tipo: r.tipo, nome: r.nome, tempo: "agora", critico };
+        setNotificacoes((prev) => [nota, ...prev].slice(0, 5));
+        if (!critico) setTimeout(() => setNotificacoes((prev) => prev.filter((n) => n.id !== r.id)), 8000);
+      }
+    ).subscribe();
+    return () => { document.documentElement.removeAttribute("data-theme"); subscription.unsubscribe(); channel.unsubscribe(); };
   }, []);
 
   async function carregar() {
@@ -556,6 +584,19 @@ export default function BrunoPainel() {
     setEditando(p);
     setBlogForm({ slug: p.slug, titulo: p.titulo, subtitulo: p.subtitulo, categoria: p.categoria, tempo_leitura: p.tempo_leitura, resumo: p.resumo, tags: p.tags.join(", "), conteudo: p.conteudo, publicado: p.publicado });
     setBlogMsg("");
+  }
+
+  // Edita um post estatico (JSON): abre o editor pre-preenchido. Ao salvar, cria uma
+  // linha no Supabase com o MESMO slug, que sobrepoe o estatico no blog (getAllPosts
+  // deduplica por slug com o dinamico primeiro). setEditando(null) forca INSERT.
+  function editarEstatico(p: BlogPost) {
+    setEditando(null);
+    setBlogForm({
+      slug: p.slug, titulo: p.titulo, subtitulo: p.subtitulo, categoria: p.categoria,
+      tempo_leitura: p.tempoLeitura, resumo: p.resumo, tags: p.tags.join(", "),
+      conteudo: p.conteudo, publicado: true,
+    });
+    setBlogMsg("Editando copia do post estatico — ao salvar, cria versao editavel no Supabase que sobrepoe o original no site.");
   }
 
   function gerarSlug(titulo: string) {
@@ -616,24 +657,37 @@ export default function BrunoPainel() {
     if (!items.length) return;
     setExportando(true);
     const zip = new JSZip();
-    for (const r of items) {
+    for (let i = 0; i < items.length; i++) {
+      const r = items[i];
+      setExportProgress(`${i + 1}/${items.length}`);
       const cfg = allScaleConfigs[r.tipo];
-      const perguntas = cfg?.itens?.map((item, i) => getItemText(item, i)) ?? r.respostas.map((_, i) => `Item ${i + 1}`);
+      const perguntas = cfg?.itens?.map((item, idx) => getItemText(item, idx)) ?? r.respostas.map((_, idx) => `Item ${idx + 1}`);
       const dt = new Date(r.criado_em).toLocaleDateString("pt-BR");
       const sigla = testesDisponiveis.find((t) => t.id === r.tipo)?.sigla ?? r.tipo.toUpperCase();
-      const doc = gerarPDF({ tipo: sigla, nome: r.nome, pontuacao: r.pontuacao, nivel: interpretarResposta(r.tipo, r.respostas, r.pontuacao).resumo, respostas: r.respostas, perguntas, data: dt });
+      const interp = interpretarResposta(r.tipo, r.respostas, r.pontuacao);
+      const doc = gerarPDF({ tipo: sigla, nome: r.nome, pontuacao: r.pontuacao, nivel: interp.resumo, respostas: r.respostas, perguntas, data: dt, interp, optionLabel: (v) => getOptionLabel(r.tipo, v) });
       zip.file(sigla + "_" + r.nome.replace(/\s+/g, "_") + "_" + dt.replace(/\//g, "-") + ".pdf", doc.output("arraybuffer"));
     }
     const blob = await zip.generateAsync({ type: "blob" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
     a.download = "respostas_" + new Date().toISOString().slice(0, 10) + ".zip"; a.click();
     setExportando(false);
+    setExportProgress("");
   }
 
   async function deletar() {
     if (!supabase || !selecionados.size) return;
     await supabase.from("respostas_questionarios").delete().in("id", Array.from(selecionados));
     setSelecionados(new Set()); carregar();
+  }
+
+  async function excluirPaciente(chave: string) {
+    if (!supabase) return;
+    const ids = respostas.filter((r) => chavePaciente(r) === chave).map((r) => r.id);
+    if (!ids.length) return;
+    await supabase.from("respostas_questionarios").delete().in("id", ids);
+    setPacienteChave(null);
+    carregar();
   }
 
 
@@ -821,7 +875,7 @@ export default function BrunoPainel() {
                     {respView === "lista" && <motion.button whileTap={{ scale: 0.96 }} onClick={exportar} disabled={!selecionados.size || exportando}
                       className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white transition-opacity disabled:opacity-40"
                       style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
-                      <Download size={14} /> {exportando ? "..." : "PDF (" + selecionados.size + ")"}
+                      <Download size={14} /> {exportando ? (exportProgress ? `Gerando ${exportProgress}...` : "...") : "PDF (" + selecionados.size + ")"}
                     </motion.button>}
                     {respView === "lista" && <button onClick={deletar} disabled={!selecionados.size}
                       className="flex items-center gap-1.5 rounded-full border border-red-300 px-4 py-2 text-xs font-semibold text-red-500 transition-all hover:bg-red-50 disabled:opacity-40">
@@ -837,7 +891,8 @@ export default function BrunoPainel() {
                     <PerfilPaciente
                       respostas={respostas.filter((r) => chavePaciente(r) === pacienteChave)}
                       onVoltar={() => setPacienteChave(null)}
-                      onAbrirResposta={(r) => abrirDashboard(r)} />
+                      onAbrirResposta={(r) => abrirDashboard(r)}
+                      onExcluir={() => excluirPaciente(pacienteChave!)} />
                   ) : (
                     <PacientesLista respostas={respostas} onAbrir={(k) => setPacienteChave(k)} />
                   )
@@ -1320,10 +1375,10 @@ export default function BrunoPainel() {
                           </div>
                         ))}
 
-                        {staticPosts.length > 0 && (
-                          <p className="mb-2 mt-6 text-xs font-medium uppercase tracking-wider text-[var(--c-muted)]">Estaticos ({staticPosts.length})</p>
+                        {staticPosts.filter((p) => !blogPosts.some((b) => b.slug === p.slug)).length > 0 && (
+                          <p className="mb-2 mt-6 text-xs font-medium uppercase tracking-wider text-[var(--c-muted)]">Estaticos ({staticPosts.filter((p) => !blogPosts.some((b) => b.slug === p.slug)).length})</p>
                         )}
-                        {staticPosts.map((p) => (
+                        {staticPosts.filter((p) => !blogPosts.some((b) => b.slug === p.slug)).map((p) => (
                           <div key={"static-" + p.slug} className="glass-card flex items-center justify-between rounded-2xl p-5 opacity-70">
                             <div className="flex items-start gap-4">
                               <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-[var(--c-surface)]">
@@ -1338,9 +1393,14 @@ export default function BrunoPainel() {
                                 </div>
                               </div>
                             </div>
-                            <Link to={"/blog/" + p.slug} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]" title="Ver post">
-                              <ExternalLink size={14} />
-                            </Link>
+                            <div className="flex gap-1">
+                              <button onClick={() => editarEstatico(p)} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]" title="Editar (cria copia editavel no Supabase)">
+                                <Edit3 size={14} />
+                              </button>
+                              <Link to={"/blog/" + p.slug} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]" title="Ver post">
+                                <ExternalLink size={14} />
+                              </Link>
+                            </div>
                           </div>
                         ))}
                       </motion.div>
@@ -1359,16 +1419,22 @@ export default function BrunoPainel() {
         <AnimatePresence>
           {notificacoes.map((n) => (
             <motion.div key={n.id} initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, x: 80, scale: 0.9 }} transition={{ type: "spring", stiffness: 300, damping: 25 }}
-              className="glass-card flex items-center gap-3 rounded-2xl p-4 shadow-lg" style={{ borderLeft: `3px solid var(--c-accent)` }}>
-              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[var(--c-accent)]/15">
-                <Bell size={14} className="text-[var(--c-accent)]" />
+              className="glass-card flex items-center gap-3 rounded-2xl p-4 shadow-lg"
+              style={{ borderLeft: n.critico ? "3px solid #dc2626" : "3px solid var(--c-accent)", background: n.critico ? "#dc26260D" : undefined }}>
+              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full" style={{ background: n.critico ? "#dc26261A" : "var(--c-accent)/15" }}>
+                {n.critico ? <AlertTriangle size={14} style={{ color: "#dc2626" }} /> : <Bell size={14} className="text-[var(--c-accent)]" />}
               </div>
               <div className="min-w-0">
+                {n.critico && <p className="text-[9px] font-bold uppercase tracking-wider" style={{ color: "#dc2626" }}>Alerta Crítico</p>}
                 <p className="text-xs font-semibold text-[var(--c-text)] truncate">{n.nome} respondeu</p>
                 <p className="text-[10px] text-[var(--c-muted)]">{n.tipo.toUpperCase()} · {n.tempo}</p>
               </div>
-              <button onClick={() => { setNotificacoes((prev) => prev.filter((x) => x.id !== n.id)); setTab("respostas"); carregar(); }}
-                className="ml-auto flex-shrink-0 text-[10px] font-medium text-[var(--c-accent)] hover:underline">Ver</button>
+              <div className="ml-auto flex flex-col gap-1 flex-shrink-0">
+                <button onClick={() => { setNotificacoes((prev) => prev.filter((x) => x.id !== n.id)); setTab("respostas"); carregar(); }}
+                  className="text-[10px] font-medium text-[var(--c-accent)] hover:underline">Ver</button>
+                {n.critico && <button onClick={() => setNotificacoes((prev) => prev.filter((x) => x.id !== n.id))}
+                  className="text-[10px] text-[var(--c-muted)] hover:underline">Dispensar</button>}
+              </div>
             </motion.div>
           ))}
         </AnimatePresence>

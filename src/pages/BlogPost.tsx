@@ -50,7 +50,7 @@ export default function BlogPost() {
   const [progresso, setProgresso] = useState(0);
   const artigoRef = useRef<HTMLDivElement>(null);
 
-  const area = areaDe(post?.area);
+  const area = areaDe(post?.area ?? undefined);
   const cor = area?.cor ?? "var(--c-accent)";
 
   const toc = useMemo(() => {
