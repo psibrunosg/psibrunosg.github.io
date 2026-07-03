@@ -57,6 +57,46 @@ const exerciciosRestritos = [
     href: "/exercicios/less",
     slug: "less",
   },
+  {
+    Icon: NotebookPen,
+    titulo: "Escrita Expressiva",
+    resumo: "10 minutos escrevendo sem filtro: tudo o que você sente, sem censura, sem julgamento.",
+    tempo: "10 min",
+    href: "/exercicios/escrita",
+    slug: "escrita",
+  },
+  {
+    Icon: Wind,
+    titulo: "Pontos de Tensão",
+    resumo: "Mapeie 3 situações: disparador → emoção → ação impulsiva → custo → alternativa.",
+    tempo: "8 min",
+    href: "/exercicios/pontos",
+    slug: "pontos",
+  },
+  {
+    Icon: Footprints,
+    titulo: "Reformulação de História",
+    resumo: "Sua narrativa que define você. Mantenha os fatos, mude a interpretação e o ending.",
+    tempo: "10 min",
+    href: "/exercicios/reformulacao",
+    slug: "reformulacao",
+  },
+  {
+    Icon: NotebookPen,
+    titulo: "Carta à Fonte do Esquema",
+    resumo: "Diálogo imaginário com figura significativa que ensinou este padrão de comportamento.",
+    tempo: "10 min",
+    href: "/exercicios/carta",
+    slug: "carta",
+  },
+  {
+    Icon: Wind,
+    titulo: "Óculos dos Esquemas",
+    resumo: "Mini-game: reconheça padrão de esquema em 3 cenários. Quiz de 3-4 minutos.",
+    tempo: "4 min",
+    href: "/exercicios/oculos",
+    slug: "oculos",
+  },
 ];
 
 export default function ExerciciosRestritos() {

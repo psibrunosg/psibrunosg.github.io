@@ -24,6 +24,11 @@ import TedioPage from "./pages/exercicios/TedioPage";
 import InundacaoPage from "./pages/exercicios/InundacaoPage";
 import FantasiaPage from "./pages/exercicios/FantasiaPage";
 import LESSPage from "./pages/exercicios/LESSPage";
+import EscritaPage from "./pages/exercicios/EscritaPage";
+import PontosPage from "./pages/exercicios/PontosPage";
+import ReformulacaoPage from "./pages/exercicios/ReformulacaoPage";
+import CartaPage from "./pages/exercicios/CartaPage";
+import OculosPage from "./pages/exercicios/OculosPage";
 import PacienteHub from "./pages/paciente/Hub";
 import PHQ9 from "./pages/paciente/PHQ9";
 import GAD7 from "./pages/paciente/GAD7";
@@ -59,6 +64,11 @@ export default function App() {
         <Route path="/exercicios/inundacao" element={<InundacaoPage />} />
         <Route path="/exercicios/fantasia" element={<FantasiaPage />} />
         <Route path="/exercicios/less" element={<LESSPage />} />
+        <Route path="/exercicios/escrita" element={<EscritaPage />} />
+        <Route path="/exercicios/pontos" element={<PontosPage />} />
+        <Route path="/exercicios/reformulacao" element={<ReformulacaoPage />} />
+        <Route path="/exercicios/carta" element={<CartaPage />} />
+        <Route path="/exercicios/oculos" element={<OculosPage />} />
         <Route path="/paciente" element={<PacienteHub />} />
         <Route path="/paciente/phq9" element={<PHQ9 />} />
         <Route path="/paciente/gad7" element={<GAD7 />} />
