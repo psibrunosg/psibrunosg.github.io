@@ -29,6 +29,12 @@ import PontosPage from "./pages/exercicios/PontosPage";
 import ReformulacaoPage from "./pages/exercicios/ReformulacaoPage";
 import CartaPage from "./pages/exercicios/CartaPage";
 import OculosPage from "./pages/exercicios/OculosPage";
+import BussolaPage from "./pages/exercicios/BussolaPage";
+import PerfeccionometroPage from "./pages/exercicios/PerfeccionometroPage";
+import DiarioPage from "./pages/exercicios/DiarioPage";
+import DireitosPage from "./pages/exercicios/DireitosPage";
+import ForcasPage from "./pages/exercicios/ForcasPage";
+import RodaPage from "./pages/exercicios/RodaPage";
 import PacienteHub from "./pages/paciente/Hub";
 import PHQ9 from "./pages/paciente/PHQ9";
 import GAD7 from "./pages/paciente/GAD7";
@@ -69,6 +75,12 @@ export default function App() {
         <Route path="/exercicios/reformulacao" element={<ReformulacaoPage />} />
         <Route path="/exercicios/carta" element={<CartaPage />} />
         <Route path="/exercicios/oculos" element={<OculosPage />} />
+        <Route path="/exercicios/bussola" element={<BussolaPage />} />
+        <Route path="/exercicios/perfeccionometro" element={<PerfeccionometroPage />} />
+        <Route path="/exercicios/lapsos" element={<DiarioPage />} />
+        <Route path="/exercicios/direitos" element={<DireitosPage />} />
+        <Route path="/exercicios/forcas" element={<ForcasPage />} />
+        <Route path="/exercicios/emocoes" element={<RodaPage />} />
         <Route path="/paciente" element={<PacienteHub />} />
         <Route path="/paciente/phq9" element={<PHQ9 />} />
         <Route path="/paciente/gad7" element={<GAD7 />} />
