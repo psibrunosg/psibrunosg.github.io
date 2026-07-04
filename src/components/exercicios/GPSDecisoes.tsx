@@ -10,6 +10,7 @@ const SCRIPT_GPS: ChatScript = {
     tipo: "pergunta",
     texto: "Qual decisão você está enfrentando?",
     campo: { tipo: "area", placeholder: "Descreva a situação..." },
+    proxNodo: "curto_vs_longo",
   },
   curto_vs_longo: {
     id: "curto_vs_longo",
@@ -46,6 +47,7 @@ const SCRIPT_GPS: ChatScript = {
     tipo: "pergunta",
     texto: "Se escolher A: quais as perdas? Se escolher B: quais as perdas?",
     campo: { tipo: "area", placeholder: "Perdas em A: ...\nPerdas em B: ..." },
+    proxNodo: "arrependimento",
   },
   arrependimento: {
     id: "arrependimento",
@@ -75,17 +77,19 @@ export default function GPSDecisoes() {
   const nodo = SCRIPT_GPS[nodoAtual];
   const totalNodos = Object.keys(SCRIPT_GPS).length - 1; // sem "fim"
 
-  const handleResposta = (proxNodo?: string) => {
+  const handleResposta = (proxNodo?: string, resposta?: string) => {
     if (!proxNodo) return;
 
-    setHistorico([...historico, { nodo: nodoAtual, resposta: respostaAtual, xp: 10 }]);
+    const textoResposta = resposta ?? respostaAtual;
+    const novoHistorico = [...historico, { nodo: nodoAtual, resposta: textoResposta, xp: 10 }];
+    setHistorico(novoHistorico);
     setXp((x) => x + 10);
-    setProgresso(Math.floor(((historico.length + 1) / totalNodos) * 100));
+    setProgresso(Math.floor((novoHistorico.length / totalNodos) * 100));
 
     save({
-      nodos_completos: historico.length + 1,
+      nodos_completos: novoHistorico.length,
       xp: xp + 10,
-      respostas: { [nodoAtual]: respostaAtual },
+      respostas: Object.fromEntries(novoHistorico.map((h) => [h.nodo, h.resposta])),
     });
 
     setNodoAtual(proxNodo);
@@ -135,7 +139,7 @@ export default function GPSDecisoes() {
                   key={i}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => handleResposta(op.proxNodo)}
+                  onClick={() => handleResposta(op.proxNodo, op.texto)}
                   className="w-full p-2 rounded-lg bg-[var(--c-surface)] border border-[var(--c-border)] text-[var(--c-text)] text-xs font-semibold hover:border-[var(--c-accent)] transition-all"
                 >
                   {op.texto}
@@ -154,7 +158,7 @@ export default function GPSDecisoes() {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => handleResposta("fim")}
+                onClick={() => handleResposta(nodo.proxNodo ?? "fim")}
                 disabled={!respostaAtual.trim()}
                 className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-xs disabled:opacity-50 flex items-center justify-center gap-1"
               >

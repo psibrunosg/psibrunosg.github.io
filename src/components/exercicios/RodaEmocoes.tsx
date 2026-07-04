@@ -5,32 +5,35 @@ import { useExerciseSession } from "@/hooks/useExerciseSession";
 type Fase = "nomeacao" | "resultado";
 
 const EMOCOES = [
-  { nome: "Alegria", cor: "#22c55e" },
-  { nome: "Tristeza", cor: "#3b82f6" },
-  { nome: "Raiva", cor: "#dc2626" },
-  { nome: "Medo", cor: "#f59e0b" },
-  { nome: "Surpresa", cor: "#8b5cf6" },
-  { nome: "Nojo", cor: "#ec4899" },
+  { nome: "Alegria", cor: "#22c55e", nuances: ["Contentamento", "Orgulho", "Entusiasmo", "Gratidão"] },
+  { nome: "Tristeza", cor: "#3b82f6", nuances: ["Desânimo", "Solidão", "Decepção", "Luto"] },
+  { nome: "Raiva", cor: "#dc2626", nuances: ["Irritação", "Frustração", "Ressentimento", "Indignação"] },
+  { nome: "Medo", cor: "#f59e0b", nuances: ["Apreensão", "Ansiedade", "Insegurança", "Pavor"] },
+  { nome: "Surpresa", cor: "#8b5cf6", nuances: ["Espanto", "Confusão", "Choque", "Curiosidade"] },
+  { nome: "Aversão", cor: "#ec4899", nuances: ["Desconforto", "Rejeição", "Desprezo", "Repulsa"] },
 ];
 
 export default function RodaEmocoes() {
   const { save, complete } = useExerciseSession("roda-emocoes");
   const [fase, setFase] = useState<Fase>("nomeacao");
   const [emocaoAtual, setEmocaoAtual] = useState<string | null>(null);
+  const [nuanceAtual, setNuanceAtual] = useState<string | null>(null);
   const [intensidade, setIntensidade] = useState(50);
-  const [historico, setHistorico] = useState<{ emocao: string; intensidade: number }[]>([]);
+  const [historico, setHistorico] = useState<{ emocao: string; nuance?: string; intensidade: number }[]>([]);
 
   const handleNomear = (emocao: string) => {
     setEmocaoAtual(emocao);
+    setNuanceAtual(null);
     setIntensidade(50);
   };
 
   const handleRegistrar = () => {
     if (emocaoAtual) {
-      const novo = { emocao: emocaoAtual, intensidade };
+      const novo = { emocao: emocaoAtual, nuance: nuanceAtual ?? undefined, intensidade };
       setHistorico([...historico, novo]);
       save({ emocoes: [...historico, novo] });
       setEmocaoAtual(null);
+      setNuanceAtual(null);
       setIntensidade(50);
     }
   };
@@ -70,6 +73,23 @@ export default function RodaEmocoes() {
 
         {emocaoAtual && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass-card rounded-2xl p-6">
+            <p className="text-sm font-semibold text-[var(--c-text)] mb-3">Consegue ser mais específico?</p>
+            <div className="flex flex-wrap gap-2 mb-5">
+              {EMOCOES.find((e) => e.nome === emocaoAtual)?.nuances.map((n) => (
+                <button
+                  key={n}
+                  onClick={() => setNuanceAtual(nuanceAtual === n ? null : n)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                    nuanceAtual === n
+                      ? "bg-[var(--c-accent)] text-white"
+                      : "bg-[var(--c-surface)] text-[var(--c-text)] border border-[var(--c-border)] hover:border-[var(--c-accent)]"
+                  }`}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+
             <p className="text-sm font-semibold text-[var(--c-text)] mb-4">Qual a intensidade?</p>
             <input
               type="range"
@@ -112,7 +132,7 @@ export default function RodaEmocoes() {
   return (
     <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="space-y-4">
       <div className="glass-card rounded-2xl p-6 text-center border-l-4" style={{ borderLeftColor: "var(--c-accent)" }}>
-        <p className="text-lg font-bold text-[var(--c-accent)] mb-3">🎪 Roda de Emoções</p>
+        <p className="text-lg font-bold text-[var(--c-accent)] mb-3">Roda das Emoções</p>
         <p className="text-xs text-[var(--c-muted)]">{historico.length} emoções nomeadas.</p>
       </div>
 
@@ -129,7 +149,10 @@ export default function RodaEmocoes() {
             >
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-4 h-4 rounded-full" style={{ backgroundColor: emocao?.cor }} />
-                <p className="text-xs font-semibold text-[var(--c-text)]">{h.emocao}</p>
+                <p className="text-xs font-semibold text-[var(--c-text)]">
+                  {h.emocao}
+                  {h.nuance && <span className="text-[var(--c-muted)] font-normal"> · {h.nuance}</span>}
+                </p>
               </div>
               <div className="h-1.5 bg-[var(--c-border)] rounded-full overflow-hidden">
                 <motion.div
@@ -146,7 +169,7 @@ export default function RodaEmocoes() {
       </div>
 
       <p className="text-[10px] text-[var(--c-muted)] italic text-center mt-4">
-        Nomear as emoções reduz sua intensidade. Você está no controle.
+        Nomear com precisão o que se sente já muda a relação com a emoção — é o primeiro passo para regulá-la.
       </p>
     </motion.div>
   );

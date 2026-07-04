@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { RotateCcw } from "lucide-react";
+import { useExerciseSession } from "@/hooks/useExerciseSession";
 
 const PARES = [
   { esquerda: "Catastrofização", direita: 'Pensamento: "Tudo vai dar errado"' },
@@ -21,6 +22,7 @@ interface Carta {
 }
 
 export default function ParesMente() {
+  const { complete } = useExerciseSession("pares-mente");
   const [cartas, setCartas] = useState<Carta[]>([]);
   const [selecionadas, setSelecionadas] = useState<string[]>([]);
   const [acertadas, setAcertadas] = useState(0);
@@ -43,6 +45,8 @@ export default function ParesMente() {
   };
 
   const handleClick = (id: string) => {
+    // Bloqueia 3º clique enquanto o par atual está sendo avaliado
+    if (selecionadas.length >= 2) return;
     if (selecionadas.includes(id) || cartas.find((c) => c.id === id)?.acertada) return;
 
     const novaSelecionada = [...selecionadas, id];
@@ -61,7 +65,11 @@ export default function ParesMente() {
               c.id === id1 || c.id === id2 ? { ...c, acertada: true } : c
             )
           );
-          setAcertadas((a) => a + 1);
+          setAcertadas((a) => {
+            const novo = a + 1;
+            if (novo === PARES.length) complete(score + 15);
+            return novo;
+          });
           setScore((s) => s + 15);
           setSelecionadas([]);
         }, 600);

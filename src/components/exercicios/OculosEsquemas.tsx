@@ -4,39 +4,39 @@ import { useExerciseSession } from "@/hooks/useExerciseSession";
 
 type Fase = "inicio" | "jogo" | "resultado";
 
+const ESQUEMAS = ["Abandono", "Desconfiança", "Inadequação", "Dependência", "Rigidez"];
+
 interface Cenario {
   contexto: string;
-  opcoes: { esquema: string; texto: string }[];
+  pensamento: string;
   resposta: string;
 }
 
 const CENARIOS: Cenario[] = [
   {
-    contexto: "Você não é convidado para uma reunião social. Pensa...",
-    opcoes: [
-      { esquema: "Abandono", texto: "Ninguém me quer. Vou ficar sozinho para sempre." },
-      { esquema: "Inadequação", texto: "Não sou interessante o suficiente para incluir." },
-      { esquema: "Desconfiança", texto: "Eles planejam isso propositalmente para me machucarem." },
-    ],
+    contexto: "Você não é convidado para uma reunião social.",
+    pensamento: "Ninguém me quer por perto. Vou acabar sozinho.",
     resposta: "Abandono",
   },
   {
-    contexto: "Sua apresentação no trabalho teve um erro pequeno. Você pensa...",
-    opcoes: [
-      { esquema: "Rigidez", texto: "Cometi um erro. Sou completamente incompetente." },
-      { esquema: "Dependência", texto: "Deveria ter pedido ajuda. Não consigo fazer nada sozinho." },
-      { esquema: "Inadequação", texto: "Isso prova que não mereço este trabalho." },
-    ],
+    contexto: "Sua apresentação no trabalho teve um erro pequeno.",
+    pensamento: "Cometi um erro. Isso é inaceitável — tinha que ser perfeito.",
     resposta: "Rigidez",
   },
   {
-    contexto: "Um amigo demora para responder suas mensagens. Você pensa...",
-    opcoes: [
-      { esquema: "Desconfiança", texto: "Ele me odeia e está me dando o silêncio." },
-      { esquema: "Abandono", texto: "Vou perder este amigo também." },
-      { esquema: "Inadequação", texto: "Sou chato demais para ter amigos reais." },
-    ],
+    contexto: "Um amigo demora para responder suas mensagens.",
+    pensamento: "Ele deve estar fazendo isso de propósito para me atingir.",
     resposta: "Desconfiança",
+  },
+  {
+    contexto: "Você recebe uma tarefa nova e desafiadora.",
+    pensamento: "Sozinho eu não dou conta. Preciso que alguém me diga como fazer.",
+    resposta: "Dependência",
+  },
+  {
+    contexto: "Alguém elogia seu trabalho na frente do time.",
+    pensamento: "Se me conhecessem de verdade, veriam que não sou bom o suficiente.",
+    resposta: "Inadequação",
   },
 ];
 
@@ -46,55 +46,60 @@ export default function OculosEsquemas() {
   const [cenarioIdx, setCenarioIdx] = useState(0);
   const [acertos, setAcertos] = useState(0);
   const [respostas, setRespostas] = useState<string[]>([]);
-
-  const handleIniciar = () => {
-    setFase("jogo");
-  };
+  const [feedback, setFeedback] = useState<{ acertou: boolean; certa: string } | null>(null);
 
   const handleResposta = (esquema: string) => {
+    if (feedback) return;
     const cenario = CENARIOS[cenarioIdx];
     const acertou = esquema === cenario.resposta;
+    const novosAcertos = acertou ? acertos + 1 : acertos;
+    const novasRespostas = [...respostas, esquema];
 
-    if (acertou) {
-      setAcertos(acertos + 1);
-    }
+    setAcertos(novosAcertos);
+    setRespostas(novasRespostas);
+    setFeedback({ acertou, certa: cenario.resposta });
 
-    setRespostas([...respostas, cenario.resposta]);
-
-    if (cenarioIdx < CENARIOS.length - 1) {
-      setCenarioIdx(cenarioIdx + 1);
-    } else {
-      save({ cenarios: CENARIOS.length, acertos });
-      complete((acertos / CENARIOS.length) * 100);
-      setFase("resultado");
-    }
+    setTimeout(() => {
+      setFeedback(null);
+      if (cenarioIdx < CENARIOS.length - 1) {
+        setCenarioIdx(cenarioIdx + 1);
+      } else {
+        save({
+          cenarios: CENARIOS.length,
+          acertos: novosAcertos,
+          respostas: novasRespostas,
+        });
+        complete(Math.round((novosAcertos / CENARIOS.length) * 100));
+        setFase("resultado");
+      }
+    }, 1200);
   };
 
   if (fase === "inicio") {
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
         <div className="glass-card rounded-2xl p-6">
-          <label className="block text-xs font-semibold text-[var(--c-accent)] mb-3">
+          <p className="block text-xs font-semibold text-[var(--c-accent)] mb-3">
             🕶️ Óculos dos Esquemas
-          </label>
+          </p>
           <p className="text-sm text-[var(--c-muted)] mb-4">
-            Você vai ler cenários. Para cada um, identifique qual esquema está ativo no pensamento automático.
+            Você vai ler um pensamento automático em cada cenário. Identifique qual esquema está falando.
           </p>
           <div className="bg-[var(--c-surface)] rounded-lg p-4 border-l-4" style={{ borderLeftColor: "var(--c-accent)" }}>
             <p className="text-[10px] font-semibold text-[var(--c-accent)] mb-2">Esquemas:</p>
             <ul className="text-[10px] text-[var(--c-muted)] space-y-1">
-              <li>🔴 <span className="font-semibold">Abandono</span>: medo de ser deixado</li>
-              <li>🟠 <span className="font-semibold">Desconfiança</span>: pessoas têm segundas intenções</li>
-              <li>🟡 <span className="font-semibold">Inadequação</span>: não sou bom o suficiente</li>
-              <li>🔵 <span className="font-semibold">Dependência</span>: não consigo sozinho</li>
-              <li>🟣 <span className="font-semibold">Rigidez</span>: devo ser perfeito</li>
+              <li><span className="font-semibold">Abandono</span>: medo de ser deixado</li>
+              <li><span className="font-semibold">Desconfiança</span>: pessoas têm segundas intenções</li>
+              <li><span className="font-semibold">Inadequação</span>: não sou bom o suficiente</li>
+              <li><span className="font-semibold">Dependência</span>: não consigo sozinho</li>
+              <li><span className="font-semibold">Rigidez</span>: devo ser perfeito</li>
             </ul>
           </div>
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={handleIniciar}
-            className="mt-6 w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm"
+            onClick={() => setFase("jogo")}
+            className="mt-6 w-full py-2.5 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm"
           >
             Começar →
           </motion.button>
@@ -121,22 +126,42 @@ export default function OculosEsquemas() {
         </div>
 
         <div className="glass-card rounded-2xl p-6">
-          <p className="text-sm font-semibold text-[var(--c-text)] mb-6">{cenario.contexto}</p>
+          <p className="text-xs text-[var(--c-muted)] mb-2">{cenario.contexto}</p>
+          <p className="text-base font-semibold text-[var(--c-text)] mb-6 italic">"{cenario.pensamento}"</p>
 
-          <div className="space-y-2">
-            {cenario.opcoes.map((opcao, i) => (
-              <motion.button
-                key={i}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleResposta(opcao.esquema)}
-                className="w-full p-4 rounded-lg bg-[var(--c-surface)] border border-[var(--c-border)] text-left hover:border-[var(--c-accent)] transition-all"
-              >
-                <p className="text-xs font-semibold text-[var(--c-accent)] mb-1">{opcao.esquema}</p>
-                <p className="text-sm text-[var(--c-text)]">"{opcao.texto}"</p>
-              </motion.button>
-            ))}
+          <p className="text-xs font-semibold text-[var(--c-accent)] mb-3">Qual esquema está falando?</p>
+          <div className="grid grid-cols-2 gap-2">
+            {ESQUEMAS.map((esquema) => {
+              const destaque =
+                feedback && esquema === feedback.certa
+                  ? "border-green-500 bg-green-500/15"
+                  : feedback && respostas[cenarioIdx] === esquema && !feedback.acertou
+                    ? "border-red-500 bg-red-500/15"
+                    : "border-[var(--c-border)] bg-[var(--c-surface)] hover:border-[var(--c-accent)]";
+              return (
+                <motion.button
+                  key={esquema}
+                  whileHover={feedback ? {} : { scale: 1.02 }}
+                  whileTap={feedback ? {} : { scale: 0.98 }}
+                  onClick={() => handleResposta(esquema)}
+                  disabled={!!feedback}
+                  className={`p-3 rounded-lg border text-sm font-semibold text-[var(--c-text)] transition-all ${destaque}`}
+                >
+                  {esquema}
+                </motion.button>
+              );
+            })}
           </div>
+
+          {feedback && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className={`mt-4 text-center text-sm font-semibold ${feedback.acertou ? "text-green-600" : "text-red-600"}`}
+            >
+              {feedback.acertou ? "✓ Isso mesmo!" : `✗ Era ${feedback.certa}`}
+            </motion.p>
+          )}
         </div>
       </motion.div>
     );
@@ -169,10 +194,10 @@ export default function OculosEsquemas() {
             transition={{ delay: i * 0.1 }}
             className={`glass-card rounded-lg p-4 border-l-4 ${acertou ? "border-l-green-600" : "border-l-red-600"}`}
           >
-            <p className="text-xs font-semibold mb-1">
-              {acertou ? "✓" : "✗"} Cenário {i + 1}: {cenario.resposta}
+            <p className="text-xs font-semibold mb-1 text-[var(--c-text)]">
+              {acertou ? "✓" : `✗ Você disse ${resposta} —`} {cenario.resposta}
             </p>
-            <p className="text-[10px] text-[var(--c-muted)]">{cenario.contexto}</p>
+            <p className="text-[10px] text-[var(--c-muted)] italic">"{cenario.pensamento}"</p>
           </motion.div>
         );
       })}

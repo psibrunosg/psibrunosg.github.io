@@ -4,7 +4,7 @@ import { useExerciseSession } from "@/hooks/useExerciseSession";
 
 type Fase = "questionario" | "resultado";
 
-const ESCAMAS = [
+const ESCALAS = [
   { nome: "Abandono", cor: "#dc2626" },
   { nome: "Desconfiança", cor: "#f59e0b" },
   { nome: "Inadequação", cor: "#eab308" },
@@ -38,28 +38,22 @@ export default function LESSII() {
     if (itemIdx < ITENS.length - 1) {
       setItemIdx(itemIdx + 1);
     } else {
-      save(novasRespostas);
-      calcularEscores(novasRespostas);
+      // Salva com o texto de cada item — números soltos não dizem nada ao terapeuta
+      save({
+        respostas: ITENS.map((item) => ({
+          item: item.texto,
+          escala: item.escala,
+          valor: novasRespostas[item.id],
+        })),
+      });
       complete(100);
       setFase("resultado");
     }
   };
 
-  const calcularEscores = (resp: { [key: number]: number }) => {
-    const scores: { [key: string]: number } = {};
-    ESCAMAS.forEach((e) => {
-      scores[e.nome] = 0;
-    });
-    ITENS.forEach((item) => {
-      if (resp[item.id]) {
-        scores[item.escala] += resp[item.id];
-      }
-    });
-  };
-
   const getEscoresAtuais = () => {
     const scores: { [key: string]: number } = {};
-    ESCAMAS.forEach((e) => {
+    ESCALAS.forEach((e) => {
       scores[e.nome] = 0;
     });
     ITENS.forEach((item) => {
@@ -126,7 +120,7 @@ export default function LESSII() {
       </div>
 
       <div className="space-y-3">
-        {ESCAMAS.map((escama, i) => (
+        {ESCALAS.map((escama, i) => (
           <motion.div key={escama.nome} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }}>
             <div className="flex justify-between items-center mb-1">
               <p className="text-xs font-semibold text-[var(--c-text)]">{escama.nome}</p>

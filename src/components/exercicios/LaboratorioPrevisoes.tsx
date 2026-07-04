@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Plus, CheckCircle2, XCircle } from "lucide-react";
+import { useExerciseSession } from "@/hooks/useExerciseSession";
 
 interface Previsao {
   id: string;
@@ -11,14 +12,35 @@ interface Previsao {
 }
 
 export default function LaboratorioPrevisoes() {
+  const { state, loading, save, complete } = useExerciseSession("lab-previsoes");
   const [previsoes, setPrevisoes] = useState<Previsao[]>([]);
   const [novaPrevisao, setNovaPrevisao] = useState("");
   const [dataPrazo, setDataPrazo] = useState("");
   const [modo, setModo] = useState<"registrar" | "revisar">("registrar");
 
+  // Retoma previsões salvas (localStorage/DB) — o Laboratório só funciona com retorno ao longo do tempo
+  useEffect(() => {
+    if (loading) return;
+    const salvas = state.payload?.previsoes as Previsao[] | undefined;
+    if (salvas && salvas.length > 0) {
+      setPrevisoes(salvas);
+      // Se há previsões vencidas sem resultado, abre direto na revisão
+      const hoje = new Date().toISOString().slice(0, 10);
+      if (salvas.some((p) => !p.resultado && p.data <= hoje)) {
+        setModo("revisar");
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
+
+  const persistir = (novas: Previsao[]) => {
+    setPrevisoes(novas);
+    save({ previsoes: novas });
+  };
+
   const handleRegistrar = () => {
     if (!novaPrevisao.trim() || !dataPrazo) return;
-    setPrevisoes([
+    persistir([
       ...previsoes,
       {
         id: Date.now().toString(),
@@ -31,11 +53,14 @@ export default function LaboratorioPrevisoes() {
   };
 
   const handleRegistrarResultado = (id: string, resultado: "acertou" | "errou", notas: string) => {
-    setPrevisoes((prev) =>
-      prev.map((p) =>
-        p.id === id ? { ...p, resultado, notasResultado: notas } : p
-      )
+    const novas = previsoes.map((p) =>
+      p.id === id ? { ...p, resultado, notasResultado: notas } : p
     );
+    persistir(novas);
+    // Testar uma previsão conta como sessão concluída (rega o Jardim)
+    const testadas = novas.filter((p) => p.resultado).length;
+    const acertosAtuais = novas.filter((p) => p.resultado === "acertou").length;
+    complete(testadas > 0 ? Math.round((acertosAtuais / testadas) * 100) : 0);
   };
 
   const acertos = previsoes.filter((p) => p.resultado === "acertou").length;
@@ -110,10 +135,15 @@ export default function LaboratorioPrevisoes() {
           </div>
 
           {/* Previsões */}
-          {previsoes.map((pred) => (
-            <motion.div key={pred.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-card rounded-lg p-3">
+          {previsoes.map((pred) => {
+            const vencida = !pred.resultado && pred.data <= new Date().toISOString().slice(0, 10);
+            return (
+            <motion.div key={pred.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`glass-card rounded-lg p-3 ${vencida ? "border-l-4" : ""}`} style={vencida ? { borderLeftColor: "var(--c-accent)" } : undefined}>
               <p className="text-xs font-semibold text-[var(--c-text)] mb-1">{pred.texto}</p>
-              <p className="text-[10px] text-[var(--c-muted)] mb-2">Prazo: {new Date(pred.data).toLocaleDateString("pt-BR")}</p>
+              <p className="text-[10px] text-[var(--c-muted)] mb-2">
+                Prazo: {new Date(`${pred.data}T12:00:00`).toLocaleDateString("pt-BR")}
+                {vencida && <span className="ml-2 font-semibold text-[var(--c-accent)]">• Hora de testar: o que aconteceu de verdade?</span>}
+              </p>
 
               {!pred.resultado ? (
                 <div className="flex gap-2">
@@ -146,7 +176,8 @@ export default function LaboratorioPrevisoes() {
                 </div>
               )}
             </motion.div>
-          ))}
+            );
+          })}
 
           {previsoes.length === 0 && (
             <p className="text-center text-[var(--c-muted)] text-sm py-4">Nenhuma previsão registrada ainda</p>

@@ -13,7 +13,7 @@ const PARADAS = [
 type Fase = "inicio" | "viagem" | "fim";
 
 export default function MaquinaDoTempo() {
-  const { complete } = useExerciseSession("maquina-tempo");
+  const { save, complete } = useExerciseSession("maquina-tempo");
   const [fase, setFase] = useState<Fase>("inicio");
   const [preocupacao, setPreocupacao] = useState("");
   const [paradaIdx, setParadaIdx] = useState(0);
@@ -28,13 +28,16 @@ export default function MaquinaDoTempo() {
   };
 
   const handleProximaParada = () => {
-    setResultados([...resultados, { parada: PARADAS[paradaIdx].tempo, valor: importancia }]);
-    setImportancia(Math.max(0, importancia - 15)); // Decai naturalmente
+    // Registra o valor que o USUÁRIO escolheu — sem decair automaticamente
+    // (pré-baixar o slider anularia a descoberta: a curva tem que ser dele)
+    const novosResultados = [...resultados, { parada: PARADAS[paradaIdx].tempo, valor: importancia }];
+    setResultados(novosResultados);
     setScore((s) => s + 10);
 
     if (paradaIdx < PARADAS.length - 1) {
       setParadaIdx(paradaIdx + 1);
     } else {
+      save({ preocupacao, trajetoria: novosResultados });
       setFase("fim");
       complete(score + 10);
     }
@@ -130,9 +133,27 @@ export default function MaquinaDoTempo() {
 
   return (
     <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="glass-card rounded-2xl p-6 text-center">
-      <p className="text-lg font-bold text-[var(--c-accent)] mb-3">📉 Curva de importância</p>
-      <p className="text-xs text-[var(--c-muted)] mb-4">Viu como diminui naturalmente com o tempo?</p>
-      <p className="text-sm font-semibold text-[var(--c-text)]">Preocupação inicial: {Math.round(resultados[0]?.valor || 100)} → Final: {Math.round(importancia)}</p>
+      <p className="text-lg font-bold text-[var(--c-accent)] mb-3">📉 Sua curva de importância</p>
+      <div className="flex items-end gap-2 h-24 mb-4">
+        {resultados.map((r, i) => (
+          <div key={i} className="flex-1 flex flex-col items-center justify-end h-full">
+            <motion.div
+              initial={{ height: 0 }}
+              animate={{ height: `${Math.max(4, r.valor)}%` }}
+              className="w-full bg-[var(--c-accent)]/40 rounded-t-lg flex items-start justify-center text-[10px] font-bold text-[var(--c-accent)] pt-1"
+            >
+              {r.valor}
+            </motion.div>
+            <p className="text-[9px] text-[var(--c-muted)] mt-1">{r.parada}</p>
+          </div>
+        ))}
+      </div>
+      <p className="text-sm font-semibold text-[var(--c-text)]">
+        Em 1 semana: {resultados[0]?.valor ?? "—"} → Em 5 anos: {resultados[resultados.length - 1]?.valor ?? "—"}
+      </p>
+      {resultados.length > 1 && resultados[resultados.length - 1].valor < resultados[0].valor && (
+        <p className="text-xs text-[var(--c-muted)] mt-2">A importância caiu com a distância — o que isso diz sobre a preocupação de hoje?</p>
+      )}
     </motion.div>
   );
 }

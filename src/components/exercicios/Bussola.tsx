@@ -82,7 +82,7 @@ export default function Bussola() {
     <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="space-y-4">
       <div className="glass-card rounded-2xl p-6 text-center border-l-4" style={{ borderLeftColor: "var(--c-accent)" }}>
         <p className="text-lg font-bold text-[var(--c-accent)] mb-3">🧭 Sua Bússola de Valores</p>
-        <p className="text-xs text-[var(--c-muted)] mb-4">Seus 3 principais valores são guia.</p>
+        <p className="text-xs text-[var(--c-muted)] mb-4">Estes são os 3 valores que você colocou no topo — use-os como critério nas próximas decisões.</p>
       </div>
 
       <div className="space-y-2">

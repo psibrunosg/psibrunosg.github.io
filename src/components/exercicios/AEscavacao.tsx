@@ -28,6 +28,7 @@ export default function AEscavacao() {
   const [pensamento, setPensamento] = useState("");
   const [camadas, setCamadas] = useState<Camada[]>([]);
   const [cavaIdx, setCavaIdx] = useState(0);
+  const [respostaAtual, setRespostaAtual] = useState("");
 
   const handleIniciar = () => {
     if (!pensamento.trim()) return;
@@ -42,6 +43,7 @@ export default function AEscavacao() {
     };
     setCamadas([...camadas, novaCamada]);
     save({ pensamento, camadas: [...camadas, novaCamada] });
+    setRespostaAtual("");
 
     if (cavaIdx < SCRIPT_ESCAVACAO.perguntas.length - 1) {
       setCavaIdx(cavaIdx + 1);
@@ -117,25 +119,26 @@ export default function AEscavacao() {
             {SCRIPT_ESCAVACAO.perguntas[cavaIdx]}
           </p>
           <textarea
+            value={respostaAtual}
+            onChange={(e) => setRespostaAtual(e.target.value)}
             placeholder="Sua resposta..."
             onKeyDown={(e) => {
-              const val = (e.target as HTMLTextAreaElement).value.trim();
-              if (e.key === "Enter" && e.ctrlKey && val) {
-                handleResponder(val);
+              if (e.key === "Enter" && e.ctrlKey && respostaAtual.trim()) {
+                handleResponder(respostaAtual.trim());
               }
             }}
             className="w-full rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-3 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none resize-none mb-3"
             rows={2}
-            id="resposta-escavacao"
+            aria-label="Resposta da camada atual"
           />
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => {
-              const val = (document.getElementById("resposta-escavacao") as HTMLTextAreaElement)?.value.trim();
-              if (val) handleResponder(val);
+              if (respostaAtual.trim()) handleResponder(respostaAtual.trim());
             }}
-            className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm flex items-center justify-center gap-2"
+            disabled={!respostaAtual.trim()}
+            className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {cavaIdx < SCRIPT_ESCAVACAO.perguntas.length - 1 ? "Próxima camada" : "Ver resultado"} <ChevronDown size={14} />
           </motion.button>

@@ -3,6 +3,8 @@ export interface ChatNodo {
   tipo: "pergunta" | "fim";
   texto: string;
   campo?: { tipo: "texto" | "area"; placeholder: string };
+  /** Próximo nó para nós de campo livre (nós com opções definem o destino em cada opção). */
+  proxNodo?: string;
   opcoes?: Array<{ id: string; texto: string; proxNodo: string }>;
 }
 
@@ -34,9 +36,7 @@ export function procesarChat(
       proximoNodo = opcao.proxNodo;
     }
   } else if (nodo.campo && resposta.trim()) {
-    // Chat com campo texto — seguir padrão (próximo nodo definido no script)
-    // Por enquanto, voltar pra fim se não houver opção
-    proximoNodo = "fim";
+    proximoNodo = nodo.proxNodo ?? "fim";
   }
 
   return { proximoNodo, xp: xpBase };

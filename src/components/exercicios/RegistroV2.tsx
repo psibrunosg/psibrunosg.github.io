@@ -38,8 +38,14 @@ const SCRIPT: Record<string, NodoChat> = {
   },
   reformulacao: {
     id: "reformulacao",
+    tipo: "pergunta",
+    texto: "Agora reescreva o pensamento de forma mais equilibrada, usando as evidências que você listou:",
+    campo: { tipo: "area", placeholder: "Ex: Posso errar em partes, mas me preparei e já apresentei bem antes" },
+  },
+  fim: {
+    id: "fim",
     tipo: "validacao",
-    texto: "Pensamento reformulado: Uma versão mais equilibrada, baseada nas evidências.",
+    texto: "Registro completo — você examinou o pensamento e o reformulou com base em evidências.",
   },
 };
 
@@ -52,25 +58,26 @@ export default function RegistroV2() {
   const [progresso, setProgresso] = useState(0);
 
   const nodo = SCRIPT[nodoAtual];
-  const totalNodos = Object.keys(SCRIPT).length;
+  const totalNodos = Object.keys(SCRIPT).length - 1; // "fim" não conta como etapa
 
   const handleResposta = (proxNodo?: string, xpGanho?: number) => {
     if (!proxNodo) return;
 
-    setHistorico([...historico, { nodo: nodoAtual, resposta: respostaAtual, xp: xpGanho || 10 }]);
+    const novoHistorico = [...historico, { nodo: nodoAtual, resposta: respostaAtual, xp: xpGanho || 10 }];
+    setHistorico(novoHistorico);
     setXp((x) => x + (xpGanho || 10));
-    setProgresso(Math.floor(((historico.length + 1) / totalNodos) * 100));
+    setProgresso(Math.floor((novoHistorico.length / totalNodos) * 100));
 
     save({
-      nodos_completos: historico.length + 1,
+      nodos_completos: novoHistorico.length,
       xp: xp + (xpGanho || 10),
-      respostas: { [nodoAtual]: respostaAtual },
+      respostas: Object.fromEntries(novoHistorico.map((h) => [h.nodo, h.resposta])),
     });
 
     setNodoAtual(proxNodo);
     setRespostaAtual("");
 
-    if (proxNodo === "reformulacao") {
+    if (proxNodo === "fim") {
       setTimeout(() => complete(xp + (xpGanho || 10)), 1500);
     }
   };
@@ -134,8 +141,9 @@ export default function RegistroV2() {
                   const proximo = nodoAtual === "inicio" ? "situacao" :
                                   nodoAtual === "situacao" ? "evidencias" :
                                   nodoAtual === "evidencias" ? "contra_evidencias" :
-                                  "reformulacao";
-                  handleResposta(proximo, 10);
+                                  nodoAtual === "contra_evidencias" ? "reformulacao" :
+                                  "fim";
+                  handleResposta(proximo, nodoAtual === "reformulacao" ? 20 : 10);
                 }}
                 disabled={!respostaAtual.trim()}
                 className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-xs disabled:opacity-50"

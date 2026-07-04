@@ -3,56 +3,80 @@ import { motion } from "framer-motion";
 import { Calendar } from "lucide-react";
 
 interface Planta {
-  id: number;
+  slug: string;
   estagio: number; // 0-5 (semente, broto, folhas, flores, fruto, árvore)
-  ultimaRega: string;
+  ultimaRega: string; // ISO
   sessoesConcluidas: number;
 }
 
 const ESTAGIOS = [
   { emoji: "🌱", desc: "Semente" },
   { emoji: "🌿", desc: "Broto" },
-  { emoji: "🌱🌿", desc: "Folhas" },
+  { emoji: "🍃", desc: "Folhas" },
   { emoji: "🌸", desc: "Flor" },
-  { emoji: "🍀", desc: "Florada" },
+  { emoji: "🌺", desc: "Florada" },
   { emoji: "🌳", desc: "Árvore" },
 ];
+
+const NOMES: Record<string, string> = {
+  "acerte-distorcao": "Acerte a Distorção",
+  "muralha-evidencias": "Muralha de Evidências",
+  "registro-v2": "Registro de Pensamentos",
+  "baralho-adulto": "Baralho Adulto",
+  "pares-mente": "Pares da Mente",
+  "chuva-preocupacoes": "Chuva de Preocupações",
+  "balao-pensamentos": "Balão de Pensamentos",
+  "caca-fatos": "Caça aos Fatos",
+  "gps-decisoes": "GPS de Decisões",
+  "maquina-tempo": "Máquina do Tempo",
+  "torta-responsabilidade": "Torta da Responsabilidade",
+  "lab-previsoes": "Laboratório de Previsões",
+  "conecte-abc": "Conecte A-B-C",
+};
 
 export default function JardimMente() {
   const [plantas, setPlantas] = useState<Planta[]>([]);
   const [totalSessoes, setTotalSessoes] = useState(0);
 
-  // Simula progresso — em produção, viria do Supabase
+  // Jardim real: cada sessão concluída (via useExerciseSession.complete) grava uma "rega" em jardim_regas.
+  // Uma planta por exercício praticado; estágio cresce com o nº de sessões concluídas.
   useEffect(() => {
-    const code = localStorage.getItem("exercise_patient_code");
-    if (!code) {
-      // Anônimo: mostra demo
-      setPlantas([
-        { id: 1, estagio: 0, ultimaRega: new Date().toLocaleDateString("pt-BR"), sessoesConcluidas: 0 },
-      ]);
-      return;
+    let regas: Array<{ slug: string; data: string }> = [];
+    try {
+      regas = JSON.parse(localStorage.getItem("jardim_regas") || "[]");
+    } catch {
+      regas = [];
     }
 
-    // TODO: carregar do Supabase patient-progress
-    // Por enquanto, mostra estado demo
-    const demo: Planta[] = [];
-    for (let i = 0; i < 3; i++) {
-      demo.push({
-        id: i,
-        estagio: Math.min(5, Math.floor(Math.random() * 6)),
-        ultimaRega: new Date(Date.now() - Math.random() * 86400000 * 7).toLocaleDateString("pt-BR"),
-        sessoesConcluidas: Math.floor(Math.random() * 10),
-      });
+    const porSlug = new Map<string, { count: number; ultima: string }>();
+    for (const r of regas) {
+      const atual = porSlug.get(r.slug);
+      if (!atual) {
+        porSlug.set(r.slug, { count: 1, ultima: r.data });
+      } else {
+        porSlug.set(r.slug, {
+          count: atual.count + 1,
+          ultima: r.data > atual.ultima ? r.data : atual.ultima,
+        });
+      }
     }
-    setPlantas(demo);
-    setTotalSessoes(demo.reduce((a, p) => a + p.sessoesConcluidas, 0));
+
+    const novasPlantas: Planta[] = Array.from(porSlug.entries()).map(([slug, info]) => ({
+      slug,
+      estagio: Math.min(5, info.count - 1),
+      ultimaRega: info.ultima,
+      sessoesConcluidas: info.count,
+    }));
+    novasPlantas.sort((a, b) => b.sessoesConcluidas - a.sessoesConcluidas);
+
+    setPlantas(novasPlantas);
+    setTotalSessoes(regas.length);
   }, []);
 
-  const calcularDiasDesdeRega = (data: string) => {
-    const hoje = new Date();
-    const rega = new Date(data);
-    const diff = Math.floor((hoje.getTime() - rega.getTime()) / (1000 * 60 * 60 * 24));
-    return diff;
+  const calcularDiasDesdeRega = (iso: string) => {
+    const diff = Date.now() - new Date(iso).getTime();
+    if (Number.isNaN(diff)) return 0;
+    return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
   };
 
   return (
@@ -75,10 +99,10 @@ export default function JardimMente() {
 
         {plantas.length === 0 ? (
           <div className="py-8 text-center">
-            <p className="text-sm text-[var(--c-muted)]">Comece um exercício para plantar sua primeira semente 🌱</p>
+            <p className="text-sm text-[var(--c-muted)]">Complete um exercício para plantar sua primeira semente 🌱</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4" role="list">
             {plantas.map((planta) => {
               const estagio = ESTAGIOS[planta.estagio];
               const diasDesdeRega = calcularDiasDesdeRega(planta.ultimaRega);
@@ -86,30 +110,29 @@ export default function JardimMente() {
 
               return (
                 <motion.div
-                  key={planta.id}
+                  key={planta.slug}
+                  role="listitem"
                   whileHover={{ scale: 1.05 }}
-                  className="rounded-xl border border-[var(--c-border)] p-3 text-center transition-colors"
-                  style={{ borderColor: saudavel ? "var(--c-accent)" : "#dc2626" }}
+                  className="rounded-xl border p-3 text-center transition-colors"
+                  style={{ borderColor: saudavel ? "var(--c-accent)" : "var(--c-border)" }}
                 >
-                  <div className="text-3xl mb-2">{estagio.emoji}</div>
-                  <p className="text-[10px] font-semibold text-[var(--c-text)]">{estagio.desc}</p>
+                  <div className="text-3xl mb-2" aria-hidden="true">{estagio.emoji}</div>
+                  <p className="text-[10px] font-semibold text-[var(--c-text)]">
+                    {NOMES[planta.slug] ?? planta.slug}
+                  </p>
                   <p className="text-[9px] text-[var(--c-muted)] mt-1">
-                    {planta.sessoesConcluidas} sessões
+                    {estagio.desc} · {planta.sessoesConcluidas} {planta.sessoesConcluidas === 1 ? "sessão" : "sessões"}
                   </p>
 
                   <div className="mt-2 flex items-center justify-center gap-1 text-[9px] text-[var(--c-muted)]">
-                    <Calendar size={10} />
-                    <span>{diasDesdeRega}d atrás</span>
+                    <Calendar size={10} aria-hidden="true" />
+                    <span>{diasDesdeRega === 0 ? "hoje" : `${diasDesdeRega}d atrás`}</span>
                   </div>
 
                   {!saudavel && (
-                    <motion.div
-                      animate={{ opacity: [0.5, 1] }}
-                      transition={{ duration: 1, repeat: Infinity }}
-                      className="mt-2 text-xs font-semibold text-red-500"
-                    >
-                      ⚠ Carece água
-                    </motion.div>
+                    <p className="mt-2 text-[10px] font-semibold text-[var(--c-muted)]">
+                      💧 Precisa de água — pratique de novo
+                    </p>
                   )}
                 </motion.div>
               );
@@ -121,7 +144,7 @@ export default function JardimMente() {
       {/* Info */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[10px] text-[var(--c-muted)] bg-[var(--c-surface)] rounded-xl p-3">
         <p className="mb-1 font-semibold text-[var(--c-accent)]">💡 Como funciona</p>
-        <p>Cada sessão concluída em qualquer exercício rega uma planta. Quanto mais você pratica, mais elas crescem!</p>
+        <p>Cada sessão concluída em qualquer exercício rega a planta daquele exercício. Quanto mais você pratica, mais elas crescem — e murcham se ficarem 14 dias sem rega.</p>
       </motion.div>
     </div>
   );

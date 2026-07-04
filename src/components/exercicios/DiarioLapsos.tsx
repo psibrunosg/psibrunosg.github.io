@@ -141,6 +141,15 @@ export default function DiarioLapsos() {
           <p className="text-sm text-[var(--c-text)]">{lapso.reacao}</p>
         </div>
         <div className="text-center text-xs text-[var(--c-muted)]">↓</div>
+        {lapso.consequencia.trim() && (
+          <>
+            <div className="glass-card rounded-lg p-3 border-l-4" style={{ borderLeftColor: "#f59e0b" }}>
+              <p className="text-xs font-semibold text-amber-600 mb-1">CONSEQUÊNCIA</p>
+              <p className="text-sm text-[var(--c-text)]">{lapso.consequencia}</p>
+            </div>
+            <div className="text-center text-xs text-[var(--c-muted)]">↓</div>
+          </>
+        )}
         <div className="glass-card rounded-lg p-3 border-l-4" style={{ borderLeftColor: "#22c55e" }}>
           <p className="text-xs font-semibold text-green-600 mb-1">LIÇÃO</p>
           <p className="text-sm text-[var(--c-text)]">{lapso.licao}</p>

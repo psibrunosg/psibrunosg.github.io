@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useExerciseSession } from "@/hooks/useExerciseSession";
 
@@ -9,15 +9,25 @@ export default function EscritaExpressiva() {
   const [fase, setFase] = useState<Fase>("entrada");
   const [palavras, setPalavras] = useState(0);
   const [conteudo, setConteudo] = useState("");
-  const [tempoInicio, setTempoInicio] = useState<number | null>(null);
+  const [tempoDecorrido, setTempoDecorrido] = useState(0);
+
+  // Timer de verdade (o anterior só atualizava quando o usuário digitava)
+  useEffect(() => {
+    if (fase !== "escrita") return;
+    const timer = setInterval(() => setTempoDecorrido((t) => t + 1), 1000);
+    return () => clearInterval(timer);
+  }, [fase]);
 
   const handleIniciar = () => {
     setFase("escrita");
-    setTempoInicio(Date.now());
+    setTempoDecorrido(0);
   };
 
   const handleFinalizar = () => {
-    save({ conteudo, palavras: conteudo.split(/\s+/).filter(w => w.length > 0).length });
+    // PRIVACIDADE: o texto NUNCA sai do dispositivo — só metadados (nº de palavras, duração).
+    // A UI promete "ninguém lê isso sem sua autorização"; enviar o conteúdo ao banco quebraria isso.
+    localStorage.setItem("escrita_expressiva_local", conteudo);
+    save({ palavras, duracao_segundos: tempoDecorrido });
     complete(100);
     setFase("resultado");
   };
@@ -61,9 +71,8 @@ export default function EscritaExpressiva() {
   }
 
   if (fase === "escrita") {
-    const tempoPassado = tempoInicio ? Math.floor((Date.now() - tempoInicio) / 1000) : 0;
-    const minutos = Math.floor(tempoPassado / 60);
-    const segundos = tempoPassado % 60;
+    const minutos = Math.floor(tempoDecorrido / 60);
+    const segundos = tempoDecorrido % 60;
 
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">

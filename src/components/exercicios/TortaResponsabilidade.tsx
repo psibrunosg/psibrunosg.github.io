@@ -2,13 +2,17 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useExerciseSession } from "@/hooks/useExerciseSession";
 
+// "Meu comportamento" vem POR ÚLTIMO de propósito: a técnica pede distribuir
+// primeiro os outros fatores — a fatia da própria culpa é o que sobra, e encolhe.
 const FATORES = [
-  "Meu comportamento",
   "Circunstâncias externas",
   "Ação de outros",
   "Sorte/acaso",
   "Minha negligência",
+  "Meu comportamento",
 ];
+
+const CORES = ["#f59e0b", "#22c55e", "#3b82f6", "#a855f7", "#dc2626"];
 
 export default function TortaResponsabilidade() {
   const { save, complete } = useExerciseSession("torta-responsabilidade");
@@ -28,9 +32,9 @@ export default function TortaResponsabilidade() {
     setFatores(novosFatores);
   };
 
-  const somaFatores = fatores.reduce((a, b) => a + b, 0);
+  const somaFatores = fatores.reduce((a, b) => a + b, 0) || 1;
   const proporcoes = fatores.map((f) => (f / somaFatores) * 100);
-  const meuFator = proporcoes[0]; // Primeiro é "Meu comportamento"
+  const meuFator = proporcoes[FATORES.length - 1]; // Último é "Meu comportamento"
 
   const handleFinalizar = () => {
     save({ fatores, proporcoes });
@@ -72,29 +76,42 @@ export default function TortaResponsabilidade() {
           <p className="text-4xl font-bold text-[var(--c-text)] mb-2">{Math.round(meuFator)}%</p>
           <p className="text-xs text-[var(--c-muted)]">Você não é responsável por {Math.round(100 - meuFator)}%</p>
         </div>
-        <p className="text-sm text-[var(--c-text)] font-semibold">Reduza a culpa realista.</p>
+        <p className="text-sm text-[var(--c-text)] font-semibold">
+          Quando a culpa vira "100% minha", a torta lembra: a realidade tem mais fatias.
+        </p>
       </motion.div>
     );
   }
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-      <p className="text-sm font-semibold text-[var(--c-text)] mb-3">Distribua a responsabilidade (total = 100%):</p>
+      <p className="text-sm font-semibold text-[var(--c-text)] mb-3">
+        Distribua a responsabilidade — comece pelos fatores externos; a sua fatia fica por último:
+      </p>
 
-      {/* Pizza visual simples */}
-      <div className="flex gap-2 justify-center mb-4">
-        {proporcoes.map((prop, i) => (
-          <div
-            key={i}
-            className="rounded-lg"
-            style={{
-              width: `${Math.max(20, (prop / 100) * 200)}px`,
-              height: "40px",
-              backgroundColor: ["#dc2626", "#f59e0b", "#22c55e", "#3b82f6", "#a855f7"][i],
-              opacity: 0.8,
-            }}
-          />
-        ))}
+      {/* Pizza de verdade (conic-gradient) */}
+      <div className="flex items-center justify-center gap-6 mb-4">
+        <div
+          className="w-36 h-36 rounded-full border border-[var(--c-border)]"
+          role="img"
+          aria-label={`Torta de responsabilidade: ${FATORES.map((f, i) => `${f} ${Math.round(proporcoes[i])}%`).join(", ")}`}
+          style={{
+            background: `conic-gradient(${proporcoes
+              .map((prop, i) => {
+                const inicio = proporcoes.slice(0, i).reduce((a, b) => a + b, 0);
+                return `${CORES[i]} ${inicio}% ${inicio + prop}%`;
+              })
+              .join(", ")})`,
+          }}
+        />
+        <div className="space-y-1">
+          {FATORES.map((fator, i) => (
+            <div key={i} className="flex items-center gap-2 text-[10px] text-[var(--c-text)]">
+              <span className="w-3 h-3 rounded-sm inline-block" style={{ backgroundColor: CORES[i] }} aria-hidden="true" />
+              {fator}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Sliders */}
@@ -102,10 +119,11 @@ export default function TortaResponsabilidade() {
         {FATORES.map((fator, i) => (
           <motion.div key={i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}>
             <div className="flex items-center justify-between mb-1">
-              <label className="text-xs font-semibold text-[var(--c-text)]">{fator}</label>
-              <span className="text-xs font-bold text-[var(--c-accent)]">{Math.round(proporcoes[i])}%</span>
+              <label htmlFor={`fator-${i}`} className="text-xs font-semibold text-[var(--c-text)]">{fator}</label>
+              <span className="text-xs font-bold" style={{ color: CORES[i] }}>{Math.round(proporcoes[i])}%</span>
             </div>
             <input
+              id={`fator-${i}`}
               type="range"
               min="0"
               max="100"

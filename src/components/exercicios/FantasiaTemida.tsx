@@ -39,7 +39,7 @@ export default function FantasiaTemida() {
             rows={3}
           />
           <p className="text-[10px] text-[var(--c-muted)] mb-3 italic">
-            Fantasia temida: confrare seu medo diretamente. Redija o pior caso, o melhor, e o realista.
+            Fantasia temida: confronte seu medo diretamente. Redija o pior caso, o melhor e o realista.
           </p>
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -133,7 +133,7 @@ export default function FantasiaTemida() {
         <p className="text-lg font-bold text-[var(--c-accent)] mb-4">✓ Fantasia explorada</p>
         <p className="text-sm text-[var(--c-text)] mb-4 italic">"{situacao}"</p>
         <p className="text-[10px] text-[var(--c-muted)]">
-          Compare: seu medo (pior) vs. realidade (realista). Note a lacuna. Discussão com terapeuta ativa.
+          Compare o pior caso com o realista — note a distância entre o que o medo prevê e o que é provável. Leve essa comparação para a sessão.
         </p>
       </div>
 

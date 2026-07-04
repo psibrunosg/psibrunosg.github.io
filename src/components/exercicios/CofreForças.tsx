@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useExerciseSession } from "@/hooks/useExerciseSession";
 
@@ -12,10 +12,18 @@ interface Forca {
 }
 
 export default function CofreForças() {
-  const { save, complete } = useExerciseSession("cofre-forcas");
+  const { state, loading, save, complete } = useExerciseSession("cofre-forcas");
   const [fase, setFase] = useState<Fase>("adicionar");
   const [forcas, setForcas] = useState<Forca[]>([]);
   const [nova, setNova] = useState<Forca>({ adversidade: "", comoLidou: "", recurso: "" });
+
+  // Um cofre que esvazia a cada visita não é um cofre: retoma a coleção salva
+  useEffect(() => {
+    if (loading) return;
+    const salvas = state.payload?.forcas as Forca[] | undefined;
+    if (salvas && salvas.length > 0) setForcas(salvas);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
 
   const handleAdicionar = () => {
     if (nova.adversidade.trim() && nova.comoLidou.trim() && nova.recurso.trim()) {
@@ -51,14 +59,14 @@ export default function CofreForças() {
             type="text"
             value={nova.comoLidou}
             onChange={(e) => setNova({ ...nova, comoLidou: e.target.value })}
-            placeholder="Como você lidou (ex: Fiz networking, estudei..."
+            placeholder="Como você lidou (ex: fiz contatos, estudei)"
             className="w-full rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none"
           />
           <input
             type="text"
             value={nova.recurso}
             onChange={(e) => setNova({ ...nova, recurso: e.target.value })}
-            placeholder="Recurso demonstrado (ex: Resiliência, criatividade"
+            placeholder="Recurso demonstrado (ex: resiliência, criatividade)"
             className="w-full rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none"
           />
         </div>
@@ -68,7 +76,7 @@ export default function CofreForças() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleAdicionar}
-            disabled={!nova.adversidade.trim() || !nova.comoLidou.trim()}
+            disabled={!nova.adversidade.trim() || !nova.comoLidou.trim() || !nova.recurso.trim()}
             className="py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-xs disabled:opacity-50"
           >
             + Adicionar

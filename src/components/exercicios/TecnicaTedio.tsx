@@ -11,11 +11,13 @@ export default function TecnicaTedio() {
   const [tempoDecorrido, setTempoDecorrido] = useState(0);
   const [tempoMeta, setTempoMeta] = useState(300); // 5 min default
   const [rodando, setRodando] = useState(false);
+  const [paradaCedo, setParadaCedo] = useState(false);
 
   const handleIniciar = () => {
     if (!sensacao.trim() || !tempoMeta) return;
     setFase("exposicao");
     setRodando(true);
+    setParadaCedo(false);
   };
 
   const handleStop = () => {
@@ -24,7 +26,15 @@ export default function TecnicaTedio() {
     if (tempoDecorrido >= tempoMeta * 0.8) {
       complete(100);
       setFase("resultado");
+    } else {
+      // Parou antes de 80%: dá feedback e caminho — antes o botão não fazia nada visível
+      setParadaCedo(true);
     }
+  };
+
+  const handleContinuar = () => {
+    setParadaCedo(false);
+    setRodando(true);
   };
 
   // Simulate timer
@@ -128,14 +138,43 @@ export default function TecnicaTedio() {
             Observe a sensação. Não tente mudar. Apenas note: surge, flutua, diminui.
           </p>
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleStop}
-            className="w-full py-2 rounded-lg bg-red-500/20 text-red-600 font-semibold text-sm border border-red-500/30"
-          >
-            Parar observação
-          </motion.button>
+          {!paradaCedo ? (
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleStop}
+              className="w-full py-2 rounded-lg bg-red-500/20 text-red-600 font-semibold text-sm border border-red-500/30"
+            >
+              Parar observação
+            </motion.button>
+          ) : (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2">
+              <p className="text-xs text-[var(--c-muted)]">
+                Você parou antes da meta — o progresso ficou salvo. A vontade de sair É a evitação que estamos observando. Consegue ficar mais um pouco?
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleContinuar}
+                  className="py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm"
+                >
+                  Continuar
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    complete(Math.round((tempoDecorrido / tempoMeta) * 100));
+                    setFase("resultado");
+                  }}
+                  className="py-2 rounded-lg bg-[var(--c-border)] text-[var(--c-text)] font-semibold text-sm"
+                >
+                  Encerrar por hoje
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
         </div>
       </motion.div>
     );

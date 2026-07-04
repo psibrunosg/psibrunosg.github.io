@@ -68,7 +68,7 @@ export default function Perfeccionometro() {
     <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="space-y-4">
       <div className="glass-card rounded-2xl p-6 text-center border-l-4" style={{ borderLeftColor: "var(--c-accent)" }}>
         <p className="text-lg font-bold text-[var(--c-accent)] mb-3">📊 Seu Perfeccionômetro</p>
-        <p className="text-xs text-[var(--c-muted)]">Áreas com alta rigidez custam energia e causa estresse.</p>
+        <p className="text-xs text-[var(--c-muted)]">Áreas com alta rigidez custam energia e causam estresse.</p>
       </div>
 
       <div className="space-y-3">

@@ -1,27 +1,35 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Wind } from "lucide-react";
+import { useExerciseSession } from "@/hooks/useExerciseSession";
 
+// Cada metáfora tem a própria saída: balão sobe, trem atravessa, ligação se apaga...
 const METAFORAS = [
-  { nome: "Balão", emoji: "🎈", desc: "Flutua e some" },
-  { nome: "Ligação", emoji: "☎️", desc: "Desliga e sai" },
-  { nome: "Trem", emoji: "🚂", desc: "Passa e continua" },
-  { nome: "Visitante", emoji: "🚪", desc: "Entra e sai" },
-  { nome: "Palhaço", emoji: "🤡", desc: "Faz barulho e vai" },
+  { nome: "Balão", emoji: "🎈", desc: "Flutua e some", saida: { y: -400, opacity: 0, scale: 0.6 } },
+  { nome: "Ligação", emoji: "📞", desc: "Desliga e sai", saida: { opacity: 0, scale: 0.3 } },
+  { nome: "Trem", emoji: "🚂", desc: "Passa e continua", saida: { x: 500, opacity: 0 } },
+  { nome: "Visitante", emoji: "🚪", desc: "Entra e sai", saida: { x: -400, opacity: 0 } },
+  { nome: "Nuvem", emoji: "☁️", desc: "Passa com o vento", saida: { x: 300, y: -150, opacity: 0 } },
 ];
 
 export default function BalaoPensamentos() {
+  const { complete } = useExerciseSession("balao-pensamentos");
   const [pensamento, setPensamento] = useState("");
   const [metafora, setMetafora] = useState(0);
   const [solto, setSolto] = useState(false);
+  const [solturas, setSolturas] = useState(0);
 
   const handleSoltar = () => {
     if (!pensamento.trim()) return;
     setSolto(true);
+    const novasSolturas = solturas + 1;
+    setSolturas(novasSolturas);
+    // Soltar um pensamento conta como sessão (rega o Jardim)
+    complete(novasSolturas);
     setTimeout(() => {
       setPensamento("");
       setSolto(false);
-    }, 2000);
+    }, 2200);
   };
 
   return (
@@ -62,8 +70,8 @@ export default function BalaoPensamentos() {
         <motion.div
           animate={
             solto
-              ? { y: -400, opacity: 0, scale: 0 }
-              : { y: 0, opacity: 1, scale: 1 }
+              ? METAFORAS[metafora].saida
+              : { x: 0, y: 0, opacity: 1, scale: 1 }
           }
           transition={{ duration: 2, ease: "easeOut" }}
           className="text-center"

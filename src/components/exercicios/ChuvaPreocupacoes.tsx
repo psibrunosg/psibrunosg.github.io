@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useExerciseSession } from "@/hooks/useExerciseSession";
 
 const PREOCUPACOES = [
   "Esquecer reunião importante",
@@ -18,9 +19,11 @@ interface Preocupacao {
 }
 
 export default function ChuvaPreocupacoes() {
+  const { complete } = useExerciseSession("chuva-preocupacoes");
   const [preocupacoes, setPreocupacoes] = useState<Preocupacao[]>([]);
   const [timeLeft, setTimeLeft] = useState(90);
   const [score, setScore] = useState(0);
+  const [perdidas, setPerdidas] = useState(0);
   const [gameState, setGameState] = useState<"ready" | "playing" | "finished">("ready");
 
   useEffect(() => {
@@ -37,21 +40,37 @@ export default function ChuvaPreocupacoes() {
     return () => clearInterval(timer);
   }, [gameState]);
 
+  // Sessão conta como completa ao terminar a rodada (rega o Jardim)
+  useEffect(() => {
+    if (gameState === "finished") complete(score);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameState]);
+
   useEffect(() => {
     if (gameState !== "playing") return;
     const spawnInterval = setInterval(() => {
       const idx = Math.floor(Math.random() * PREOCUPACOES.length);
+      const id = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
       setPreocupacoes((prev) => [
         ...prev,
         {
-          id: Date.now().toString(),
+          id,
           texto: PREOCUPACOES[idx],
           posX: Math.random() * 80 + 10,
           posY: 0,
           acao: null,
         },
       ]);
-    }, 1200);
+
+      // Se ninguém arrastar, a preocupação "acumula no chão" e some — conta como perdida
+      setTimeout(() => {
+        setPreocupacoes((prev) => {
+          const aindaExiste = prev.some((p) => p.id === id);
+          if (aindaExiste) setPerdidas((n) => n + 1);
+          return prev.filter((p) => p.id !== id);
+        });
+      }, 4500);
+    }, 1600);
     return () => clearInterval(spawnInterval);
   }, [gameState]);
 
@@ -60,17 +79,10 @@ export default function ChuvaPreocupacoes() {
     if (!preoc) return;
 
     const yPos = info.offset.y;
-    let tipoAcao: "acao" | "estacionamento" | null = null;
-
-    if (yPos < -50) {
-      tipoAcao = "acao";
-      setScore((s) => s + 20);
-    } else if (yPos > 50) {
-      tipoAcao = "estacionamento";
-      setScore((s) => s + 10);
-    }
-
-    if (tipoAcao) {
+    // Mesmo peso para as duas zonas: estacionar uma preocupação improdutiva
+    // vale tanto quanto transformar em ação — a habilidade é DECIDIR.
+    if (yPos < -50 || yPos > 50) {
+      setScore((s) => s + 15);
       setPreocupacoes((prev) => prev.filter((p) => p.id !== id));
     }
   };
@@ -88,6 +100,7 @@ export default function ChuvaPreocupacoes() {
               setGameState("playing");
               setTimeLeft(90);
               setScore(0);
+              setPerdidas(0);
               setPreocupacoes([]);
             }}
             className="px-3 py-1 rounded-full bg-[var(--c-accent)] text-white text-xs font-semibold"
@@ -132,12 +145,16 @@ export default function ChuvaPreocupacoes() {
       {gameState === "finished" && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/50">
           <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="text-center text-white">
-            <p className="text-2xl font-bold mb-3">{score} pontos!</p>
+            <p className="text-2xl font-bold mb-1">{score} pontos!</p>
+            {perdidas > 0 && (
+              <p className="text-xs mb-3 opacity-80">{perdidas} preocupações acumularam sem decisão</p>
+            )}
             <motion.button
               whileHover={{ scale: 1.05 }}
               onClick={() => {
                 setGameState("ready");
                 setPreocupacoes([]);
+                setPerdidas(0);
               }}
               className="px-4 py-2 rounded-full bg-[var(--c-accent)] text-white font-semibold text-sm"
             >

@@ -47,13 +47,14 @@ export function useExerciseSession(slug: string) {
     })();
   }, [slug]);
 
-  // Save com debounce
+  // Save com debounce — payload é MESCLADO ao anterior (saves parciais não apagam campos já salvos)
   const save = useCallback(
     (newPayload: Record<string, unknown>, options?: { partial?: boolean }) => {
       setState((prev) => {
+        const mergedPayload = { ...prev.payload, ...newPayload };
         const updated = {
           ...prev,
-          payload: newPayload,
+          payload: mergedPayload,
           partial: options?.partial !== false,
         };
 
@@ -75,7 +76,7 @@ export function useExerciseSession(slug: string) {
                   },
                   body: JSON.stringify({
                     exercise_slug: slug,
-                    payload: newPayload,
+                    payload: mergedPayload,
                     partial: options?.partial !== false,
                   }),
                 }
@@ -98,6 +99,15 @@ export function useExerciseSession(slug: string) {
   // Complete (marca completo, envia score)
   const complete = useCallback(
     (score: number) => {
+      // Rega o Jardim da Mente: log local de sessões concluídas (por slug + data)
+      try {
+        const regas = JSON.parse(localStorage.getItem("jardim_regas") || "[]") as Array<{ slug: string; data: string }>;
+        regas.push({ slug, data: new Date().toISOString() });
+        localStorage.setItem("jardim_regas", JSON.stringify(regas));
+      } catch {
+        localStorage.setItem("jardim_regas", JSON.stringify([{ slug, data: new Date().toISOString() }]));
+      }
+
       setState((prev) => {
         const updated = {
           ...prev,

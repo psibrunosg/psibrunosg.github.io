@@ -25,9 +25,9 @@ export default function AcerteDistorcao() {
   const [gameState, setGameState] = useState<GameState>("ready");
   const [timeLeft, setTimeLeft] = useState(60);
   const [score, setScore] = useState(0);
-  const [pensamentos, setPensamentos] = useState<Array<{ id: string; texto: string; isDistorcao: boolean; pos: { x: number; y: number }; hit: boolean }>>([]);
+  const [pensamentos, setPensamentos] = useState<Array<{ id: string; texto: string; isDistorcao: boolean; pos: { x: number; y: number }; hit: boolean; acertou?: boolean }>>([]);
 
-  // Spawn pensamentos aleatórios
+  // Spawn pensamentos aleatórios; cada um expira sozinho em 4s (senão a tela lota)
   useEffect(() => {
     if (gameState !== "playing") return;
     const interval = setInterval(() => {
@@ -35,18 +35,23 @@ export default function AcerteDistorcao() {
       const baseList = isDistorcao ? DISTORCOES : EQUILIBRADOS;
       const texto = baseList[Math.floor(Math.random() * baseList.length)] as any;
       const desc = typeof texto === "string" ? texto : texto.desc;
+      const id = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 
       setPensamentos((prev) => [
         ...prev,
         {
-          id: Date.now().toString(),
+          id,
           texto: desc,
           isDistorcao,
-          pos: { x: Math.random() * 80 + 10, y: Math.random() * 60 + 10 },
+          pos: { x: Math.random() * 70 + 5, y: Math.random() * 60 + 10 },
           hit: false,
         },
       ]);
-    }, 800);
+
+      setTimeout(() => {
+        setPensamentos((prev) => prev.filter((p) => p.id !== id || p.hit));
+      }, 4000);
+    }, 900);
     return () => clearInterval(interval);
   }, [gameState]);
 
@@ -68,7 +73,7 @@ export default function AcerteDistorcao() {
 
   const handleClick = (id: string, isDistorcao: boolean) => {
     setPensamentos((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, hit: true } : p))
+      prev.map((p) => (p.id === id ? { ...p, hit: true, acertou: isDistorcao } : p))
     );
     if (isDistorcao) {
       setScore((s) => s + 10);
@@ -77,7 +82,7 @@ export default function AcerteDistorcao() {
     }
     setTimeout(() => {
       setPensamentos((prev) => prev.filter((p) => p.id !== id));
-    }, 300);
+    }, 350);
   };
 
   return (
@@ -109,22 +114,24 @@ export default function AcerteDistorcao() {
           {pensamentos.map((p) => (
             <motion.button
               key={p.id}
-              initial={{ scale: 1, opacity: 1 }}
+              initial={{ scale: 0.7, opacity: 0 }}
               animate={
                 p.hit
                   ? { scale: 0.5, opacity: 0 }
-                  : { y: [0, 20], x: Math.sin(parseInt(p.id) / 100) * 10 }
+                  : { scale: 1, opacity: 1, y: [0, 15] }
               }
-              transition={{ duration: p.hit ? 0.2 : 2 }}
+              transition={{ duration: p.hit ? 0.3 : 2 }}
               onClick={() => handleClick(p.id, p.isDistorcao)}
-              className={`absolute px-3 py-2 rounded-full font-semibold text-[11px] cursor-pointer transition-all ${
-                p.isDistorcao
-                  ? "bg-red-500/80 text-white hover:bg-red-600"
-                  : "bg-green-500/80 text-white hover:bg-green-600"
+              className={`absolute max-w-40 px-3 py-2 rounded-full font-semibold text-[11px] cursor-pointer transition-colors ${
+                p.hit
+                  ? p.acertou
+                    ? "bg-green-500 text-white"
+                    : "bg-red-500 text-white"
+                  : "bg-[var(--c-accent)]/85 text-white hover:bg-[var(--c-accent)]"
               }`}
               style={{ left: `${p.pos.x}%`, top: `${p.pos.y}%` }}
             >
-              {p.texto.slice(0, 20)}
+              {p.hit ? (p.acertou ? "✓ Distorção!" : "✗ Equilibrado") : p.texto}
             </motion.button>
           ))}
         </div>
