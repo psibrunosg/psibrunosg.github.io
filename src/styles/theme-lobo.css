@@ -1,0 +1,52 @@
+/* Paleta "Verde integral" — Clínica Bruno Souza · Saúde & Bem-estar
+   Manual de Identidade Visual v1.0 (jul/2026)
+   verde profundo = mente · terracota = corpo · sálvia = contexto */
+[data-theme="lobo"] {
+  --c-deep:     #2C4A3F;
+  --c-moss:     #A8C3B4;
+  --c-moss-dk:  #6F9080;
+  --c-accent:   #3E6B5C;
+  --c-accent-lt:#5E8A77;
+  --c-warm:     #C97B4A;
+  --c-warm-lt:  #E9CDB4;
+  --c-bg:       #F7F3EE;
+  --c-bg-dark:  #2C4A3F;
+  --c-text:     #2E2E2E;
+  --c-muted:    #6D6A62;
+  --c-surface:  #FFFDFA;
+  --c-border:   #E5DDD1;
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-heading: 'Fraunces', Georgia, serif;
+  --font-body:    'Nunito Sans', Verdana, sans-serif;
+  --font-ui:      'Nunito Sans', Verdana, sans-serif;
+}
+
+/* ===== Elementos lúdicos da Trilha da matilha ===== */
+
+@keyframes lobo-float {
+  0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+  50%      { transform: translateY(-12px) rotate(1.5deg); }
+}
+
+@keyframes lobo-leaf-drift {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  33%      { transform: translate(6px, -14px) rotate(8deg); }
+  66%      { transform: translate(-5px, -6px) rotate(-6deg); }
+}
+
+.lobo-blob {
+  border-radius: 58% 42% 55% 45% / 52% 48% 45% 55%;
+  transition: border-radius 0.6s ease;
+}
+
+.lobo-card:hover .lobo-blob {
+  border-radius: 45% 55% 48% 52% / 55% 45% 58% 42%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="lobo"] * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

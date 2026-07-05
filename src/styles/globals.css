@@ -1,8 +1,10 @@
 ﻿@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Raleway:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Nunito+Sans:wght@400;600;700;800&display=swap');
 @import "tailwindcss";
 @import "./theme-a.css";
 @import "./theme-b.css";
 @import "./theme-c.css";
+@import "./theme-lobo.css";
 
 *, *::before, *::after { box-sizing: border-box; }
 
