@@ -1,6 +1,6 @@
 import { useRef, useState, useMemo, useEffect } from 'react';
 import { useFrame, useLoader } from '@react-three/fiber';
-import { Html, Sparkles } from '@react-three/drei';
+import { Html, Sparkles, Center } from '@react-three/drei';
 import * as THREE from 'three';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { brainPartsData, disordersData, type BrainPartId, type BrainPartData, type DisorderId } from '@/content/neuroanatomia';
@@ -320,25 +320,27 @@ export function BrainModel({ onSelectPart, selectedPartId, stressLevel, isExplod
 
       {!activeDisorder && !isMedicated && <TherapyLine isTherapyActive={isTherapyActive} isExploded={isExploded} />}
 
-      {brainParts.map((part) => (
-        <BrainPart
-          key={part.id}
-          data={part}
-          selected={selectedPartId === part.id}
-          hasSelection={selectedPartId !== null}
-          stressLevel={stressLevel}
-          isExploded={isExploded}
-          isMindfulness={isMindfulness}
-          isMedicated={isMedicated}
-          activeDisorder={activeDisorder}
-          quizTarget={quizTarget}
-          onClick={() => {
-            if (part.id !== 'context') {
-              onSelectPart(part.id);
-            }
-          }}
-        />
-      ))}
+      <Center>
+        {brainParts.map((part) => (
+          <BrainPart
+            key={part.id}
+            data={part}
+            selected={selectedPartId === part.id}
+            hasSelection={selectedPartId !== null}
+            stressLevel={stressLevel}
+            isExploded={isExploded}
+            isMindfulness={isMindfulness}
+            isMedicated={isMedicated}
+            activeDisorder={activeDisorder}
+            quizTarget={quizTarget}
+            onClick={() => {
+              if (part.id !== 'context') {
+                onSelectPart(part.id);
+              }
+            }}
+          />
+        ))}
+      </Center>
     </group>
   );
 }

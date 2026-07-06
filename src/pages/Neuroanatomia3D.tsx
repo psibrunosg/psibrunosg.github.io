@@ -67,6 +67,41 @@ const quizQuestions: { target: BrainPartId, question: string }[] = [
   { target: 'hippocampus', question: 'Onde ficam armazenadas as nossas memórias e o contexto das situações?' }
 ];
 
+// Checker temporário para debugar arquivos OBJ
+function ObjChecker() {
+  const [status, setStatus] = useState<string>('Verificando arquivos...');
+  const [content, setContent] = useState<string>('');
+
+  useEffect(() => {
+    fetch('/models/FJ3801_BP58201_FMA72658_Left inferior frontal gyrus.obj')
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        return res.text();
+      })
+      .then(text => {
+        const preview = text.substring(0, 100);
+        if (preview.trim().startsWith('<')) {
+          setStatus('ERRO CRÍTICO: O servidor está retornando HTML (index.html) em vez do arquivo OBJ 3D! Caminho não encontrado.');
+        } else {
+          setStatus('SUCESSO: O arquivo OBJ foi encontrado e baixado corretamente!');
+        }
+        setContent(preview);
+      })
+      .catch(err => setStatus(`FALHA NA REDE: ${err.message}`));
+  }, []);
+
+  return (
+    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-red-600 text-white p-4 rounded-lg shadow-xl w-[90%] md:w-[600px] border-2 border-white">
+      <h3 className="font-bold text-lg mb-2">🔍 Verificador de Arquivos 3D (Temporário)</h3>
+      <p className="font-semibold mb-2">{status}</p>
+      <div className="bg-black/50 p-2 text-xs font-mono rounded whitespace-pre-wrap overflow-hidden h-20">
+        Primeiros 100 caracteres do arquivo:<br/>
+        {content}
+      </div>
+    </div>
+  );
+}
+
 export default function Neuroanatomia3D() {
   const [selectedPartId, setSelectedPartId] = useState<BrainPartId | null>(null);
   const [activeDisorder, setActiveDisorder] = useState<DisorderId | null>(null);
@@ -164,6 +199,7 @@ export default function Neuroanatomia3D() {
       <main id="main" className="flex-1 flex flex-col md:flex-row pt-20">
         {/* Painel Esquerdo: Canvas 3D */}
         <div className="flex-1 relative h-[50vh] md:h-auto border-b md:border-b-0 md:border-r border-[var(--c-border)] bg-black/5">
+          <ObjChecker />
           <Link
             to="/psicoeducacao"
             className="absolute top-4 left-4 z-10 inline-flex items-center gap-2 text-sm text-[var(--c-text)] hover:text-[var(--c-accent)] transition-colors bg-[var(--c-surface)]/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-[var(--c-border)] shadow-sm"
