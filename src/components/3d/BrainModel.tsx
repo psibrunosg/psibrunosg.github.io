@@ -5,6 +5,59 @@ import * as THREE from 'three';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { brainPartsData, disordersData, type BrainPartId, type BrainPartData, type DisorderId } from '@/content/neuroanatomia';
 
+// Carrega a lista de todos os arquivos OBJ disponíveis na pasta public/models
+const allModelPaths = Object.keys(import.meta.glob('/public/models/*.obj')).map(p => p.replace('/public', ''));
+
+// Descobre quais arquivos já estão sendo usados pelas peças principais para não duplicar
+const usedUrls = new Set(Object.values(brainPartsData).flatMap(part => part.urls));
+const cortexUrls = allModelPaths.filter(url => !usedUrls.has(url));
+
+// Componente para o Córtex Completo
+function FullCortex({ visible, opacity }: { visible: boolean, opacity: number }) {
+  // Só carrega os arquivos se estiver visível para não travar o início
+  const objs = useLoader(OBJLoader, visible ? cortexUrls : []);
+  const materialsRef = useRef<THREE.MeshLambertMaterial[]>([]);
+
+  const meshes = useMemo(() => {
+    if (!visible) return new THREE.Group();
+    const combined = new THREE.Group();
+    materialsRef.current = [];
+    const objArray = Array.isArray(objs) ? objs : [objs];
+    
+    objArray.forEach((obj: any) => {
+      if (!obj) return;
+      const clone = obj.clone(true);
+      clone.traverse((child: any) => {
+        if (child.isMesh) {
+          const material = new THREE.MeshLambertMaterial({
+            color: '#e5e7eb',
+            transparent: true,
+            opacity: opacity,
+          });
+          child.material = material;
+          materialsRef.current.push(material);
+        }
+      });
+      combined.add(clone);
+    });
+    return combined;
+  }, [objs, visible, opacity]);
+
+  useFrame(() => {
+    materialsRef.current.forEach(mat => {
+      mat.opacity += (opacity - mat.opacity) * 0.1;
+    });
+  });
+
+  if (!visible) return null;
+
+  return (
+    <group>
+      <primitive object={meshes} />
+    </group>
+  );
+}
+
 interface BrainPartProps {
   data: BrainPartData;
   selected: boolean;
@@ -24,6 +77,7 @@ function BrainPart({ data, selected, hasSelection, stressLevel, isExploded, isMi
   const [hovered, setHover] = useState(false);
   const groupRef = useRef<THREE.Group>(null);
   const materialsRef = useRef<THREE.MeshStandardMaterial[]>([]);
+  const [labelCenter, setLabelCenter] = useState<THREE.Vector3>(new THREE.Vector3(0, 100, 0));
 
   const meshes = useMemo(() => {
     const combined = new THREE.Group();
@@ -48,6 +102,14 @@ function BrainPart({ data, selected, hasSelection, stressLevel, isExploded, isMi
       });
       combined.add(clone);
     });
+
+    // Calcula o centro exato desta peça anatômica para posicionar o rótulo HTML
+    const box = new THREE.Box3().setFromObject(combined);
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+    center.y += 20; // Eleva um pouco para não ficar exatamente dentro da malha
+    setLabelCenter(center);
+
     return combined;
   }, [objs, data.color]);
 
@@ -187,7 +249,7 @@ function BrainPart({ data, selected, hasSelection, stressLevel, isExploded, isMi
       <primitive object={meshes} />
       
       {(selected || hovered || isExploded) && data.id !== 'context' && (
-        <Html position={[0, 100, 0]} center zIndexRange={[100, 0]}>
+        <Html position={[labelCenter.x, labelCenter.y, labelCenter.z]} center zIndexRange={[100, 0]}>
           <div className="px-2 py-1 rounded bg-black/80 text-white text-xs font-bold whitespace-nowrap backdrop-blur-sm border border-white/20 pointer-events-none">
             {data.title}
           </div>
@@ -237,9 +299,10 @@ interface BrainModelProps {
   isMedicated: boolean;
   activeDisorder: DisorderId | null;
   quizTarget: BrainPartId | null;
+  showContext: boolean;
 }
 
-export function BrainModel({ onSelectPart, selectedPartId, stressLevel, isExploded, isMindfulness, isTherapyActive, activeDisorder, isMedicated, quizTarget }: BrainModelProps) {
+export function BrainModel({ onSelectPart, selectedPartId, stressLevel, isExploded, isMindfulness, isTherapyActive, activeDisorder, isMedicated, quizTarget, showContext }: BrainModelProps) {
   const groupRef = useRef<THREE.Group>(null);
 
   useFrame((state: any) => {
@@ -300,6 +363,9 @@ export function BrainModel({ onSelectPart, selectedPartId, stressLevel, isExplod
     sparkCount = 15 + Math.floor((stressLevel / 100) * 30);
   }
 
+  // Córtex opacity based on selection
+  const cortexOpacity = isExploded ? 0.1 : (selectedPartId ? 0.15 : 0.3);
+
   return (
     <group ref={groupRef} scale={globalScale} position={globalPosition}>
       <ambientLight intensity={ambientIntensity} />
@@ -340,6 +406,8 @@ export function BrainModel({ onSelectPart, selectedPartId, stressLevel, isExplod
             }}
           />
         ))}
+        {/* Renderiza o córtex de fundo, se habilitado */}
+        {showContext && <FullCortex visible={showContext} opacity={cortexOpacity} />}
       </Center>
     </group>
   );

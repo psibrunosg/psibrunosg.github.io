@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Suspense, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, BookOpen, AlertCircle, Loader2, Activity, Maximize2, Minimize2, Flower2, Link as LinkIcon, Wind, Stethoscope, Pill, HeartPulse, BrainCircuit, Target, CheckCircle2, XCircle } from "lucide-react";
+import { ArrowLeft, BookOpen, AlertCircle, Loader2, Activity, Maximize2, Minimize2, Flower2, Link as LinkIcon, Wind, Stethoscope, Pill, HeartPulse, BrainCircuit, Target, CheckCircle2, XCircle, Brain } from "lucide-react";
 import { Canvas } from "@react-three/fiber";
 import { CameraControls, Html } from "@react-three/drei";
 import { motion, AnimatePresence } from "framer-motion";
@@ -67,41 +67,6 @@ const quizQuestions: { target: BrainPartId, question: string }[] = [
   { target: 'hippocampus', question: 'Onde ficam armazenadas as nossas memórias e o contexto das situações?' }
 ];
 
-// Checker temporário para debugar arquivos OBJ
-function ObjChecker() {
-  const [status, setStatus] = useState<string>('Verificando arquivos...');
-  const [content, setContent] = useState<string>('');
-
-  useEffect(() => {
-    fetch('/models/FJ3801_BP58201_FMA72658_Left inferior frontal gyrus.obj')
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        return res.text();
-      })
-      .then(text => {
-        const preview = text.substring(0, 100);
-        if (preview.trim().startsWith('<')) {
-          setStatus('ERRO CRÍTICO: O servidor está retornando HTML (index.html) em vez do arquivo OBJ 3D! Caminho não encontrado.');
-        } else {
-          setStatus('SUCESSO: O arquivo OBJ foi encontrado e baixado corretamente!');
-        }
-        setContent(preview);
-      })
-      .catch(err => setStatus(`FALHA NA REDE: ${err.message}`));
-  }, []);
-
-  return (
-    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-red-600 text-white p-4 rounded-lg shadow-xl w-[90%] md:w-[600px] border-2 border-white">
-      <h3 className="font-bold text-lg mb-2">🔍 Verificador de Arquivos 3D (Temporário)</h3>
-      <p className="font-semibold mb-2">{status}</p>
-      <div className="bg-black/50 p-2 text-xs font-mono rounded whitespace-pre-wrap overflow-hidden h-20">
-        Primeiros 100 caracteres do arquivo:<br/>
-        {content}
-      </div>
-    </div>
-  );
-}
-
 export default function Neuroanatomia3D() {
   const [selectedPartId, setSelectedPartId] = useState<BrainPartId | null>(null);
   const [activeDisorder, setActiveDisorder] = useState<DisorderId | null>(null);
@@ -120,6 +85,7 @@ export default function Neuroanatomia3D() {
   const [isQuizMode, setIsQuizMode] = useState<boolean>(false);
   const [currentQuizIndex, setCurrentQuizIndex] = useState<number>(0);
   const [quizStatus, setQuizStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
+  const [showContext, setShowContext] = useState<boolean>(true);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "c");
@@ -199,7 +165,6 @@ export default function Neuroanatomia3D() {
       <main id="main" className="flex-1 flex flex-col md:flex-row pt-20">
         {/* Painel Esquerdo: Canvas 3D */}
         <div className="flex-1 relative h-[50vh] md:h-auto border-b md:border-b-0 md:border-r border-[var(--c-border)] bg-black/5">
-          <ObjChecker />
           <Link
             to="/psicoeducacao"
             className="absolute top-4 left-4 z-10 inline-flex items-center gap-2 text-sm text-[var(--c-text)] hover:text-[var(--c-accent)] transition-colors bg-[var(--c-surface)]/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-[var(--c-border)] shadow-sm"
@@ -305,6 +270,7 @@ export default function Neuroanatomia3D() {
                   isMedicated={isMedicated}
                   activeDisorder={activeDisorder}
                   quizTarget={isQuizMode ? quizQuestions[currentQuizIndex].target : null}
+                  showContext={showContext}
                 />
                 <CameraManager selectedPartId={selectedPartId} />
               </Suspense>
@@ -509,6 +475,16 @@ export default function Neuroanatomia3D() {
                   >
                     {isExploded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
                     {isExploded ? "Agrupar Modelo" : "Visão Expandida"}
+                  </button>
+
+                  <button
+                    onClick={() => setShowContext(!showContext)}
+                    className={`w-full mt-2 py-3 px-4 rounded-xl flex items-center justify-center gap-2 text-sm font-semibold transition-colors border ${
+                      showContext ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-600 dark:text-indigo-400" : "bg-[var(--c-bg)] border-[var(--c-border)] text-[var(--c-text)] hover:border-indigo-500/30"
+                    }`}
+                  >
+                    <Brain size={16} />
+                    {showContext ? "Ocultar Córtex" : "Mostrar Córtex"}
                   </button>
                 </div>
               </div>
