@@ -248,6 +248,27 @@ export default function Psicoeducacao() {
             <motion.p variants={fadeUp} className="text-[var(--c-muted)] max-w-xl mb-12 leading-relaxed">
               Conteúdo claro para entender o que você sente. Saber como a mente funciona é o primeiro passo para cuidar dela com mais autonomia.
             </motion.p>
+            <div className="mb-8">
+              <Link
+                to="/psicoeducacao/neuroanatomia"
+                className="flex items-center justify-between p-6 rounded-2xl bg-gradient-to-r from-[var(--c-accent)]/20 to-[var(--c-bg)] border border-[var(--c-accent)]/30 hover:border-[var(--c-accent)]/60 transition-colors group"
+              >
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Brain className="text-[var(--c-accent)]" size={24} />
+                    <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>
+                      Laboratório de Neuroanatomia 3D
+                    </h2>
+                  </div>
+                  <p className="text-sm text-[var(--c-muted)]">
+                    Explore um modelo 3D do cérebro e entenda como as emoções são processadas (Baseado no BodyParts3D).
+                  </p>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-[var(--c-accent)]/10 flex items-center justify-center group-hover:bg-[var(--c-accent)]/20 transition-colors shrink-0">
+                  <span className="text-[var(--c-accent)] font-bold">→</span>
+                </div>
+              </Link>
+            </div>
 
             <div className="space-y-4">
               {topicos.map((t, i) => {

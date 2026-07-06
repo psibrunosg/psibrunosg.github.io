@@ -1,4 +1,4 @@
-﻿import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import VariantC from "./pages/VariantC";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
@@ -12,6 +12,7 @@ import JardimPage from "./pages/exercicios/JardimPage";
 import BaralhoAdultoPage from "./pages/exercicios/BaralhoAdultoPage";
 import ParesMentePage from "./pages/exercicios/ParesMentePage";
 import ChuvaPreocupacoesPage from "./pages/exercicios/ChuvaPreocupacoesPage";
+import Neuroanatomia3D from "./pages/Neuroanatomia3D";
 import BalaoPensamentosPage from "./pages/exercicios/BalaoPensamentosPage";
 import CacaFatosPage from "./pages/exercicios/CacaFatosPage";
 import GPSPage from "./pages/exercicios/GPSPage";
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:slug" element={<BlogPost />} />
         <Route path="/psicoeducacao" element={<Psicoeducacao />} />
+        <Route path="/psicoeducacao/neuroanatomia" element={<Neuroanatomia3D />} />
         <Route path="/exercicios" element={<Exercicios />} />
         <Route path="/exercicios/restritos" element={<ExerciciosRestritos />} />
         <Route path="/exercicios/acerte-distorcao" element={<AcerteDistorcaoPage />} />
