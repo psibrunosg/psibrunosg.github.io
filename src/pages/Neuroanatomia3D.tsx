@@ -2,7 +2,7 @@ import { useState, useEffect, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, BookOpen, AlertCircle, Loader2 } from "lucide-react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, Html } from "@react-three/drei";
 import { motion, AnimatePresence } from "framer-motion";
 import { MobileMenu } from "@/components/ui/MobileMenu";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
