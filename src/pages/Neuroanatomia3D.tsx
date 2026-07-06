@@ -1,8 +1,8 @@
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, BookOpen, AlertCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, BookOpen, AlertCircle, Loader2, Activity } from "lucide-react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Html } from "@react-three/drei";
+import { CameraControls, Html } from "@react-three/drei";
 import { motion, AnimatePresence } from "framer-motion";
 import { MobileMenu } from "@/components/ui/MobileMenu";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
@@ -10,6 +10,7 @@ import { SkipLink } from "@/components/shared/SkipLink";
 import { WhatsAppFloat } from "@/components/shared/WhatsAppFloat";
 import { contato } from "@/content/copy";
 import { BrainModel } from "@/components/3d/BrainModel";
+import { brainPartsData, type BrainPartId } from "@/content/neuroanatomia";
 
 const navItems = [
   { label: "Inicio", href: "/" },
@@ -18,26 +19,33 @@ const navItems = [
   { label: "Blog", href: "/blog" },
 ];
 
-const brainPartsInfo: Record<string, { title: string; description: string; role: string }> = {
-  prefrontal: {
-    title: "Córtex Pré-Frontal",
-    description: "A parte da frente do cérebro, responsável pelo pensamento lógico, planejamento, tomada de decisões e controle dos impulsos.",
-    role: "Na ansiedade, o córtex pré-frontal tenta 'frear' o sistema de alarme (amígdala). Quando o estresse é muito alto, ele pode perder a força e você passa a agir mais por emoção do que por razão.",
-  },
-  amygdala: {
-    title: "Amígdala",
-    description: "Uma pequena estrutura em forma de amêndoa. É o centro emocional e o 'sistema de alarme' do cérebro.",
-    role: "Quando percebe uma ameaça (real ou imaginária), ela dispara a resposta de 'lutar, fugir ou congelar', liberando adrenalina e causando os sintomas físicos da ansiedade.",
-  },
-  hippocampus: {
-    title: "Hipocampo",
-    description: "A estrutura responsável pela formação e armazenamento de novas memórias e pelo aprendizado.",
-    role: "Trabalha junto com a amígdala para lembrar de situações perigosas. No estresse crônico ou trauma, o hipocampo pode encolher, dificultando a diferenciação entre uma lembrança antiga e um perigo atual.",
-  }
-};
+function CameraManager({ selectedPartId }: { selectedPartId: BrainPartId | null }) {
+  const controlsRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (controlsRef.current) {
+      if (selectedPartId && brainPartsData[selectedPartId]) {
+        const data = brainPartsData[selectedPartId];
+        if (data.cameraPosition && data.cameraTarget) {
+          controlsRef.current.setLookAt(
+            data.cameraPosition[0], data.cameraPosition[1], data.cameraPosition[2],
+            data.cameraTarget[0], data.cameraTarget[1], data.cameraTarget[2],
+            true
+          );
+        }
+      } else {
+        // Volta para a posição inicial
+        controlsRef.current.setLookAt(0, 0, 5, 0, 0, 0, true);
+      }
+    }
+  }, [selectedPartId]);
+
+  return <CameraControls ref={controlsRef} minDistance={2} maxDistance={10} />;
+}
 
 export default function Neuroanatomia3D() {
-  const [selectedPartId, setSelectedPartId] = useState<string | null>(null);
+  const [selectedPartId, setSelectedPartId] = useState<BrainPartId | null>(null);
+  const [isAnxietyAttack, setIsAnxietyAttack] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "c");
@@ -45,7 +53,7 @@ export default function Neuroanatomia3D() {
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
-  const selectedInfo = selectedPartId ? brainPartsInfo[selectedPartId] : null;
+  const selectedInfo = selectedPartId ? brainPartsData[selectedPartId] : null;
 
   return (
     <div className="flex flex-col min-h-screen bg-[var(--c-bg)]">
@@ -77,20 +85,30 @@ export default function Neuroanatomia3D() {
                 </div>
               </Html>
             }>
-              <BrainModel onSelectPart={setSelectedPartId} selectedPartId={selectedPartId} />
-              <OrbitControls 
-                enablePan={false}
-                minDistance={2}
-                maxDistance={10}
-                autoRotate={!selectedPartId}
-                autoRotateSpeed={0.5}
+              <BrainModel 
+                onSelectPart={setSelectedPartId} 
+                selectedPartId={selectedPartId} 
+                isAnxietyAttack={isAnxietyAttack} 
               />
+              <CameraManager selectedPartId={selectedPartId} />
             </Suspense>
           </Canvas>
+
+          {/* Overlay de Crise (Borda vermelha pulsante) */}
+          <AnimatePresence>
+            {isAnxietyAttack && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 pointer-events-none shadow-[inset_0_0_100px_rgba(239,68,68,0.2)]"
+              />
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Painel Direito: Informações Psicoeducativas */}
-        <div className="w-full md:w-[400px] lg:w-[480px] bg-[var(--c-surface)] overflow-y-auto h-[50vh] md:h-[calc(100vh-80px)] p-6 md:p-8">
+        <div className="w-full md:w-[400px] lg:w-[480px] bg-[var(--c-surface)] overflow-y-auto h-[50vh] md:h-[calc(100vh-80px)] p-6 md:p-8 flex flex-col">
           <div className="mb-8">
             <p className="text-xs tracking-[0.3em] uppercase text-[var(--c-accent)] font-semibold mb-2">
               Laboratório 3D
@@ -103,71 +121,109 @@ export default function Neuroanatomia3D() {
             </p>
           </div>
 
-          <AnimatePresence mode="wait">
-            {selectedInfo ? (
-              <motion.div
-                key={selectedPartId}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-6"
-              >
-                <div>
-                  <h2 className="text-2xl font-bold text-[var(--c-text)] mb-3" style={{ fontFamily: "var(--font-heading)" }}>
-                    {selectedInfo.title}
+          {/* Botão de Simulação */}
+          <div className="mb-6">
+            <button
+              onClick={() => {
+                setIsAnxietyAttack(!isAnxietyAttack);
+                if (!isAnxietyAttack) setSelectedPartId(null);
+              }}
+              className={`w-full py-4 px-6 rounded-2xl flex items-center justify-center gap-3 font-semibold transition-all duration-300 ${
+                isAnxietyAttack 
+                ? "bg-red-500 text-white shadow-[0_0_20px_rgba(239,68,68,0.5)]" 
+                : "bg-[var(--c-bg)] border-2 border-[var(--c-border)] text-[var(--c-text)] hover:border-red-500/50 hover:text-red-500"
+              }`}
+            >
+              <Activity className={isAnxietyAttack ? "animate-pulse" : ""} />
+              {isAnxietyAttack ? "Parar Simulação de Crise" : "Simular Crise de Ansiedade"}
+            </button>
+          </div>
+
+          <div className="flex-1">
+            <AnimatePresence mode="wait">
+              {isAnxietyAttack ? (
+                <motion.div
+                  key="attack"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="bg-red-500/10 border border-red-500/20 p-6 rounded-2xl space-y-4"
+                >
+                  <h2 className="text-xl font-bold text-red-600 dark:text-red-400" style={{ fontFamily: "var(--font-heading)" }}>
+                    O Sequestro da Amígdala
                   </h2>
-                  <div className="bg-[var(--c-bg)] p-4 rounded-xl border border-[var(--c-border)]">
-                    <div className="flex items-start gap-3 mb-2">
-                      <BookOpen className="w-5 h-5 text-[var(--c-accent)] shrink-0 mt-0.5" />
+                  <p className="text-sm text-[var(--c-text)] leading-relaxed">
+                    Durante uma crise de ansiedade ou pânico, a <strong>Amígdala</strong> (o centro de alarme) fica hiperativa. Ela assume o controle do cérebro para preparar você para uma ameaça imediata.
+                  </p>
+                  <p className="text-sm text-[var(--c-text)] leading-relaxed">
+                    Neste processo, o <strong>Córtex Pré-Frontal</strong> (a parte racional) perde energia e fica "desligado". É por isso que é tão difícil pensar logicamente ou se acalmar apenas com a razão durante o pico de pânico.
+                  </p>
+                </motion.div>
+              ) : selectedInfo ? (
+                <motion.div
+                  key={selectedPartId}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-6"
+                >
+                  <div>
+                    <h2 className="text-2xl font-bold text-[var(--c-text)] mb-3" style={{ fontFamily: "var(--font-heading)" }}>
+                      {selectedInfo.title}
+                    </h2>
+                    <div className="bg-[var(--c-bg)] p-4 rounded-xl border border-[var(--c-border)]">
+                      <div className="flex items-start gap-3 mb-2">
+                        <BookOpen className="w-5 h-5 text-[var(--c-accent)] shrink-0 mt-0.5" />
+                        <div>
+                          <h3 className="font-semibold text-[var(--c-text)] text-sm mb-1">O que é?</h3>
+                          <p className="text-sm text-[var(--c-muted)] leading-relaxed">
+                            {selectedInfo.description}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-orange-500/10 p-4 rounded-xl border border-orange-500/20">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
                       <div>
-                        <h3 className="font-semibold text-[var(--c-text)] text-sm mb-1">O que é?</h3>
+                        <h3 className="font-semibold text-orange-600 dark:text-orange-400 text-sm mb-1">
+                          O Papel na Ansiedade
+                        </h3>
                         <p className="text-sm text-[var(--c-muted)] leading-relaxed">
-                          {selectedInfo.description}
+                          {selectedInfo.role}
                         </p>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="bg-orange-500/10 p-4 rounded-xl border border-orange-500/20">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
-                    <div>
-                      <h3 className="font-semibold text-orange-600 dark:text-orange-400 text-sm mb-1">
-                        O Papel na Ansiedade
-                      </h3>
-                      <p className="text-sm text-[var(--c-muted)] leading-relaxed">
-                        {selectedInfo.role}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <button 
-                  onClick={() => setSelectedPartId(null)}
-                  className="w-full py-3 rounded-xl border border-[var(--c-border)] text-sm font-medium hover:bg-[var(--c-bg)] transition-colors"
+                  <button 
+                    onClick={() => setSelectedPartId(null)}
+                    className="w-full py-3 rounded-xl border border-[var(--c-border)] text-sm font-medium hover:bg-[var(--c-bg)] transition-colors"
+                  >
+                    Limpar Seleção
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="empty"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="h-48 flex flex-col items-center justify-center text-center p-6 border-2 border-dashed border-[var(--c-border)] rounded-2xl bg-[var(--c-bg)]/50"
                 >
-                  Limpar Seleção
-                </button>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="empty"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="h-48 flex flex-col items-center justify-center text-center p-6 border-2 border-dashed border-[var(--c-border)] rounded-2xl bg-[var(--c-bg)]/50"
-              >
-                <div className="w-12 h-12 rounded-full bg-[var(--c-accent)]/10 flex items-center justify-center mb-3">
-                  <div className="w-6 h-6 rounded-full bg-[var(--c-accent)]/20 animate-ping" />
-                </div>
-                <p className="text-[var(--c-muted)] text-sm font-medium">
-                  Selecione uma área no modelo 3D para ver como ela afeta suas emoções.
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                  <div className="w-12 h-12 rounded-full bg-[var(--c-accent)]/10 flex items-center justify-center mb-3">
+                    <div className="w-6 h-6 rounded-full bg-[var(--c-accent)]/20 animate-ping" />
+                  </div>
+                  <p className="text-[var(--c-muted)] text-sm font-medium">
+                    Selecione uma área no modelo 3D para ver como ela afeta suas emoções.
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </main>
 
