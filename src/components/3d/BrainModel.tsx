@@ -36,12 +36,11 @@ function BrainPart({ data, selected, hasSelection, stressLevel, isExploded, isMi
       const clone = obj.clone(true);
       clone.traverse((child: any) => {
         if (child.isMesh) {
-          const material = new THREE.MeshStandardMaterial({
+          // MeshLambertMaterial é muito mais leve para a placa de vídeo
+          const material = new THREE.MeshLambertMaterial({
             color: data.color,
             transparent: true,
-            opacity: 0.7,
-            roughness: 0.5,
-            metalness: 0.1,
+            opacity: 0.9,
           });
           child.material = material;
           materialsRef.current.push(material);
@@ -260,8 +259,8 @@ export function BrainModel({ onSelectPart, selectedPartId, stressLevel, isExplod
   let dirColor = new THREE.Color("#ffffff");
   
   let sparkColor = '#fbbf24';
-  let sparkSpeed = 0.2;
-  let sparkCount = 50;
+  let sparkSpeed = 0.1;
+  let sparkCount = 20; // Reduzido drasticamente para placas fracas
   let sparkScale = 1;
   let sparkNoise = 1;
 
@@ -272,8 +271,8 @@ export function BrainModel({ onSelectPart, selectedPartId, stressLevel, isExplod
     dirColor.set(disorder.dirColor);
     
     sparkColor = disorder.sparkles.color;
-    sparkSpeed = disorder.sparkles.speed;
-    sparkCount = disorder.sparkles.count;
+    sparkSpeed = disorder.sparkles.speed * 0.5;
+    sparkCount = Math.floor(disorder.sparkles.count * 0.3); // 30% do original
     sparkScale = disorder.sparkles.scale;
     sparkNoise = disorder.sparkles.noise;
   } else if (isMindfulness) {
@@ -281,15 +280,15 @@ export function BrainModel({ onSelectPart, selectedPartId, stressLevel, isExplod
     dirIntensity = 0.8;
     dirColor.set("#dbeafe");
     sparkColor = '#93c5fd';
-    sparkSpeed = 0.05;
-    sparkCount = 100;
+    sparkSpeed = 0.02;
+    sparkCount = 30;
   } else if (isMedicated) {
     ambientIntensity = 0.7;
     dirIntensity = 1.0;
     dirColor.set("#ecfdf5"); // emerald tint
     sparkColor = '#34d399'; // calm green
-    sparkSpeed = 0.1;
-    sparkCount = 80;
+    sparkSpeed = 0.05;
+    sparkCount = 25;
   } else {
     // Stress normal calculation
     ambientIntensity = 0.6 - (stressLevel / 100) * 0.4;
@@ -297,8 +296,8 @@ export function BrainModel({ onSelectPart, selectedPartId, stressLevel, isExplod
     if (stressLevel > 50) dirColor.set("#fee2e2");
 
     sparkColor = stressLevel > 50 ? '#ef4444' : '#fbbf24';
-    sparkSpeed = 0.2 + (stressLevel / 100) * 1.5;
-    sparkCount = 50 + (stressLevel / 100) * 150;
+    sparkSpeed = 0.1 + (stressLevel / 100) * 0.5;
+    sparkCount = 15 + Math.floor((stressLevel / 100) * 30);
   }
 
   return (
