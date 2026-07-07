@@ -1,0 +1,582 @@
+{
+  "communities": {
+    "0": [
+      "src_app_app"
+    ],
+    "1": [
+      "src_components_exercicios_chuvapreocupacoes_chuvapreocupacoes"
+    ],
+    "2": [
+      "src_components_exercicios_exercicioshell_exercicioshell"
+    ],
+    "3": [
+      "src_components_exercicios_gpsdecisoes_gpsdecisoes"
+    ],
+    "4": [
+      "src_components_exercicios_muralhaevidencias_muralhaevidencias"
+    ],
+    "5": [
+      "src_components_exercicios_registrov2_registrov2"
+    ],
+    "6": [
+      "src_components_shared_crisiscard_crisiscard"
+    ],
+    "7": [
+      "src_components_shared_ethicalfooter_ethicalfooter"
+    ],
+    "8": [
+      "src_components_shared_skiplink_skiplink"
+    ],
+    "9": [
+      "src_components_shared_whatsappfloat_whatsappfloat"
+    ],
+    "10": [
+      "src_components_ui_aurorabackground_aurorabackground"
+    ],
+    "11": [
+      "src_components_ui_cardhovereffect_cardhovereffect"
+    ],
+    "12": [
+      "src_components_ui_magneticcursor_magneticcursor"
+    ],
+    "13": [
+      "src_components_ui_scrollprogress_scrollprogress"
+    ],
+    "14": [
+      "src_components_ui_spotlight_spotlight"
+    ],
+    "15": [
+      "src_content_areas_blog_areablog"
+    ],
+    "16": [
+      "src_content_areas_blog_areade"
+    ],
+    "17": [
+      "src_content_distorcoes_distorcao"
+    ],
+    "18": [
+      "src_content_escalas_escalaconfig"
+    ],
+    "19": [
+      "src_content_escalas_escaladominio"
+    ],
+    "20": [
+      "src_content_escalas_gerais_bdiitem"
+    ],
+    "21": [
+      "src_content_escalas_gerais_escalageralconfig"
+    ],
+    "22": [
+      "src_content_escalas_gerais_escalageraldominio"
+    ],
+    "23": [
+      "src_content_ferramentas_terapeuta_ferramentaterapeuta"
+    ],
+    "24": [
+      "src_content_neuroanatomia_brainpartdata"
+    ],
+    "25": [
+      "src_content_neuroanatomia_brainpartid"
+    ],
+    "26": [
+      "src_content_neuroanatomia_disorderdata"
+    ],
+    "27": [
+      "src_content_neuroanatomia_disorderid"
+    ],
+    "28": [
+      "src_content_neuroanatomia_guidedtourdata"
+    ],
+    "29": [
+      "src_content_neuroanatomia_guidedtourid"
+    ],
+    "30": [
+      "src_content_neuroanatomia_tourstep"
+    ],
+    "31": [
+      "src_content_normative_tables_atencaonorma"
+    ],
+    "32": [
+      "src_content_normative_tables_calculartscoreneoffi"
+    ],
+    "33": [
+      "src_content_normative_tables_classificaratencao"
+    ],
+    "34": [
+      "src_content_normative_tables_classificarg36"
+    ],
+    "35": [
+      "src_content_normative_tables_classificarneot"
+    ],
+    "36": [
+      "src_content_normative_tables_classificarporfaixa"
+    ],
+    "37": [
+      "src_content_normative_tables_g36escolaridade"
+    ],
+    "38": [
+      "src_content_normative_tables_g36norma"
+    ],
+    "39": [
+      "src_content_normative_tables_neoffidominio"
+    ],
+    "40": [
+      "src_content_normative_tables_neosexo"
+    ],
+    "41": [
+      "src_content_normative_tables_testeid"
+    ],
+    "42": [
+      "src_content_parecer_templates_templatesneoffidominio"
+    ],
+    "43": [
+      "src_content_posts_loader_blogpost"
+    ],
+    "44": [
+      "src_content_posts_loader_getallposts"
+    ],
+    "45": [
+      "src_content_posts_loader_getpost"
+    ],
+    "46": [
+      "src_content_posts_loader_isdynamicloaded"
+    ],
+    "47": [
+      "src_content_posts_loader_loaddynamicposts"
+    ],
+    "48": [
+      "src_content_trilhas_trilhaexercicio"
+    ],
+    "49": [
+      "src_content_trilhas_trilhatratamento"
+    ],
+    "50": [
+      "src_content_trilhas_trilhaunidade"
+    ],
+    "51": [
+      "src_hooks_useexercisesession_exercisesessionstate"
+    ],
+    "52": [
+      "src_hooks_useexercisesession_useexercisesession"
+    ],
+    "53": [
+      "src_hooks_usetrilha_trilhaprogresso"
+    ],
+    "54": [
+      "src_hooks_usetrilha_unidadeprogresso"
+    ],
+    "55": [
+      "src_hooks_usetrilha_usetrilha"
+    ],
+    "56": [
+      "src_lib_chatengine_chathistorico"
+    ],
+    "57": [
+      "src_lib_chatengine_chatnodo"
+    ],
+    "58": [
+      "src_lib_chatengine_chatscript"
+    ],
+    "59": [
+      "src_lib_chatengine_procesarchat"
+    ],
+    "60": [
+      "src_lib_interpret_correlacao"
+    ],
+    "61": [
+      "src_lib_interpret_correlacoesfactuais"
+    ],
+    "62": [
+      "src_lib_interpret_esquemainterpretado"
+    ],
+    "63": [
+      "src_lib_interpret_familia"
+    ],
+    "64": [
+      "src_lib_interpret_interpretarresposta"
+    ],
+    "65": [
+      "src_lib_interpret_itemflag"
+    ],
+    "66": [
+      "src_lib_interpret_respostainterpretada"
+    ],
+    "67": [
+      "src_lib_interpret_rodadainterpretada"
+    ],
+    "68": [
+      "src_lib_parecer_generator_dadospaciente"
+    ],
+    "69": [
+      "src_lib_parecer_generator_gerarparecerpdf"
+    ],
+    "70": [
+      "src_lib_parecer_generator_processarteste"
+    ],
+    "71": [
+      "src_lib_parecer_generator_resultadoteste"
+    ],
+    "72": [
+      "src_lib_pdf_generator_baixarpdf"
+    ],
+    "73": [
+      "src_lib_pdf_generator_geraremaillink"
+    ],
+    "74": [
+      "src_lib_pdf_generator_gerarpdf"
+    ],
+    "75": [
+      "src_lib_pdf_generator_gerarwhatsapplink"
+    ],
+    "76": [
+      "src_lib_scoring_classificarresposta"
+    ],
+    "77": [
+      "src_lib_scoring_computegeralscore"
+    ],
+    "78": [
+      "src_lib_scoring_computeschemaavg"
+    ],
+    "79": [
+      "src_lib_scoring_computethreshold"
+    ],
+    "80": [
+      "src_lib_scoring_detectarriscos"
+    ],
+    "81": [
+      "src_lib_scoring_dominioresult"
+    ],
+    "82": [
+      "src_lib_scoring_ehfaixagrave"
+    ],
+    "83": [
+      "src_lib_scoring_pacienteemrisco"
+    ],
+    "84": [
+      "src_lib_scoring_respostaregistro"
+    ],
+    "85": [
+      "src_lib_scoring_riscoclinico"
+    ],
+    "86": [
+      "src_lib_scoring_schemaresult"
+    ],
+    "87": [
+      "src_lib_supabase_atualizarpostblog"
+    ],
+    "88": [
+      "src_lib_supabase_blogpostdb"
+    ],
+    "89": [
+      "src_lib_supabase_deletarpostblog"
+    ],
+    "90": [
+      "src_lib_supabase_listarpostsblog"
+    ],
+    "91": [
+      "src_lib_supabase_listarpostspublicados"
+    ],
+    "92": [
+      "src_lib_supabase_questionnaireresponse"
+    ],
+    "93": [
+      "src_lib_supabase_salvarpostblog"
+    ],
+    "94": [
+      "src_lib_supabase_salvarresposta"
+    ],
+    "95": [
+      "src_lib_utils_cn"
+    ],
+    "96": [
+      "src_pages_exercicios_acertedistorcaopage_acertedistorcaopage"
+    ],
+    "97": [
+      "src_pages_exercicios_aescavacaopage_aescavacaopage"
+    ],
+    "98": [
+      "src_pages_exercicios_balancapage_balancapage"
+    ],
+    "99": [
+      "src_pages_exercicios_balaopensamentospage_balaopensamentospage"
+    ],
+    "100": [
+      "src_pages_exercicios_baralhoadultopage_baralhoadultopage"
+    ],
+    "101": [
+      "src_pages_exercicios_bussolapage_bussolapage"
+    ],
+    "102": [
+      "src_pages_exercicios_cacafatospage_cacafatospage"
+    ],
+    "103": [
+      "src_pages_exercicios_cartapage_cartapage"
+    ],
+    "104": [
+      "src_pages_exercicios_chuvapreocupacoespage_chuvapreocupacoespage"
+    ],
+    "105": [
+      "src_pages_exercicios_conecteabcpage_conecteabcpage"
+    ],
+    "106": [
+      "src_pages_exercicios_diariopage_diariopage"
+    ],
+    "107": [
+      "src_pages_exercicios_direitospage_direitospage"
+    ],
+    "108": [
+      "src_pages_exercicios_escritapage_escritapage"
+    ],
+    "109": [
+      "src_pages_exercicios_fantasiapage_fantasiapage"
+    ],
+    "110": [
+      "src_pages_exercicios_forcaspage_forcaspage"
+    ],
+    "111": [
+      "src_pages_exercicios_gpspage_gpspage"
+    ],
+    "112": [
+      "src_pages_exercicios_inundacaopage_inundacaopage"
+    ],
+    "113": [
+      "src_pages_exercicios_jardimpage_jardimpage"
+    ],
+    "114": [
+      "src_pages_exercicios_labprevisaopage_labprevisaopage"
+    ],
+    "115": [
+      "src_pages_exercicios_lesspage_lesspage"
+    ],
+    "116": [
+      "src_pages_exercicios_maquinatempopage_maquinatempopage"
+    ],
+    "117": [
+      "src_pages_exercicios_muralhaevidenciaspage_muralhaevidenciaspage"
+    ],
+    "118": [
+      "src_pages_exercicios_oculospage_oculospage"
+    ],
+    "119": [
+      "src_pages_exercicios_paresmentepage_paresmentepage"
+    ],
+    "120": [
+      "src_pages_exercicios_perfeccionometropage_perfeccionometropage"
+    ],
+    "121": [
+      "src_pages_exercicios_pontospage_pontospage"
+    ],
+    "122": [
+      "src_pages_exercicios_reformulacaopage_reformulacaopage"
+    ],
+    "123": [
+      "src_pages_exercicios_registropage_registropage"
+    ],
+    "124": [
+      "src_pages_exercicios_rodapage_rodapage"
+    ],
+    "125": [
+      "src_pages_exercicios_roletapage_roletapage"
+    ],
+    "126": [
+      "src_pages_exercicios_tediopage_tediopage"
+    ],
+    "127": [
+      "src_pages_exercicios_tortapage_tortapage"
+    ],
+    "128": [
+      "src_pages_varianta_varianta"
+    ]
+  },
+  "cohesion": {
+    "0": 1.0,
+    "1": 1.0,
+    "2": 1.0,
+    "3": 1.0,
+    "4": 1.0,
+    "5": 1.0,
+    "6": 1.0,
+    "7": 1.0,
+    "8": 1.0,
+    "9": 1.0,
+    "10": 1.0,
+    "11": 1.0,
+    "12": 1.0,
+    "13": 1.0,
+    "14": 1.0,
+    "15": 1.0,
+    "16": 1.0,
+    "17": 1.0,
+    "18": 1.0,
+    "19": 1.0,
+    "20": 1.0,
+    "21": 1.0,
+    "22": 1.0,
+    "23": 1.0,
+    "24": 1.0,
+    "25": 1.0,
+    "26": 1.0,
+    "27": 1.0,
+    "28": 1.0,
+    "29": 1.0,
+    "30": 1.0,
+    "31": 1.0,
+    "32": 1.0,
+    "33": 1.0,
+    "34": 1.0,
+    "35": 1.0,
+    "36": 1.0,
+    "37": 1.0,
+    "38": 1.0,
+    "39": 1.0,
+    "40": 1.0,
+    "41": 1.0,
+    "42": 1.0,
+    "43": 1.0,
+    "44": 1.0,
+    "45": 1.0,
+    "46": 1.0,
+    "47": 1.0,
+    "48": 1.0,
+    "49": 1.0,
+    "50": 1.0,
+    "51": 1.0,
+    "52": 1.0,
+    "53": 1.0,
+    "54": 1.0,
+    "55": 1.0,
+    "56": 1.0,
+    "57": 1.0,
+    "58": 1.0,
+    "59": 1.0,
+    "60": 1.0,
+    "61": 1.0,
+    "62": 1.0,
+    "63": 1.0,
+    "64": 1.0,
+    "65": 1.0,
+    "66": 1.0,
+    "67": 1.0,
+    "68": 1.0,
+    "69": 1.0,
+    "70": 1.0,
+    "71": 1.0,
+    "72": 1.0,
+    "73": 1.0,
+    "74": 1.0,
+    "75": 1.0,
+    "76": 1.0,
+    "77": 1.0,
+    "78": 1.0,
+    "79": 1.0,
+    "80": 1.0,
+    "81": 1.0,
+    "82": 1.0,
+    "83": 1.0,
+    "84": 1.0,
+    "85": 1.0,
+    "86": 1.0,
+    "87": 1.0,
+    "88": 1.0,
+    "89": 1.0,
+    "90": 1.0,
+    "91": 1.0,
+    "92": 1.0,
+    "93": 1.0,
+    "94": 1.0,
+    "95": 1.0,
+    "96": 1.0,
+    "97": 1.0,
+    "98": 1.0,
+    "99": 1.0,
+    "100": 1.0,
+    "101": 1.0,
+    "102": 1.0,
+    "103": 1.0,
+    "104": 1.0,
+    "105": 1.0,
+    "106": 1.0,
+    "107": 1.0,
+    "108": 1.0,
+    "109": 1.0,
+    "110": 1.0,
+    "111": 1.0,
+    "112": 1.0,
+    "113": 1.0,
+    "114": 1.0,
+    "115": 1.0,
+    "116": 1.0,
+    "117": 1.0,
+    "118": 1.0,
+    "119": 1.0,
+    "120": 1.0,
+    "121": 1.0,
+    "122": 1.0,
+    "123": 1.0,
+    "124": 1.0,
+    "125": 1.0,
+    "126": 1.0,
+    "127": 1.0,
+    "128": 1.0
+  },
+  "gods": [
+    {
+      "id": "src_app_app",
+      "label": "App",
+      "degree": 0
+    },
+    {
+      "id": "src_components_exercicios_chuvapreocupacoes_chuvapreocupacoes",
+      "label": "ChuvaPreocupacoes",
+      "degree": 0
+    },
+    {
+      "id": "src_components_exercicios_exercicioshell_exercicioshell",
+      "label": "ExercicioShell",
+      "degree": 0
+    },
+    {
+      "id": "src_components_exercicios_gpsdecisoes_gpsdecisoes",
+      "label": "GPSDecisoes",
+      "degree": 0
+    },
+    {
+      "id": "src_components_exercicios_muralhaevidencias_muralhaevidencias",
+      "label": "MuralhaEvidencias",
+      "degree": 0
+    },
+    {
+      "id": "src_components_exercicios_registrov2_registrov2",
+      "label": "RegistroV2",
+      "degree": 0
+    },
+    {
+      "id": "src_components_shared_crisiscard_crisiscard",
+      "label": "CrisisCard",
+      "degree": 0
+    },
+    {
+      "id": "src_components_shared_ethicalfooter_ethicalfooter",
+      "label": "EthicalFooter",
+      "degree": 0
+    },
+    {
+      "id": "src_components_shared_skiplink_skiplink",
+      "label": "SkipLink",
+      "degree": 0
+    },
+    {
+      "id": "src_components_shared_whatsappfloat_whatsappfloat",
+      "label": "WhatsAppFloat",
+      "degree": 0
+    }
+  ],
+  "surprises": [],
+  "questions": [
+    {
+      "type": "isolated_nodes",
+      "question": "What connects `App`, `ChuvaPreocupacoes`, `ExercicioShell` to the rest of the system?",
+      "why": "129 weakly-connected nodes found - possible documentation gaps or missing edges."
+    }
+  ]
+}

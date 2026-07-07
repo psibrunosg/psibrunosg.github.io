@@ -1,0 +1,1300 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "App",
+      "file_type": "code",
+      "source_file": "src/App.tsx",
+      "source_location": "L48",
+      "_origin": "ast",
+      "id": "src_app_app",
+      "community": 0,
+      "norm_label": "app"
+    },
+    {
+      "label": "ChuvaPreocupacoes",
+      "file_type": "code",
+      "source_file": "src/components/exercicios/ChuvaPreocupacoes.tsx",
+      "source_location": "L21",
+      "_origin": "ast",
+      "id": "src_components_exercicios_chuvapreocupacoes_chuvapreocupacoes",
+      "community": 1,
+      "norm_label": "chuvapreocupacoes"
+    },
+    {
+      "label": "ExercicioShell",
+      "file_type": "code",
+      "source_file": "src/components/exercicios/ExercicioShell.tsx",
+      "source_location": "L24",
+      "_origin": "ast",
+      "id": "src_components_exercicios_exercicioshell_exercicioshell",
+      "community": 2,
+      "norm_label": "exercicioshell"
+    },
+    {
+      "label": "GPSDecisoes",
+      "file_type": "code",
+      "source_file": "src/components/exercicios/GPSDecisoes.tsx",
+      "source_location": "L69",
+      "_origin": "ast",
+      "id": "src_components_exercicios_gpsdecisoes_gpsdecisoes",
+      "community": 3,
+      "norm_label": "gpsdecisoes"
+    },
+    {
+      "label": "MuralhaEvidencias",
+      "file_type": "code",
+      "source_file": "src/components/exercicios/MuralhaEvidencias.tsx",
+      "source_location": "L20",
+      "_origin": "ast",
+      "id": "src_components_exercicios_muralhaevidencias_muralhaevidencias",
+      "community": 4,
+      "norm_label": "muralhaevidencias"
+    },
+    {
+      "label": "RegistroV2",
+      "file_type": "code",
+      "source_file": "src/components/exercicios/RegistroV2.tsx",
+      "source_location": "L52",
+      "_origin": "ast",
+      "id": "src_components_exercicios_registrov2_registrov2",
+      "community": 5,
+      "norm_label": "registrov2"
+    },
+    {
+      "label": "CrisisCard",
+      "file_type": "code",
+      "source_file": "src/components/shared/CrisisCard.tsx",
+      "source_location": "L9",
+      "_origin": "ast",
+      "id": "src_components_shared_crisiscard_crisiscard",
+      "community": 6,
+      "norm_label": "crisiscard"
+    },
+    {
+      "label": "EthicalFooter",
+      "file_type": "code",
+      "source_file": "src/components/shared/EthicalFooter.tsx",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "src_components_shared_ethicalfooter_ethicalfooter",
+      "community": 7,
+      "norm_label": "ethicalfooter"
+    },
+    {
+      "label": "SkipLink",
+      "file_type": "code",
+      "source_file": "src/components/shared/SkipLink.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_components_shared_skiplink_skiplink",
+      "community": 8,
+      "norm_label": "skiplink"
+    },
+    {
+      "label": "WhatsAppFloat",
+      "file_type": "code",
+      "source_file": "src/components/shared/WhatsAppFloat.tsx",
+      "source_location": "L4",
+      "_origin": "ast",
+      "id": "src_components_shared_whatsappfloat_whatsappfloat",
+      "community": 9,
+      "norm_label": "whatsappfloat"
+    },
+    {
+      "label": "AuroraBackground",
+      "file_type": "code",
+      "source_file": "src/components/ui/AuroraBackground.tsx",
+      "source_location": "L16",
+      "_origin": "ast",
+      "id": "src_components_ui_aurorabackground_aurorabackground",
+      "community": 10,
+      "norm_label": "aurorabackground"
+    },
+    {
+      "label": "CardHoverEffect",
+      "file_type": "code",
+      "source_file": "src/components/ui/CardHoverEffect.tsx",
+      "source_location": "L16",
+      "_origin": "ast",
+      "id": "src_components_ui_cardhovereffect_cardhovereffect",
+      "community": 11,
+      "norm_label": "cardhovereffect"
+    },
+    {
+      "label": "MagneticCursor",
+      "file_type": "code",
+      "source_file": "src/components/ui/MagneticCursor.tsx",
+      "source_location": "L4",
+      "_origin": "ast",
+      "id": "src_components_ui_magneticcursor_magneticcursor",
+      "community": 12,
+      "norm_label": "magneticcursor"
+    },
+    {
+      "label": "ScrollProgress",
+      "file_type": "code",
+      "source_file": "src/components/ui/ScrollProgress.tsx",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "src_components_ui_scrollprogress_scrollprogress",
+      "community": 13,
+      "norm_label": "scrollprogress"
+    },
+    {
+      "label": "Spotlight",
+      "file_type": "code",
+      "source_file": "src/components/ui/Spotlight.tsx",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "src_components_ui_spotlight_spotlight",
+      "community": 14,
+      "norm_label": "spotlight"
+    },
+    {
+      "label": "AreaBlog",
+      "file_type": "code",
+      "source_file": "src/content/areas-blog.ts",
+      "source_location": "L4",
+      "_origin": "ast",
+      "id": "src_content_areas_blog_areablog",
+      "community": 15,
+      "norm_label": "areablog"
+    },
+    {
+      "label": "areaDe",
+      "file_type": "code",
+      "source_file": "src/content/areas-blog.ts",
+      "source_location": "L22",
+      "_origin": "ast",
+      "id": "src_content_areas_blog_areade",
+      "community": 16,
+      "norm_label": "areade"
+    },
+    {
+      "label": "Distorcao",
+      "file_type": "code",
+      "source_file": "src/content/distorcoes.ts",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_content_distorcoes_distorcao",
+      "community": 17,
+      "norm_label": "distorcao"
+    },
+    {
+      "label": "BDIItem",
+      "file_type": "code",
+      "source_file": "src/content/escalas-gerais.ts",
+      "source_location": "L4",
+      "_origin": "ast",
+      "id": "src_content_escalas_gerais_bdiitem",
+      "community": 20,
+      "norm_label": "bdiitem"
+    },
+    {
+      "label": "EscalaGeralDominio",
+      "file_type": "code",
+      "source_file": "src/content/escalas-gerais.ts",
+      "source_location": "L8",
+      "_origin": "ast",
+      "id": "src_content_escalas_gerais_escalageraldominio",
+      "community": 22,
+      "norm_label": "escalageraldominio"
+    },
+    {
+      "label": "EscalaGeralConfig",
+      "file_type": "code",
+      "source_file": "src/content/escalas-gerais.ts",
+      "source_location": "L15",
+      "_origin": "ast",
+      "id": "src_content_escalas_gerais_escalageralconfig",
+      "community": 21,
+      "norm_label": "escalageralconfig"
+    },
+    {
+      "label": "EscalaDominio",
+      "file_type": "code",
+      "source_file": "src/content/escalas.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_content_escalas_escaladominio",
+      "community": 19,
+      "norm_label": "escaladominio"
+    },
+    {
+      "label": "EscalaConfig",
+      "file_type": "code",
+      "source_file": "src/content/escalas.ts",
+      "source_location": "L7",
+      "_origin": "ast",
+      "id": "src_content_escalas_escalaconfig",
+      "community": 18,
+      "norm_label": "escalaconfig"
+    },
+    {
+      "label": "FerramentaTerapeuta",
+      "file_type": "code",
+      "source_file": "src/content/ferramentas-terapeuta.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_content_ferramentas_terapeuta_ferramentaterapeuta",
+      "community": 23,
+      "norm_label": "ferramentaterapeuta"
+    },
+    {
+      "label": "BrainPartId",
+      "file_type": "code",
+      "source_file": "src/content/neuroanatomia.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_content_neuroanatomia_brainpartid",
+      "community": 25,
+      "norm_label": "brainpartid"
+    },
+    {
+      "label": "BrainPartData",
+      "file_type": "code",
+      "source_file": "src/content/neuroanatomia.ts",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "src_content_neuroanatomia_brainpartdata",
+      "community": 24,
+      "norm_label": "brainpartdata"
+    },
+    {
+      "label": "GuidedTourId",
+      "file_type": "code",
+      "source_file": "src/content/neuroanatomia.ts",
+      "source_location": "L186",
+      "_origin": "ast",
+      "id": "src_content_neuroanatomia_guidedtourid",
+      "community": 29,
+      "norm_label": "guidedtourid"
+    },
+    {
+      "label": "TourStep",
+      "file_type": "code",
+      "source_file": "src/content/neuroanatomia.ts",
+      "source_location": "L188",
+      "_origin": "ast",
+      "id": "src_content_neuroanatomia_tourstep",
+      "community": 30,
+      "norm_label": "tourstep"
+    },
+    {
+      "label": "GuidedTourData",
+      "file_type": "code",
+      "source_file": "src/content/neuroanatomia.ts",
+      "source_location": "L194",
+      "_origin": "ast",
+      "id": "src_content_neuroanatomia_guidedtourdata",
+      "community": 28,
+      "norm_label": "guidedtourdata"
+    },
+    {
+      "label": "DisorderId",
+      "file_type": "code",
+      "source_file": "src/content/neuroanatomia.ts",
+      "source_location": "L333",
+      "_origin": "ast",
+      "id": "src_content_neuroanatomia_disorderid",
+      "community": 27,
+      "norm_label": "disorderid"
+    },
+    {
+      "label": "DisorderData",
+      "file_type": "code",
+      "source_file": "src/content/neuroanatomia.ts",
+      "source_location": "L335",
+      "_origin": "ast",
+      "id": "src_content_neuroanatomia_disorderdata",
+      "community": 26,
+      "norm_label": "disorderdata"
+    },
+    {
+      "label": "G36Norma",
+      "file_type": "code",
+      "source_file": "src/content/normative-tables.ts",
+      "source_location": "L155",
+      "_origin": "ast",
+      "id": "src_content_normative_tables_g36norma",
+      "community": 38,
+      "norm_label": "g36norma"
+    },
+    {
+      "label": "G36Escolaridade",
+      "file_type": "code",
+      "source_file": "src/content/normative-tables.ts",
+      "source_location": "L184",
+      "_origin": "ast",
+      "id": "src_content_normative_tables_g36escolaridade",
+      "community": 37,
+      "norm_label": "g36escolaridade"
+    },
+    {
+      "label": "classificarG36",
+      "file_type": "code",
+      "source_file": "src/content/normative-tables.ts",
+      "source_location": "L186",
+      "_origin": "ast",
+      "id": "src_content_normative_tables_classificarg36",
+      "community": 34,
+      "norm_label": "classificarg36"
+    },
+    {
+      "label": "NeoFFIDominio",
+      "file_type": "code",
+      "source_file": "src/content/normative-tables.ts",
+      "source_location": "L206",
+      "_origin": "ast",
+      "id": "src_content_normative_tables_neoffidominio",
+      "community": 39,
+      "norm_label": "neoffidominio"
+    },
+    {
+      "label": "NeoSexo",
+      "file_type": "code",
+      "source_file": "src/content/normative-tables.ts",
+      "source_location": "L207",
+      "_origin": "ast",
+      "id": "src_content_normative_tables_neosexo",
+      "community": 40,
+      "norm_label": "neosexo"
+    },
+    {
+      "label": "calcularTScoreNeoFFI",
+      "file_type": "code",
+      "source_file": "src/content/normative-tables.ts",
+      "source_location": "L209",
+      "_origin": "ast",
+      "id": "src_content_normative_tables_calculartscoreneoffi",
+      "community": 32,
+      "norm_label": "calculartscoreneoffi"
+    },
+    {
+      "label": "classificarNeoT",
+      "file_type": "code",
+      "source_file": "src/content/normative-tables.ts",
+      "source_location": "L225",
+      "_origin": "ast",
+      "id": "src_content_normative_tables_classificarneot",
+      "community": 35,
+      "norm_label": "classificarneot"
+    },
+    {
+      "label": "AtencaoNorma",
+      "file_type": "code",
+      "source_file": "src/content/normative-tables.ts",
+      "source_location": "L258",
+      "_origin": "ast",
+      "id": "src_content_normative_tables_atencaonorma",
+      "community": 31,
+      "norm_label": "atencaonorma"
+    },
+    {
+      "label": "classificarAtencao",
+      "file_type": "code",
+      "source_file": "src/content/normative-tables.ts",
+      "source_location": "L321",
+      "_origin": "ast",
+      "id": "src_content_normative_tables_classificaratencao",
+      "community": 33,
+      "norm_label": "classificaratencao"
+    },
+    {
+      "label": "classificarPorFaixa",
+      "file_type": "code",
+      "source_file": "src/content/normative-tables.ts",
+      "source_location": "L333",
+      "_origin": "ast",
+      "id": "src_content_normative_tables_classificarporfaixa",
+      "community": 36,
+      "norm_label": "classificarporfaixa"
+    },
+    {
+      "label": "TesteId",
+      "file_type": "code",
+      "source_file": "src/content/normative-tables.ts",
+      "source_location": "L338",
+      "_origin": "ast",
+      "id": "src_content_normative_tables_testeid",
+      "community": 41,
+      "norm_label": "testeid"
+    },
+    {
+      "label": "templatesNeoFFIDominio",
+      "file_type": "code",
+      "source_file": "src/content/parecer-templates.ts",
+      "source_location": "L138",
+      "_origin": "ast",
+      "id": "src_content_parecer_templates_templatesneoffidominio",
+      "community": 42,
+      "norm_label": "templatesneoffidominio"
+    },
+    {
+      "label": "BlogPost",
+      "file_type": "code",
+      "source_file": "src/content/posts-loader.ts",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "src_content_posts_loader_blogpost",
+      "community": 43,
+      "norm_label": "blogpost"
+    },
+    {
+      "label": "loadDynamicPosts",
+      "file_type": "code",
+      "source_file": "src/content/posts-loader.ts",
+      "source_location": "L38",
+      "_origin": "ast",
+      "id": "src_content_posts_loader_loaddynamicposts",
+      "community": 47,
+      "norm_label": "loaddynamicposts"
+    },
+    {
+      "label": "getAllPosts",
+      "file_type": "code",
+      "source_file": "src/content/posts-loader.ts",
+      "source_location": "L44",
+      "_origin": "ast",
+      "id": "src_content_posts_loader_getallposts",
+      "community": 44,
+      "norm_label": "getallposts"
+    },
+    {
+      "label": "getPost",
+      "file_type": "code",
+      "source_file": "src/content/posts-loader.ts",
+      "source_location": "L51",
+      "_origin": "ast",
+      "id": "src_content_posts_loader_getpost",
+      "community": 45,
+      "norm_label": "getpost"
+    },
+    {
+      "label": "isDynamicLoaded",
+      "file_type": "code",
+      "source_file": "src/content/posts-loader.ts",
+      "source_location": "L55",
+      "_origin": "ast",
+      "id": "src_content_posts_loader_isdynamicloaded",
+      "community": 46,
+      "norm_label": "isdynamicloaded"
+    },
+    {
+      "label": "TrilhaExercicio",
+      "file_type": "code",
+      "source_file": "src/content/trilhas.ts",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_content_trilhas_trilhaexercicio",
+      "community": 48,
+      "norm_label": "trilhaexercicio"
+    },
+    {
+      "label": "TrilhaUnidade",
+      "file_type": "code",
+      "source_file": "src/content/trilhas.ts",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "src_content_trilhas_trilhaunidade",
+      "community": 50,
+      "norm_label": "trilhaunidade"
+    },
+    {
+      "label": "TrilhaTratamento",
+      "file_type": "code",
+      "source_file": "src/content/trilhas.ts",
+      "source_location": "L19",
+      "_origin": "ast",
+      "id": "src_content_trilhas_trilhatratamento",
+      "community": 49,
+      "norm_label": "trilhatratamento"
+    },
+    {
+      "label": "ExerciseSessionState",
+      "file_type": "code",
+      "source_file": "src/hooks/useExerciseSession.ts",
+      "source_location": "L4",
+      "_origin": "ast",
+      "id": "src_hooks_useexercisesession_exercisesessionstate",
+      "community": 51,
+      "norm_label": "exercisesessionstate"
+    },
+    {
+      "label": "useExerciseSession",
+      "file_type": "code",
+      "source_file": "src/hooks/useExerciseSession.ts",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "src_hooks_useexercisesession_useexercisesession",
+      "community": 52,
+      "norm_label": "useexercisesession"
+    },
+    {
+      "label": "UnidadeProgresso",
+      "file_type": "code",
+      "source_file": "src/hooks/useTrilha.ts",
+      "source_location": "L13",
+      "_origin": "ast",
+      "id": "src_hooks_usetrilha_unidadeprogresso",
+      "community": 54,
+      "norm_label": "unidadeprogresso"
+    },
+    {
+      "label": "TrilhaProgresso",
+      "file_type": "code",
+      "source_file": "src/hooks/useTrilha.ts",
+      "source_location": "L19",
+      "_origin": "ast",
+      "id": "src_hooks_usetrilha_trilhaprogresso",
+      "community": 53,
+      "norm_label": "trilhaprogresso"
+    },
+    {
+      "label": "useTrilha",
+      "file_type": "code",
+      "source_file": "src/hooks/useTrilha.ts",
+      "source_location": "L57",
+      "_origin": "ast",
+      "id": "src_hooks_usetrilha_usetrilha",
+      "community": 55,
+      "norm_label": "usetrilha"
+    },
+    {
+      "label": "ChatNodo",
+      "file_type": "code",
+      "source_file": "src/lib/chatEngine.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_lib_chatengine_chatnodo",
+      "community": 57,
+      "norm_label": "chatnodo"
+    },
+    {
+      "label": "ChatScript",
+      "file_type": "code",
+      "source_file": "src/lib/chatEngine.ts",
+      "source_location": "L11",
+      "_origin": "ast",
+      "id": "src_lib_chatengine_chatscript",
+      "community": 58,
+      "norm_label": "chatscript"
+    },
+    {
+      "label": "ChatHistorico",
+      "file_type": "code",
+      "source_file": "src/lib/chatEngine.ts",
+      "source_location": "L15",
+      "_origin": "ast",
+      "id": "src_lib_chatengine_chathistorico",
+      "community": 56,
+      "norm_label": "chathistorico"
+    },
+    {
+      "label": "procesarChat",
+      "file_type": "code",
+      "source_file": "src/lib/chatEngine.ts",
+      "source_location": "L21",
+      "_origin": "ast",
+      "id": "src_lib_chatengine_procesarchat",
+      "community": 59,
+      "norm_label": "procesarchat"
+    },
+    {
+      "label": "Familia",
+      "file_type": "code",
+      "source_file": "src/lib/interpret.ts",
+      "source_location": "L18",
+      "_origin": "ast",
+      "id": "src_lib_interpret_familia",
+      "community": 63,
+      "norm_label": "familia"
+    },
+    {
+      "label": "EsquemaInterpretado",
+      "file_type": "code",
+      "source_file": "src/lib/interpret.ts",
+      "source_location": "L20",
+      "_origin": "ast",
+      "id": "src_lib_interpret_esquemainterpretado",
+      "community": 62,
+      "norm_label": "esquemainterpretado"
+    },
+    {
+      "label": "RodadaInterpretada",
+      "file_type": "code",
+      "source_file": "src/lib/interpret.ts",
+      "source_location": "L25",
+      "_origin": "ast",
+      "id": "src_lib_interpret_rodadainterpretada",
+      "community": 67,
+      "norm_label": "rodadainterpretada"
+    },
+    {
+      "label": "ItemFlag",
+      "file_type": "code",
+      "source_file": "src/lib/interpret.ts",
+      "source_location": "L32",
+      "_origin": "ast",
+      "id": "src_lib_interpret_itemflag",
+      "community": 65,
+      "norm_label": "itemflag"
+    },
+    {
+      "label": "RespostaInterpretada",
+      "file_type": "code",
+      "source_file": "src/lib/interpret.ts",
+      "source_location": "L34",
+      "_origin": "ast",
+      "id": "src_lib_interpret_respostainterpretada",
+      "community": 66,
+      "norm_label": "respostainterpretada"
+    },
+    {
+      "label": "interpretarResposta",
+      "file_type": "code",
+      "source_file": "src/lib/interpret.ts",
+      "source_location": "L167",
+      "_origin": "ast",
+      "id": "src_lib_interpret_interpretarresposta",
+      "community": 64,
+      "norm_label": "interpretarresposta"
+    },
+    {
+      "label": "Correlacao",
+      "file_type": "code",
+      "source_file": "src/lib/interpret.ts",
+      "source_location": "L183",
+      "_origin": "ast",
+      "id": "src_lib_interpret_correlacao",
+      "community": 60,
+      "norm_label": "correlacao"
+    },
+    {
+      "label": "correlacoesFactuais",
+      "file_type": "code",
+      "source_file": "src/lib/interpret.ts",
+      "source_location": "L190",
+      "_origin": "ast",
+      "id": "src_lib_interpret_correlacoesfactuais",
+      "community": 61,
+      "norm_label": "correlacoesfactuais"
+    },
+    {
+      "label": "DadosPaciente",
+      "file_type": "code",
+      "source_file": "src/lib/parecer-generator.ts",
+      "source_location": "L14",
+      "_origin": "ast",
+      "id": "src_lib_parecer_generator_dadospaciente",
+      "community": 68,
+      "norm_label": "dadospaciente"
+    },
+    {
+      "label": "ResultadoTeste",
+      "file_type": "code",
+      "source_file": "src/lib/parecer-generator.ts",
+      "source_location": "L21",
+      "_origin": "ast",
+      "id": "src_lib_parecer_generator_resultadoteste",
+      "community": 71,
+      "norm_label": "resultadoteste"
+    },
+    {
+      "label": "processarTeste",
+      "file_type": "code",
+      "source_file": "src/lib/parecer-generator.ts",
+      "source_location": "L107",
+      "_origin": "ast",
+      "id": "src_lib_parecer_generator_processarteste",
+      "community": 70,
+      "norm_label": "processarteste"
+    },
+    {
+      "label": "gerarParecerPDF",
+      "file_type": "code",
+      "source_file": "src/lib/parecer-generator.ts",
+      "source_location": "L236",
+      "_origin": "ast",
+      "id": "src_lib_parecer_generator_gerarparecerpdf",
+      "community": 69,
+      "norm_label": "gerarparecerpdf"
+    },
+    {
+      "label": "gerarPDF",
+      "file_type": "code",
+      "source_file": "src/lib/pdf-generator.ts",
+      "source_location": "L26",
+      "_origin": "ast",
+      "id": "src_lib_pdf_generator_gerarpdf",
+      "community": 74,
+      "norm_label": "gerarpdf"
+    },
+    {
+      "label": "baixarPDF",
+      "file_type": "code",
+      "source_file": "src/lib/pdf-generator.ts",
+      "source_location": "L137",
+      "_origin": "ast",
+      "id": "src_lib_pdf_generator_baixarpdf",
+      "community": 72,
+      "norm_label": "baixarpdf"
+    },
+    {
+      "label": "gerarWhatsAppLink",
+      "file_type": "code",
+      "source_file": "src/lib/pdf-generator.ts",
+      "source_location": "L142",
+      "_origin": "ast",
+      "id": "src_lib_pdf_generator_gerarwhatsapplink",
+      "community": 75,
+      "norm_label": "gerarwhatsapplink"
+    },
+    {
+      "label": "gerarEmailLink",
+      "file_type": "code",
+      "source_file": "src/lib/pdf-generator.ts",
+      "source_location": "L154",
+      "_origin": "ast",
+      "id": "src_lib_pdf_generator_geraremaillink",
+      "community": 73,
+      "norm_label": "geraremaillink"
+    },
+    {
+      "label": "SchemaResult",
+      "file_type": "code",
+      "source_file": "src/lib/scoring.ts",
+      "source_location": "L16",
+      "_origin": "ast",
+      "id": "src_lib_scoring_schemaresult",
+      "community": 86,
+      "norm_label": "schemaresult"
+    },
+    {
+      "label": "computeSchemaAvg",
+      "file_type": "code",
+      "source_file": "src/lib/scoring.ts",
+      "source_location": "L23",
+      "_origin": "ast",
+      "id": "src_lib_scoring_computeschemaavg",
+      "community": 78,
+      "norm_label": "computeschemaavg"
+    },
+    {
+      "label": "computeThreshold",
+      "file_type": "code",
+      "source_file": "src/lib/scoring.ts",
+      "source_location": "L43",
+      "_origin": "ast",
+      "id": "src_lib_scoring_computethreshold",
+      "community": 79,
+      "norm_label": "computethreshold"
+    },
+    {
+      "label": "DominioResult",
+      "file_type": "code",
+      "source_file": "src/lib/scoring.ts",
+      "source_location": "L52",
+      "_origin": "ast",
+      "id": "src_lib_scoring_dominioresult",
+      "community": 81,
+      "norm_label": "dominioresult"
+    },
+    {
+      "label": "computeGeralScore",
+      "file_type": "code",
+      "source_file": "src/lib/scoring.ts",
+      "source_location": "L60",
+      "_origin": "ast",
+      "id": "src_lib_scoring_computegeralscore",
+      "community": 77,
+      "norm_label": "computegeralscore"
+    },
+    {
+      "label": "classificarResposta",
+      "file_type": "code",
+      "source_file": "src/lib/scoring.ts",
+      "source_location": "L113",
+      "_origin": "ast",
+      "id": "src_lib_scoring_classificarresposta",
+      "community": 76,
+      "norm_label": "classificarresposta"
+    },
+    {
+      "label": "ehFaixaGrave",
+      "file_type": "code",
+      "source_file": "src/lib/scoring.ts",
+      "source_location": "L120",
+      "_origin": "ast",
+      "id": "src_lib_scoring_ehfaixagrave",
+      "community": 82,
+      "norm_label": "ehfaixagrave"
+    },
+    {
+      "label": "RespostaRegistro",
+      "file_type": "code",
+      "source_file": "src/lib/scoring.ts",
+      "source_location": "L129",
+      "_origin": "ast",
+      "id": "src_lib_scoring_respostaregistro",
+      "community": 84,
+      "norm_label": "respostaregistro"
+    },
+    {
+      "label": "RiscoClinico",
+      "file_type": "code",
+      "source_file": "src/lib/scoring.ts",
+      "source_location": "L140",
+      "_origin": "ast",
+      "id": "src_lib_scoring_riscoclinico",
+      "community": 85,
+      "norm_label": "riscoclinico"
+    },
+    {
+      "label": "detectarRiscos",
+      "file_type": "code",
+      "source_file": "src/lib/scoring.ts",
+      "source_location": "L148",
+      "_origin": "ast",
+      "id": "src_lib_scoring_detectarriscos",
+      "community": 80,
+      "norm_label": "detectarriscos"
+    },
+    {
+      "label": "pacienteEmRisco",
+      "file_type": "code",
+      "source_file": "src/lib/scoring.ts",
+      "source_location": "L174",
+      "_origin": "ast",
+      "id": "src_lib_scoring_pacienteemrisco",
+      "community": 83,
+      "norm_label": "pacienteemrisco"
+    },
+    {
+      "label": "QuestionnaireResponse",
+      "file_type": "code",
+      "source_file": "src/lib/supabase.ts",
+      "source_location": "L8",
+      "_origin": "ast",
+      "id": "src_lib_supabase_questionnaireresponse",
+      "community": 92,
+      "norm_label": "questionnaireresponse"
+    },
+    {
+      "label": "salvarResposta",
+      "file_type": "code",
+      "source_file": "src/lib/supabase.ts",
+      "source_location": "L20",
+      "_origin": "ast",
+      "id": "src_lib_supabase_salvarresposta",
+      "community": 94,
+      "norm_label": "salvarresposta"
+    },
+    {
+      "label": "BlogPostDB",
+      "file_type": "code",
+      "source_file": "src/lib/supabase.ts",
+      "source_location": "L28",
+      "_origin": "ast",
+      "id": "src_lib_supabase_blogpostdb",
+      "community": 88,
+      "norm_label": "blogpostdb"
+    },
+    {
+      "label": "listarPostsBlog",
+      "file_type": "code",
+      "source_file": "src/lib/supabase.ts",
+      "source_location": "L46",
+      "_origin": "ast",
+      "id": "src_lib_supabase_listarpostsblog",
+      "community": 90,
+      "norm_label": "listarpostsblog"
+    },
+    {
+      "label": "listarPostsPublicados",
+      "file_type": "code",
+      "source_file": "src/lib/supabase.ts",
+      "source_location": "L52",
+      "_origin": "ast",
+      "id": "src_lib_supabase_listarpostspublicados",
+      "community": 91,
+      "norm_label": "listarpostspublicados"
+    },
+    {
+      "label": "salvarPostBlog",
+      "file_type": "code",
+      "source_file": "src/lib/supabase.ts",
+      "source_location": "L58",
+      "_origin": "ast",
+      "id": "src_lib_supabase_salvarpostblog",
+      "community": 93,
+      "norm_label": "salvarpostblog"
+    },
+    {
+      "label": "atualizarPostBlog",
+      "file_type": "code",
+      "source_file": "src/lib/supabase.ts",
+      "source_location": "L63",
+      "_origin": "ast",
+      "id": "src_lib_supabase_atualizarpostblog",
+      "community": 87,
+      "norm_label": "atualizarpostblog"
+    },
+    {
+      "label": "deletarPostBlog",
+      "file_type": "code",
+      "source_file": "src/lib/supabase.ts",
+      "source_location": "L68",
+      "_origin": "ast",
+      "id": "src_lib_supabase_deletarpostblog",
+      "community": 89,
+      "norm_label": "deletarpostblog"
+    },
+    {
+      "label": "cn",
+      "file_type": "code",
+      "source_file": "src/lib/utils.ts",
+      "source_location": "L4",
+      "_origin": "ast",
+      "id": "src_lib_utils_cn",
+      "community": 95,
+      "norm_label": "cn"
+    },
+    {
+      "label": "VariantA",
+      "file_type": "code",
+      "source_file": "src/pages/VariantA.tsx",
+      "source_location": "L26",
+      "_origin": "ast",
+      "id": "src_pages_varianta_varianta",
+      "community": 128,
+      "norm_label": "varianta"
+    },
+    {
+      "label": "AEscavacaoPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/AEscavacaoPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_aescavacaopage_aescavacaopage",
+      "community": 97,
+      "norm_label": "aescavacaopage"
+    },
+    {
+      "label": "AcerteDistorcaoPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/AcerteDistorcaoPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_acertedistorcaopage_acertedistorcaopage",
+      "community": 96,
+      "norm_label": "acertedistorcaopage"
+    },
+    {
+      "label": "BalancaPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/BalancaPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_balancapage_balancapage",
+      "community": 98,
+      "norm_label": "balancapage"
+    },
+    {
+      "label": "BalaoPensamentosPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/BalaoPensamentosPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_balaopensamentospage_balaopensamentospage",
+      "community": 99,
+      "norm_label": "balaopensamentospage"
+    },
+    {
+      "label": "BaralhoAdultoPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/BaralhoAdultoPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_baralhoadultopage_baralhoadultopage",
+      "community": 100,
+      "norm_label": "baralhoadultopage"
+    },
+    {
+      "label": "BussolaPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/BussolaPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_bussolapage_bussolapage",
+      "community": 101,
+      "norm_label": "bussolapage"
+    },
+    {
+      "label": "CacaFatosPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/CacaFatosPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_cacafatospage_cacafatospage",
+      "community": 102,
+      "norm_label": "cacafatospage"
+    },
+    {
+      "label": "CartaPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/CartaPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_cartapage_cartapage",
+      "community": 103,
+      "norm_label": "cartapage"
+    },
+    {
+      "label": "ChuvaPreocupacoesPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/ChuvaPreocupacoesPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_chuvapreocupacoespage_chuvapreocupacoespage",
+      "community": 104,
+      "norm_label": "chuvapreocupacoespage"
+    },
+    {
+      "label": "ConecteABCPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/ConecteABCPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_conecteabcpage_conecteabcpage",
+      "community": 105,
+      "norm_label": "conecteabcpage"
+    },
+    {
+      "label": "DiarioPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/DiarioPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_diariopage_diariopage",
+      "community": 106,
+      "norm_label": "diariopage"
+    },
+    {
+      "label": "DireitosPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/DireitosPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_direitospage_direitospage",
+      "community": 107,
+      "norm_label": "direitospage"
+    },
+    {
+      "label": "EscritaPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/EscritaPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_escritapage_escritapage",
+      "community": 108,
+      "norm_label": "escritapage"
+    },
+    {
+      "label": "FantasiaPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/FantasiaPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_fantasiapage_fantasiapage",
+      "community": 109,
+      "norm_label": "fantasiapage"
+    },
+    {
+      "label": "ForcasPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/ForcasPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_forcaspage_forcaspage",
+      "community": 110,
+      "norm_label": "forcaspage"
+    },
+    {
+      "label": "GPSPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/GPSPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_gpspage_gpspage",
+      "community": 111,
+      "norm_label": "gpspage"
+    },
+    {
+      "label": "InundacaoPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/InundacaoPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_inundacaopage_inundacaopage",
+      "community": 112,
+      "norm_label": "inundacaopage"
+    },
+    {
+      "label": "JardimPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/JardimPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_jardimpage_jardimpage",
+      "community": 113,
+      "norm_label": "jardimpage"
+    },
+    {
+      "label": "LESSPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/LESSPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_lesspage_lesspage",
+      "community": 115,
+      "norm_label": "lesspage"
+    },
+    {
+      "label": "LabPrevisaoPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/LabPrevisaoPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_labprevisaopage_labprevisaopage",
+      "community": 114,
+      "norm_label": "labprevisaopage"
+    },
+    {
+      "label": "MaquinaTempoPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/MaquinaTempoPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_maquinatempopage_maquinatempopage",
+      "community": 116,
+      "norm_label": "maquinatempopage"
+    },
+    {
+      "label": "MuralhaEvidenciasPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/MuralhaEvidenciasPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_muralhaevidenciaspage_muralhaevidenciaspage",
+      "community": 117,
+      "norm_label": "muralhaevidenciaspage"
+    },
+    {
+      "label": "OculosPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/OculosPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_oculospage_oculospage",
+      "community": 118,
+      "norm_label": "oculospage"
+    },
+    {
+      "label": "ParesMentePage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/ParesMentePage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_paresmentepage_paresmentepage",
+      "community": 119,
+      "norm_label": "paresmentepage"
+    },
+    {
+      "label": "PerfeccionometroPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/PerfeccionometroPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_perfeccionometropage_perfeccionometropage",
+      "community": 120,
+      "norm_label": "perfeccionometropage"
+    },
+    {
+      "label": "PontosPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/PontosPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_pontospage_pontospage",
+      "community": 121,
+      "norm_label": "pontospage"
+    },
+    {
+      "label": "ReformulacaoPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/ReformulacaoPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_reformulacaopage_reformulacaopage",
+      "community": 122,
+      "norm_label": "reformulacaopage"
+    },
+    {
+      "label": "RegistroPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/RegistroPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_registropage_registropage",
+      "community": 123,
+      "norm_label": "registropage"
+    },
+    {
+      "label": "RodaPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/RodaPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_rodapage_rodapage",
+      "community": 124,
+      "norm_label": "rodapage"
+    },
+    {
+      "label": "RoletaPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/RoletaPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_roletapage_roletapage",
+      "community": 125,
+      "norm_label": "roletapage"
+    },
+    {
+      "label": "TedioPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/TedioPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_tediopage_tediopage",
+      "community": 126,
+      "norm_label": "tediopage"
+    },
+    {
+      "label": "TortaPage",
+      "file_type": "code",
+      "source_file": "src/pages/exercicios/TortaPage.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_pages_exercicios_tortapage_tortapage",
+      "community": 127,
+      "norm_label": "tortapage"
+    }
+  ],
+  "links": [],
+  "hyperedges": [],
+  "built_at_commit": "c46e2c1c41968770104f214010e981666839c640"
+}
