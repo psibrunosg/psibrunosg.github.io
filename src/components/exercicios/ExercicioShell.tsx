@@ -12,6 +12,9 @@ interface ExercicioShellProps {
   subtitulo: string;
   tempo: string;
   children: ReactNode;
+  // "c" = paleta legada dos exercícios originais (default, não mexe no que já existe).
+  // "lobo" = paleta oficial do Manual de Identidade Visual v1.0 (verde integral).
+  theme?: "c" | "lobo";
 }
 
 const navItems = [
@@ -21,14 +24,14 @@ const navItems = [
   { label: "Blog", href: "/blog" },
 ];
 
-export function ExercicioShell({ titulo, subtitulo, tempo, children }: ExercicioShellProps) {
+export function ExercicioShell({ titulo, subtitulo, tempo, children, theme = "c" }: ExercicioShellProps) {
   return (
     <>
       <SkipLink />
       <MobileMenu items={navItems} crp={contato.crp} whatsappLink={contato.whatsappLink} />
       <WhatsAppFloat />
 
-      <main id="main" className="min-h-screen bg-[var(--c-bg)] pt-28 pb-24 px-6" data-theme="c">
+      <main id="main" className="min-h-screen bg-[var(--c-bg)] pt-28 pb-24 px-6" data-theme={theme}>
         <div className="max-w-2xl mx-auto">
           <Link
             to="/exercicios"

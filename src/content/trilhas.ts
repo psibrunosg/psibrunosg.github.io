@@ -32,6 +32,25 @@ export const XP_POR_CONCLUSAO = 10;
 
 export const TRILHAS: TrilhaTratamento[] = [
   {
+    id: "detetive-mirim",
+    titulo: "Detetive de Pensamentos",
+    emoji: "🔍",
+    descricao:
+      "Fato, pensamento e sentimento parecem a mesma coisa, mas não são. Nesta trilha você aprende a separar os três e a perceber como cada pensamento muda o jeito que a gente se sente.",
+    base: "Leahy — Cap. 2: Evocação de Pensamentos",
+    unidades: [
+      {
+        titulo: "Separando as Coisas",
+        emoji: "🧩",
+        descricao: "O primeiro passo do detetive: separar fato, pensamento e sentimento.",
+        exercicios: [
+          { slug: "separando-tudo", href: "/exercicios/separando-tudo", titulo: "Separando Tudo", tempo: "4 min" },
+          { slug: "baloes-clima", href: "/exercicios/baloes-clima", titulo: "Balões do Clima", tempo: "3 min" },
+        ],
+      },
+    ],
+  },
+  {
     id: "ansiedade",
     titulo: "Desarmando a Ansiedade",
     emoji: "🎯",

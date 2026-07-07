@@ -121,6 +121,22 @@ const exercicios: Exercicio[] = [
     trilha: "jogos",
   },
   {
+    Icon: Copy,
+    titulo: "Separando Tudo",
+    resumo: "O que aconteceu, o que pensei e o que senti são coisas diferentes. Classifique as cartas certinho.",
+    tempo: "4 min",
+    href: "/exercicios/separando-tudo",
+    trilha: "jogos",
+  },
+  {
+    Icon: CloudRain,
+    titulo: "Balões do Clima",
+    resumo: "Adivinhe se o pensamento traz sol ou chuva antes de estourar o balão.",
+    tempo: "3 min",
+    href: "/exercicios/baloes-clima",
+    trilha: "jogos",
+  },
+  {
     Icon: Castle,
     titulo: "Muralha de Evidências",
     resumo: "Coloque um pensamento em julgamento: tijolo por tijolo, o que os fatos dizem?",
