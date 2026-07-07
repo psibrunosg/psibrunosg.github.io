@@ -93,7 +93,11 @@ export default function Neuroanatomia3D() {
   const [isQuizMode, setIsQuizMode] = useState<boolean>(false);
   const [currentQuizIndex, setCurrentQuizIndex] = useState<number>(0);
   const [quizStatus, setQuizStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
-  const [showContext, setShowContext] = useState<boolean>(true);
+  const [quizWrongAttempts, setQuizWrongAttempts] = useState<number>(0);
+  const [quizFirstTryCorrect, setQuizFirstTryCorrect] = useState<number>(0);
+  const [quizFinished, setQuizFinished] = useState<boolean>(false);
+  // Default false: o Córtex Completo carrega ~200 malhas anatômicas pesadas — só sob demanda.
+  const [showContext, setShowContext] = useState<boolean>(false);
   const [activeTour, setActiveTour] = useState<GuidedTourId | null>(null);
   const [tourStep, setTourStep] = useState<number>(0);
 
@@ -146,23 +150,32 @@ export default function Neuroanatomia3D() {
     if (isQuizMode) {
       if (partId === quizQuestions[currentQuizIndex].target) {
         setQuizStatus('correct');
+        if (quizWrongAttempts === 0) setQuizFirstTryCorrect((n) => n + 1);
         setTimeout(() => {
           setQuizStatus('idle');
+          setQuizWrongAttempts(0);
           if (currentQuizIndex < quizQuestions.length - 1) {
             setCurrentQuizIndex(prev => prev + 1);
           } else {
-            setIsQuizMode(false);
-            setCurrentQuizIndex(0);
-            alert("Parabéns! Você completou o Quiz de Neuroanatomia!");
+            setQuizFinished(true);
           }
         }, 2000);
       } else {
         setQuizStatus('wrong');
+        setQuizWrongAttempts((n) => n + 1);
         setTimeout(() => setQuizStatus('idle'), 1500);
       }
     } else if (!activeTour) {
       setSelectedPartId(partId);
     }
+  };
+
+  const resetQuiz = () => {
+    setCurrentQuizIndex(0);
+    setQuizStatus('idle');
+    setQuizWrongAttempts(0);
+    setQuizFirstTryCorrect(0);
+    setQuizFinished(false);
   };
 
   // Cálculos do Monitor Biométrico
@@ -284,6 +297,7 @@ export default function Neuroanatomia3D() {
                   isMedicated={isMedicated}
                   activeDisorder={activeDisorder}
                   quizTarget={isQuizMode ? quizQuestions[currentQuizIndex].target : null}
+                  quizHint={isQuizMode && quizWrongAttempts >= 2}
                   showContext={showContext}
                 />
                 <CameraManager selectedPartId={currentSelectedPartId} />
@@ -318,9 +332,12 @@ export default function Neuroanatomia3D() {
               <p className="text-xs tracking-[0.3em] uppercase text-[var(--c-accent)] font-semibold mb-2">
                 Laboratório Clínico 3D
               </p>
-              <h1 className="text-3xl font-semibold text-[var(--c-text)] mb-4" style={{ fontFamily: "var(--font-heading)" }}>
+              <h1 className="text-3xl font-semibold text-[var(--c-text)] mb-1" style={{ fontFamily: "var(--font-heading)" }}>
                 Neuroanatomia
               </h1>
+              <p className="text-[11px] text-[var(--c-muted)] leading-snug max-w-[280px]">
+                Simulação educacional simplificada. Não substitui avaliação, diagnóstico ou tratamento profissional.
+              </p>
             </div>
             {/* Botão do Quiz */}
             <button
@@ -335,7 +352,7 @@ export default function Neuroanatomia3D() {
                   setIsMedicated(false);
                   setSelectedPartId(null);
                   setActiveTour(null);
-                  setCurrentQuizIndex(0);
+                  resetQuiz();
                 }
               }}
               className={`p-3 rounded-full transition-colors ${
@@ -347,7 +364,36 @@ export default function Neuroanatomia3D() {
             </button>
           </div>
 
-          {isQuizMode ? (
+          {isQuizMode && quizFinished ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-6 text-center shadow-inner"
+            >
+              <CheckCircle2 className="mx-auto mb-4 text-emerald-500" size={32} />
+              <h2 className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mb-2">Quiz completo!</h2>
+              <p className="text-3xl font-bold text-[var(--c-text)] mb-1">
+                {quizFirstTryCorrect}/{quizQuestions.length}
+              </p>
+              <p className="text-sm text-[var(--c-muted)] mb-6">
+                acertos de primeira (sem precisar da dica)
+              </p>
+              <div className="flex gap-2 justify-center">
+                <button
+                  onClick={resetQuiz}
+                  className="px-4 py-2 rounded-xl bg-emerald-500 text-white text-sm font-semibold"
+                >
+                  Refazer quiz
+                </button>
+                <button
+                  onClick={() => { setIsQuizMode(false); resetQuiz(); }}
+                  className="px-4 py-2 rounded-xl border border-[var(--c-border)] text-[var(--c-text)] text-sm font-semibold"
+                >
+                  Sair
+                </button>
+              </div>
+            </motion.div>
+          ) : isQuizMode ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -356,13 +402,15 @@ export default function Neuroanatomia3D() {
               <Target className="mx-auto mb-4 text-emerald-500" size={32} />
               <h2 className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mb-2">Modo Avaliação</h2>
               <div className="text-sm font-semibold text-emerald-700/80 dark:text-emerald-300/80 mb-4">
-                Pergunta {currentQuizIndex + 1} de {quizQuestions.length}
+                Pergunta {currentQuizIndex + 1} de {quizQuestions.length} · {quizFirstTryCorrect} acertos
               </div>
               <p className="text-lg text-[var(--c-text)] font-medium leading-relaxed mb-6">
                 "{quizQuestions[currentQuizIndex].question}"
               </p>
               <p className="text-sm text-[var(--c-muted)] italic">
-                Gire o modelo 3D e clique na parte correta do cérebro.
+                {quizWrongAttempts >= 2
+                  ? "Dica: observe a área que está pulsando em amarelo no modelo 3D."
+                  : "Gire o modelo 3D e clique na parte correta do cérebro."}
               </p>
             </motion.div>
           ) : (
@@ -554,6 +602,9 @@ export default function Neuroanatomia3D() {
                       </p>
                       <p className="text-sm text-[var(--c-text)] leading-relaxed">
                         Isso ajuda a "restaurar o brilho" do Córtex Pré-Frontal e do Hipocampo, e simultaneamente acalma a Amígdala hiperativa, estabilizando o transtorno.
+                      </p>
+                      <p className="text-xs text-emerald-700/70 dark:text-emerald-300/70 italic leading-relaxed border-t border-emerald-500/20 pt-3">
+                        Na prática clínica esse efeito não é instantâneo — ISRS costumam levar de 2 a 6 semanas de uso contínuo para o efeito terapêutico pleno aparecer. Aqui simulamos o resultado final para fins didáticos.
                       </p>
                     </motion.div>
                   ) : activeDisorder && disorderInfo ? (
