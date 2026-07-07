@@ -11,6 +11,9 @@ import RegistroPage from "./pages/exercicios/RegistroPage";
 import JardimPage from "./pages/exercicios/JardimPage";
 import BaralhoAdultoPage from "./pages/exercicios/BaralhoAdultoPage";
 import ParesMentePage from "./pages/exercicios/ParesMentePage";
+import BalancaPage from "./pages/exercicios/BalancaPage";
+import RoletaPage from "./pages/exercicios/RoletaPage";
+import TrilhaPage from "./pages/exercicios/TrilhaPage";
 import ChuvaPreocupacoesPage from "./pages/exercicios/ChuvaPreocupacoesPage";
 import Neuroanatomia3D from "./pages/Neuroanatomia3D";
 import BalaoPensamentosPage from "./pages/exercicios/BalaoPensamentosPage";
@@ -59,6 +62,9 @@ export default function App() {
         <Route path="/exercicios/jardim" element={<JardimPage />} />
         <Route path="/exercicios/baralho-adulto" element={<BaralhoAdultoPage />} />
         <Route path="/exercicios/pares" element={<ParesMentePage />} />
+        <Route path="/exercicios/balanca" element={<BalancaPage />} />
+        <Route path="/exercicios/roleta" element={<RoletaPage />} />
+        <Route path="/exercicios/trilha/:trilhaId" element={<TrilhaPage />} />
         <Route path="/exercicios/chuva" element={<ChuvaPreocupacoesPage />} />
         <Route path="/exercicios/balao" element={<BalaoPensamentosPage />} />
         <Route path="/exercicios/fatos" element={<CacaFatosPage />} />

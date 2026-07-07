@@ -10,6 +10,7 @@ import {
   CloudRain,
   Compass,
   Copy,
+  Dices,
   FlaskConical,
   Gamepad2,
   Gauge,
@@ -25,6 +26,7 @@ import {
   PawPrint,
   PenLine,
   PieChart,
+  Scale,
   Scroll,
   Search,
   SmilePlus,
@@ -41,6 +43,8 @@ import { SkipLink } from "@/components/shared/SkipLink";
 import { WhatsAppFloat } from "@/components/shared/WhatsAppFloat";
 import { contato } from "@/content/copy";
 import { fadeUp, stagger } from "@/lib/motion";
+import { TRILHAS } from "@/content/trilhas";
+import { useTrilha } from "@/hooks/useTrilha";
 
 const navItems = [
   { label: "Inicio", href: "/" },
@@ -109,6 +113,14 @@ const exercicios: Exercicio[] = [
     trilha: "jogos",
   },
   {
+    Icon: Dices,
+    titulo: "Roleta do E Se?",
+    resumo: "Gire, encare um 'E se...?' e veja a catástrofe encolher diante dos finais possíveis.",
+    tempo: "5 min",
+    href: "/exercicios/roleta",
+    trilha: "jogos",
+  },
+  {
     Icon: Castle,
     titulo: "Muralha de Evidências",
     resumo: "Coloque um pensamento em julgamento: tijolo por tijolo, o que os fatos dizem?",
@@ -130,6 +142,14 @@ const exercicios: Exercicio[] = [
     resumo: "Todo pensamento negativo ignora fatos. Encontre os que ficaram de fora.",
     tempo: "4 min",
     href: "/exercicios/fatos",
+    trilha: "detetive",
+  },
+  {
+    Icon: Scale,
+    titulo: "Balança de Evidências",
+    resumo: "Só fatos pesam. Separe evidência de sentimento e veja o veredito do pensamento.",
+    tempo: "4 min",
+    href: "/exercicios/balanca",
     trilha: "detetive",
   },
   {
@@ -245,6 +265,31 @@ function TrilhaDePegadas({ className = "" }: { className?: string }) {
         />
       ))}
     </div>
+  );
+}
+
+function TrilhaCard({ trilhaId }: { trilhaId: string }) {
+  const { trilha, pct, xp, streak, totalConcluidos, totalExercicios } = useTrilha(trilhaId);
+  if (!trilha) return null;
+  return (
+    <Link
+      to={`/exercicios/trilha/${trilha.id}`}
+      className="block rounded-2xl border p-5 mb-10 transition-transform hover:-translate-y-0.5"
+      style={{ borderColor: "var(--c-border)", background: "var(--c-surface)" }}
+    >
+      <div className="flex items-center gap-4">
+        <img src="/img/lobo.svg" alt="" aria-hidden className="w-12 h-12 object-contain shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--c-accent)]">Trilha de tratamento</p>
+          <h2 className="text-lg font-semibold text-[var(--c-text)]">{trilha.emoji} {trilha.titulo}</h2>
+          <p className="text-xs text-[var(--c-muted)]">{totalConcluidos}/{totalExercicios} exercícios · {xp} XP{streak > 0 ? ` · 🔥 ${streak}` : ""}</p>
+        </div>
+        <ArrowRight size={18} className="text-[var(--c-muted)] shrink-0" />
+      </div>
+      <div className="mt-3 h-2 rounded-full bg-[var(--c-border)] overflow-hidden" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
+        <div className="h-full rounded-full bg-[var(--c-accent)]" style={{ width: `${pct}%` }} />
+      </div>
+    </Link>
   );
 }
 
@@ -434,6 +479,10 @@ export default function Exercicios() {
           </motion.section>
 
           <TrilhaDePegadas className="my-10" />
+
+          {TRILHAS.map((t) => (
+            <TrilhaCard key={t.id} trilhaId={t.id} />
+          ))}
 
           {/* ===== Filtros por trilha ===== */}
           <section aria-label="Trilhas de exercícios">

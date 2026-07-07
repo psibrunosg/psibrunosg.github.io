@@ -1,4 +1,4 @@
-import { useRef, useState, useMemo, useEffect } from 'react';
+import { useRef, useState, useMemo } from 'react';
 import { useFrame, useLoader } from '@react-three/fiber';
 import { Html, Sparkles, Center } from '@react-three/drei';
 import * as THREE from 'three';
@@ -76,7 +76,7 @@ function BrainPart({ data, selected, hasSelection, stressLevel, isExploded, isMi
   const objs = useLoader(OBJLoader, data.urls);
   const [hovered, setHover] = useState(false);
   const groupRef = useRef<THREE.Group>(null);
-  const materialsRef = useRef<THREE.MeshStandardMaterial[]>([]);
+  const materialsRef = useRef<THREE.MeshLambertMaterial[]>([]);
   const [labelCenter, setLabelCenter] = useState<THREE.Vector3>(new THREE.Vector3(0, 100, 0));
 
   const meshes = useMemo(() => {
@@ -283,6 +283,7 @@ function TherapyLine({ isTherapyActive, isExploded }: { isTherapyActive: boolean
   });
 
   return (
+    // @ts-expect-error — R3F <line> resolve para o namespace JSX do SVG em vez do Object3DNode
     <line ref={lineRef} geometry={geometry}>
       <lineBasicMaterial color="#3b82f6" transparent opacity={0} linewidth={2} />
     </line>
