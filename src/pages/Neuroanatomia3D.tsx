@@ -68,7 +68,11 @@ const quizQuestions: { target: BrainPartId, question: string }[] = [
   { target: 'hypothalamus', question: 'Qual estrutura recebe o alarme e aciona a liberação de hormônios do estresse, como o cortisol (Eixo HPA)?' },
   { target: 'insula', question: 'Qual área do córtex está envolvida na interocepção, monitorando as sensações viscerais do corpo?' },
   { target: 'cingulate', question: 'Qual região processa a dor emocional e funciona como um detector de conflitos ("algo está errado")?' },
-  { target: 'caudate', question: 'Qual núcleo faz parte dos gânglios da base e atua na formação de hábitos e recompensas?' }
+  { target: 'caudate', question: 'Qual núcleo faz parte dos gânglios da base e atua na formação de hábitos e recompensas?' },
+  { target: 'cerebellum', question: 'Qual estrutura é a grande coordenadora motora, responsável pelo equilíbrio e pela consolidação da "memória muscular" no esporte?' },
+  { target: 'motor_cortex', question: 'Qual área cortical origina os comandos elétricos voluntários para a contração dos músculos?' },
+  { target: 'somatosensory', question: 'Onde o cérebro recebe e processa o feedback tátil e proprioceptivo do corpo durante o movimento?' },
+  { target: 'putamen', question: 'Qual região do estriado libera picos de dopamina com alimentos hiperpalatáveis e ajuda a automatizar rotinas motoras?' }
 ];
 
 export default function Neuroanatomia3D() {

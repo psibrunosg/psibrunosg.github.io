@@ -1,4 +1,4 @@
-export type BrainPartId = 'prefrontal' | 'amygdala' | 'hippocampus' | 'hypothalamus' | 'cingulate' | 'insula' | 'caudate' | 'context';
+export type BrainPartId = 'prefrontal' | 'amygdala' | 'hippocampus' | 'hypothalamus' | 'cingulate' | 'insula' | 'caudate' | 'cerebellum' | 'motor_cortex' | 'somatosensory' | 'putamen' | 'context';
 
 export interface BrainPartData {
   id: BrainPartId;
@@ -114,6 +114,61 @@ export const brainPartsData: Record<BrainPartId, BrainPartData> = {
     cameraPosition: [0, 2, -6],
     explodePosition: [10, 10, -20]
   },
+  cerebellum: {
+    id: 'cerebellum',
+    title: "Cerebelo",
+    description: "O grande coordenador motor. Contém mais da metade dos neurônios do cérebro, apesar de seu tamanho.",
+    role: "Fundamental na aprendizagem motora, ajuste fino de movimentos e equilíbrio. No esporte, é onde a 'memória muscular' e a técnica perfeita são consolidadas.",
+    color: "#f43f5e", // rose
+    urls: [
+      '/models/FJ3834_BP58271_FMA67944_Cerebellum.obj'
+    ],
+    cameraTarget: [0, -5, -4],
+    cameraPosition: [0, -5, -12],
+    explodePosition: [0, -20, -30]
+  },
+  motor_cortex: {
+    id: 'motor_cortex',
+    title: "Córtex Motor Primário",
+    description: "Localizado no giro pré-central. Responsável pelo planejamento e execução dos movimentos voluntários.",
+    role: "É a origem dos sinais nervosos que descem para a medula espinhal para contrair os músculos. Ativado fortemente ao levantar peso ou executar um gesto esportivo.",
+    color: "#eab308", // yellow
+    urls: [
+      '/models/FJ3852_BP58221_FMA72662_Left precentral gyrus.obj',
+      '/models/FJ3853_BP58189_FMA72661_Right precentral gyrus.obj'
+    ],
+    cameraTarget: [0, 8, 2],
+    cameraPosition: [0, 14, 6],
+    explodePosition: [0, 40, 20]
+  },
+  somatosensory: {
+    id: 'somatosensory',
+    title: "Córtex Somatossensorial",
+    description: "Localizado no giro pós-central. Processa as informações de tato, dor, temperatura e propriocepção.",
+    role: "No esporte, a propriocepção é vital. Permite que o cérebro saiba a posição exata de cada articulação sem que você precise olhar para o seu próprio corpo.",
+    color: "#0ea5e9", // sky
+    urls: [
+      '/models/FJ3849_BP58224_FMA72666_Left postcentral gyrus.obj',
+      '/models/FJ3850_BP58212_FMA72665_Right postcentral gyrus.obj'
+    ],
+    cameraTarget: [0, 7, -1],
+    cameraPosition: [0, 13, -5],
+    explodePosition: [0, 35, -10]
+  },
+  putamen: {
+    id: 'putamen',
+    title: "Putâmen (Gânglios da Base)",
+    description: "Estrutura do estriado profundamente envolvida na regulação de movimentos automáticos e no circuito de recompensa.",
+    role: "Na nutrição, é ativado intensamente pela ingestão de açúcares, liberando dopamina. No esporte, atua junto com o cerebelo para automatizar sequências motoras (ex: pedalar).",
+    color: "#a855f7", // purple
+    urls: [
+      '/models/FJ3829_BP58036_FMA72829_Left putamen.obj',
+      '/models/FJ3870_BP58039_FMA72828_Right putamen.obj'
+    ],
+    cameraTarget: [-2, -1, 1],
+    cameraPosition: [-6, 0, 3],
+    explodePosition: [-20, 0, 20]
+  },
   context: {
     id: 'context',
     title: "Tronco Cerebral",
@@ -128,7 +183,7 @@ export const brainPartsData: Record<BrainPartId, BrainPartData> = {
   }
 };
 
-export type GuidedTourId = 'hpa_axis' | 'panic_loop' | 'habit_loop';
+export type GuidedTourId = 'hpa_axis' | 'panic_loop' | 'habit_loop' | 'sports_neuro' | 'nutrition_behavior';
 
 export interface TourStep {
   partId: BrainPartId;
@@ -212,6 +267,60 @@ export const guidedToursData: Record<GuidedTourId, GuidedTourData> = {
         partId: 'caudate',
         title: '2. Formação do Hábito',
         content: 'O Núcleo Caudato (Gânglios da Base) automatiza a sequência. Com o tempo (TOC, vícios), a ação ocorre impulsivamente sem controle pré-frontal.'
+      }
+    ]
+  },
+  sports_neuro: {
+    id: 'sports_neuro',
+    name: 'Neurociência do Esporte',
+    description: 'A jornada do movimento perfeito.',
+    steps: [
+      {
+        partId: 'prefrontal',
+        title: '1. A Intenção e Estratégia',
+        content: 'O Córtex Pré-Frontal planeja a jogada. Decide, por exemplo, que você precisa correr e chutar a bola na direção do gol.'
+      },
+      {
+        partId: 'motor_cortex',
+        title: '2. O Comando de Ação',
+        content: 'O Córtex Motor Primário envia o comando elétrico que desce pela medula espinhal para contrair os músculos da perna.'
+      },
+      {
+        partId: 'somatosensory',
+        title: '3. O Feedback do Corpo',
+        content: 'Enquanto o movimento ocorre, o Córtex Somatossensorial recebe dados de propriocepção: "Onde minha perna está no espaço?"'
+      },
+      {
+        partId: 'cerebellum',
+        title: '4. O Ajuste Fino e a Técnica',
+        content: 'O Cerebelo compara o movimento real com a intenção inicial. Se houve erro, ele ajusta a técnica. Com treino, a "memória muscular" fica guardada aqui.'
+      }
+    ]
+  },
+  nutrition_behavior: {
+    id: 'nutrition_behavior',
+    name: 'Comportamento Alimentar',
+    description: 'Como o cérebro processa a fome e o vício em açúcar.',
+    steps: [
+      {
+        partId: 'hypothalamus',
+        title: '1. Fome e Saciedade',
+        content: 'Hormônios como Grelina (fome) e Leptina (saciedade) atuam diretamente no Hipotálamo, regulando seu impulso biológico de procurar comida.'
+      },
+      {
+        partId: 'insula',
+        title: '2. O Sabor da Comida',
+        content: 'Quando você come, a Ínsula atua como o córtex gustativo, interpretando conscientemente se a comida é doce, salgada ou amarga.'
+      },
+      {
+        partId: 'putamen',
+        title: '3. A Recompensa Dopaminérgica',
+        content: 'Alimentos hiperpalatáveis (açúcar/gordura) causam um pico de dopamina no Putâmen e Gânglios da Base, gerando prazer extremo e desejo de repetição.'
+      },
+      {
+        partId: 'prefrontal',
+        title: '4. O Desafio Inibitório',
+        content: 'O Córtex Pré-Frontal deve decidir se você come mais um pedaço de bolo ou não. Se a recompensa for muito forte, o controle inibitório falha.'
       }
     ]
   }
