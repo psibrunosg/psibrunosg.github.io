@@ -1,4 +1,4 @@
-export type BrainPartId = 'prefrontal' | 'amygdala' | 'hippocampus' | 'context';
+export type BrainPartId = 'prefrontal' | 'amygdala' | 'hippocampus' | 'hypothalamus' | 'cingulate' | 'insula' | 'caudate' | 'context';
 
 export interface BrainPartData {
   id: BrainPartId;
@@ -16,8 +16,8 @@ export const brainPartsData: Record<BrainPartId, BrainPartData> = {
   prefrontal: {
     id: 'prefrontal',
     title: "Córtex Pré-Frontal",
-    description: "A parte da frente do cérebro, responsável pelo pensamento lógico, planejamento, tomada de decisões e controle dos impulsos.",
-    role: "Na ansiedade, o córtex pré-frontal tenta 'frear' o sistema de alarme (amígdala). Quando o estresse é muito alto, ele pode perder a força e você passa a agir mais por emoção do que por razão.",
+    description: "Sede das funções executivas, atenção sustentada, planejamento e controle inibitório (controle top-down).",
+    role: "Inibe a resposta de medo da amígdala. Na ansiedade, perde força (hipoativação), reduzindo a capacidade de racionalizar medos. No TDAH, falha na inibição de impulsos.",
     color: "#3b82f6", 
     urls: [
       '/models/FJ3801_BP58201_FMA72658_Left inferior frontal gyrus.obj',
@@ -29,13 +29,13 @@ export const brainPartsData: Record<BrainPartId, BrainPartData> = {
     ],
     cameraTarget: [0, 2, 3],
     cameraPosition: [0, 4, 8],
-    explodePosition: [0, 20, 30] 
+    explodePosition: [0, 30, 40] 
   },
   amygdala: {
     id: 'amygdala',
     title: "Amígdala",
-    description: "Uma pequena estrutura em forma de amêndoa. É o centro emocional e o 'sistema de alarme' do cérebro.",
-    role: "Quando percebe uma ameaça (real ou imaginária), ela dispara a resposta de 'lutar, fugir ou congelar', liberando adrenalina e causando os sintomas físicos da ansiedade.",
+    description: "Centro de processamento do medo e detecção de ameaças. Modula a consolidação de memórias emocionais.",
+    role: "O 'sistema de alarme'. Dispara cascatas neuroquímicas em frações de segundo. Na ansiedade e TEPT, torna-se hiper-reativa, disparando falsos alarmes.",
     color: "#ef4444", 
     urls: [
       '/models/MM179_BP58076_FMA72833_Left amygdala.obj',
@@ -43,13 +43,13 @@ export const brainPartsData: Record<BrainPartId, BrainPartData> = {
     ],
     cameraTarget: [0, -1, 0],
     cameraPosition: [0, -1, 5],
-    explodePosition: [0, -20, 30] 
+    explodePosition: [-10, -10, 20] 
   },
   hippocampus: {
     id: 'hippocampus',
     title: "Hipocampo",
-    description: "A estrutura responsável pela formação e armazenamento de novas memórias e pelo aprendizado.",
-    role: "Trabalha junto com a amígdala para lembrar de situações perigosas. No estresse crônico ou trauma, o hipocampo pode encolher, dificultando a diferenciação entre uma lembrança antiga e um perigo atual.",
+    description: "Estrutura essencial para a consolidação da memória declarativa e regulação espacial. Possui alta densidade de receptores de glicocorticoides.",
+    role: "Fornece 'contexto' às memórias. O estresse crônico (altos níveis de cortisol) inibe a neurogênese e atrofia o hipocampo, dificultando diferenciar ameaças reais de memórias passadas (comum no TEPT).",
     color: "#10b981", 
     urls: [
       '/models/MM164_BP58046_FMA72714_Left hippocampus proper.obj',
@@ -57,19 +57,163 @@ export const brainPartsData: Record<BrainPartId, BrainPartData> = {
     ],
     cameraTarget: [0, -1, -1],
     cameraPosition: [-4, -1, 2],
-    explodePosition: [-30, 0, -20] 
+    explodePosition: [-30, -5, 0] 
+  },
+  hypothalamus: {
+    id: 'hypothalamus',
+    title: "Hipotálamo",
+    description: "Regulador central da homeostase e do sistema nervoso autônomo. Ponto de origem do Eixo HPA.",
+    role: "Recebe o alarme da Amígdala e aciona o Eixo HPA (Hipotálamo-Pituitária-Adrenal), liberando CRH que culminará na produção de cortisol (hormônio do estresse) pelas adrenais, preparando o corpo para lutar ou fugir.",
+    color: "#f59e0b", // amber
+    urls: [
+      '/models/FJ3817_BP58266_FMA62008_Hypothalamus.obj'
+    ],
+    cameraTarget: [0, -2, 1],
+    cameraPosition: [0, -2, 6],
+    explodePosition: [10, -15, 10]
+  },
+  cingulate: {
+    id: 'cingulate',
+    title: "Córtex Cingulado Anterior",
+    description: "Interface crucial entre emoção (sistema límbico) e cognição (córtex pré-frontal).",
+    role: "Envolvido na percepção da dor emocional, regulação autonômica e monitoramento de erros. No TOC, o cingulado anterior fica hiperativo, gerando a sensação de que 'algo está errado'.",
+    color: "#8b5cf6", // violet
+    urls: [
+      '/models/MM193_BP58215_FMA72718_Left cingulate gyrus.obj',
+      '/models/MM193M_BP58196_FMA72717_Right cingulate gyrus.obj'
+    ],
+    cameraTarget: [0, 4, 1],
+    cameraPosition: [0, 8, 6],
+    explodePosition: [0, 20, 0]
+  },
+  insula: {
+    id: 'insula',
+    title: "Ínsula (Córtex Insular)",
+    description: "Centro da interocepção: o mapa consciente das sensações viscerais do nosso corpo.",
+    role: "No pânico e na ansiedade, a Ínsula amplifica sensações normais (como o coração batendo) e as interpreta como perigos iminentes, criando um ciclo de retroalimentação catastrófica.",
+    color: "#ec4899", // pink
+    urls: [
+      '/models/MM236_BP58308_FMA72725_Left first short gyrus of insula.obj',
+      '/models/MM236M_BP58312_FMA72724_Right first short gyrus of insula.obj'
+    ],
+    cameraTarget: [2, 1, 0],
+    cameraPosition: [6, 1, 2],
+    explodePosition: [30, 0, 10]
+  },
+  caudate: {
+    id: 'caudate',
+    title: "Núcleo Caudato (Gânglios da Base)",
+    description: "Fundamental no sistema de recompensa e na execução de rotinas motoras e cognitivas aprendidas (hábitos).",
+    role: "Participa dos circuitos que nos prendem a comportamentos compulsivos (TOC) ou nos impulsionam em busca de dopamina rápida (vistos no TDAH e vícios).",
+    color: "#14b8a6", // teal
+    urls: [
+      '/models/MM241_BP58034_FMA72827_Left caudate nucleus.obj',
+      '/models/MM241M_BP58038_FMA72826_Right caudate nucleus.obj'
+    ],
+    cameraTarget: [0, 0, -2],
+    cameraPosition: [0, 2, -6],
+    explodePosition: [10, 10, -20]
   },
   context: {
     id: 'context',
     title: "Tronco Cerebral",
-    description: "Conecta o cérebro à medula espinhal.",
-    role: "Controla funções vitais autônomas, como respiração e batimentos cardíacos, que também se alteram na ansiedade.",
+    description: "Conecta o encéfalo à medula espinhal.",
+    role: "Controla funções vitais autônomas, como respiração e batimentos cardíacos, que também se alteram drasticamente na ansiedade e pânico.",
     color: "#e5e7eb", 
     urls: [
       '/models/FJ3828_BP58274_FMA67943_Pons.obj',
       '/models/FJ3823_BP58279_FMA62004_Medulla oblongata.obj'
     ],
     explodePosition: [0, -40, -10] 
+  }
+};
+
+export type GuidedTourId = 'hpa_axis' | 'panic_loop' | 'habit_loop';
+
+export interface TourStep {
+  partId: BrainPartId;
+  title: string;
+  content: string;
+}
+
+export interface GuidedTourData {
+  id: GuidedTourId;
+  name: string;
+  description: string;
+  steps: TourStep[];
+}
+
+export const guidedToursData: Record<GuidedTourId, GuidedTourData> = {
+  hpa_axis: {
+    id: 'hpa_axis',
+    name: 'A Cascata do Estresse (Eixo HPA)',
+    description: 'Como o cérebro transforma medo em cortisol.',
+    steps: [
+      {
+        partId: 'amygdala',
+        title: '1. O Alarme Inicial',
+        content: 'A Amígdala detecta rapidamente uma ameaça no ambiente antes mesmo da consciência plena e dispara um sinal de perigo.'
+      },
+      {
+        partId: 'hypothalamus',
+        title: '2. O Mestre da Homeostase',
+        content: 'O sinal chega ao Hipotálamo, que atua como o centro de comando autonômico, iniciando a liberação de CRH (Hormônio Liberador de Corticotrofina).'
+      },
+      {
+        partId: 'prefrontal',
+        title: '3. A Tentativa de Freio',
+        content: 'O Córtex Pré-Frontal tenta reavaliar a ameaça. Se o estresse for excessivo, sua função é suprimida, permitindo que a resposta instintiva domine.'
+      },
+      {
+        partId: 'hippocampus',
+        title: '4. Memória e Contexto',
+        content: 'O Hipocampo armazena o contexto do estresse. Níveis crônicos de cortisol afetam sua capacidade de regular o próprio Eixo HPA no futuro.'
+      }
+    ]
+  },
+  panic_loop: {
+    id: 'panic_loop',
+    name: 'O Ciclo do Pânico',
+    description: 'Interocepção e catastrofização no cérebro.',
+    steps: [
+      {
+        partId: 'context',
+        title: '1. Alteração Fisiológica',
+        content: 'O Tronco Cerebral regula funções autônomas. Por um leve estresse ou esforço, o coração bate mais rápido e a respiração acelera.'
+      },
+      {
+        partId: 'insula',
+        title: '2. Interocepção Hipervigilante',
+        content: 'A Ínsula lê ativamente essas mudanças corporais internas. No Pânico, ela é hiper-reativa, interpretando o coração acelerado como um infarto.'
+      },
+      {
+        partId: 'cingulate',
+        title: '3. Erro e Dor Emocional',
+        content: 'O Cíngulo Anterior acende, sinalizando que "algo está muito errado". Isso gera angústia emocional imediata.'
+      },
+      {
+        partId: 'amygdala',
+        title: '4. Medo Confirmado',
+        content: 'A Amígdala recebe esse sinal de erro e dispara mais medo, liberando mais adrenalina e piorando os sintomas físicos (fechando o ciclo).'
+      }
+    ]
+  },
+  habit_loop: {
+    id: 'habit_loop',
+    name: 'Hábitos e Compulsões',
+    description: 'A anatomia da recompensa e repetição.',
+    steps: [
+      {
+        partId: 'prefrontal',
+        title: '1. Intenção Inicial',
+        content: 'No início, o Córtex Pré-Frontal planeja conscientemente uma ação para obter uma recompensa ou aliviar uma ansiedade.'
+      },
+      {
+        partId: 'caudate',
+        title: '2. Formação do Hábito',
+        content: 'O Núcleo Caudato (Gânglios da Base) automatiza a sequência. Com o tempo (TOC, vícios), a ação ocorre impulsivamente sem controle pré-frontal.'
+      }
+    ]
   }
 };
 

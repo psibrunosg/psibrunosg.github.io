@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Suspense, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, BookOpen, AlertCircle, Loader2, Activity, Maximize2, Minimize2, Flower2, Link as LinkIcon, Wind, Stethoscope, Pill, HeartPulse, BrainCircuit, Target, CheckCircle2, XCircle, Brain } from "lucide-react";
+import { ArrowLeft, BookOpen, AlertCircle, Loader2, Activity, Maximize2, Minimize2, Flower2, Link as LinkIcon, Wind, Stethoscope, Pill, HeartPulse, BrainCircuit, Target, CheckCircle2, XCircle, Brain, Map, ChevronLeft, ChevronRight } from "lucide-react";
 import { Canvas } from "@react-three/fiber";
 import { CameraControls, Html } from "@react-three/drei";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,7 +10,7 @@ import { SkipLink } from "@/components/shared/SkipLink";
 import { WhatsAppFloat } from "@/components/shared/WhatsAppFloat";
 import { contato } from "@/content/copy";
 import { BrainModel } from "@/components/3d/BrainModel";
-import { brainPartsData, disordersData, type BrainPartId, type DisorderId } from "@/content/neuroanatomia";
+import { brainPartsData, disordersData, guidedToursData, type BrainPartId, type DisorderId, type GuidedTourId } from "@/content/neuroanatomia";
 
 class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: any}> {
   constructor(props: {children: React.ReactNode}) {
@@ -64,7 +64,11 @@ function CameraManager({ selectedPartId }: { selectedPartId: BrainPartId | null 
 const quizQuestions: { target: BrainPartId, question: string }[] = [
   { target: 'amygdala', question: 'Qual destas estruturas atua como o "sistema de alarme" ou detector de ameaças do nosso cérebro?' },
   { target: 'prefrontal', question: 'Qual parte é responsável por frear os impulsos emocionais, raciocinar e planejar?' },
-  { target: 'hippocampus', question: 'Onde ficam armazenadas as nossas memórias e o contexto das situações?' }
+  { target: 'hippocampus', question: 'Onde ficam armazenadas as nossas memórias e o contexto das situações?' },
+  { target: 'hypothalamus', question: 'Qual estrutura recebe o alarme e aciona a liberação de hormônios do estresse, como o cortisol (Eixo HPA)?' },
+  { target: 'insula', question: 'Qual área do córtex está envolvida na interocepção, monitorando as sensações viscerais do corpo?' },
+  { target: 'cingulate', question: 'Qual região processa a dor emocional e funciona como um detector de conflitos ("algo está errado")?' },
+  { target: 'caudate', question: 'Qual núcleo faz parte dos gânglios da base e atua na formação de hábitos e recompensas?' }
 ];
 
 export default function Neuroanatomia3D() {
@@ -86,6 +90,10 @@ export default function Neuroanatomia3D() {
   const [currentQuizIndex, setCurrentQuizIndex] = useState<number>(0);
   const [quizStatus, setQuizStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
   const [showContext, setShowContext] = useState<boolean>(true);
+  const [activeTour, setActiveTour] = useState<GuidedTourId | null>(null);
+  const [tourStep, setTourStep] = useState<number>(0);
+
+  const currentSelectedPartId = activeTour ? guidedToursData[activeTour].steps[tourStep].partId : selectedPartId;
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "c");
@@ -109,7 +117,7 @@ export default function Neuroanatomia3D() {
     return () => clearInterval(interval);
   }, [isBreathing]);
 
-  const selectedInfo = selectedPartId ? brainPartsData[selectedPartId] : null;
+  const selectedInfo = currentSelectedPartId ? brainPartsData[currentSelectedPartId] : null;
   const disorderInfo = activeDisorder ? disordersData[activeDisorder] : null;
 
   const handleDisorderSelect = (disorderId: string) => {
@@ -124,6 +132,8 @@ export default function Neuroanatomia3D() {
       setIsBreathing(false);
       setIsMedicated(false);
       setIsQuizMode(false);
+      setActiveTour(null);
+      setTourStep(0);
       setSelectedPartId(null);
     }
   };
@@ -146,7 +156,7 @@ export default function Neuroanatomia3D() {
         setQuizStatus('wrong');
         setTimeout(() => setQuizStatus('idle'), 1500);
       }
-    } else {
+    } else if (!activeTour) {
       setSelectedPartId(partId);
     }
   };
@@ -262,7 +272,7 @@ export default function Neuroanatomia3D() {
               }>
                 <BrainModel 
                   onSelectPart={handlePartClick} 
-                  selectedPartId={selectedPartId} 
+                  selectedPartId={currentSelectedPartId} 
                   stressLevel={stressLevel}
                   isExploded={isExploded}
                   isMindfulness={isMindfulness}
@@ -272,7 +282,7 @@ export default function Neuroanatomia3D() {
                   quizTarget={isQuizMode ? quizQuestions[currentQuizIndex].target : null}
                   showContext={showContext}
                 />
-                <CameraManager selectedPartId={selectedPartId} />
+                <CameraManager selectedPartId={currentSelectedPartId} />
               </Suspense>
             </Canvas>
           </ErrorBoundary>
@@ -320,6 +330,7 @@ export default function Neuroanatomia3D() {
                   setIsBreathing(false);
                   setIsMedicated(false);
                   setSelectedPartId(null);
+                  setActiveTour(null);
                   setCurrentQuizIndex(0);
                 }
               }}
@@ -391,6 +402,34 @@ export default function Neuroanatomia3D() {
                 )}
               </div>
 
+              {/* Trilhas Guiadas (Tours) */}
+              <div className="mb-6">
+                <label className="text-sm font-semibold flex items-center gap-2 text-[var(--c-text)] mb-2">
+                  <Map size={16} className="text-blue-500" />
+                  Trilhas Clínicas
+                </label>
+                <select
+                  value={activeTour || ""}
+                  onChange={(e) => {
+                    if (e.target.value === "") {
+                      setActiveTour(null);
+                      setTourStep(0);
+                    } else {
+                      setActiveTour(e.target.value as GuidedTourId);
+                      setTourStep(0);
+                      handleDisorderSelect(""); // clear disorders
+                    }
+                  }}
+                  className="w-full bg-[var(--c-bg)] border border-[var(--c-border)] text-[var(--c-text)] text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all appearance-none cursor-pointer font-medium"
+                  style={{ backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23666%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 12px center", backgroundSize: "16px" }}
+                >
+                  <option value="">Selecione uma Trilha...</option>
+                  {Object.values(guidedToursData).map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
+
               <div className="w-full h-px bg-[var(--c-border)] my-6"></div>
 
               {/* Ferramentas Manuais */}
@@ -414,7 +453,7 @@ export default function Neuroanatomia3D() {
                     disabled={isMindfulness || isBreathing}
                     onChange={(e) => {
                       setStressLevel(Number(e.target.value));
-                      if (Number(e.target.value) > 0) setSelectedPartId(null);
+                      if (Number(e.target.value) > 0) { setSelectedPartId(null); setActiveTour(null); }
                     }}
                     className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${(isMindfulness || isBreathing) ? 'opacity-50 grayscale' : ''}`}
                     style={{
@@ -579,6 +618,42 @@ export default function Neuroanatomia3D() {
                       <p className="text-sm text-[var(--c-text)] leading-relaxed">
                         A Amígdala assume o controle. O Córtex Pré-Frontal perde energia e desliga. O foco deve ser no relaxamento fisiológico (respiração).
                       </p>
+                    </motion.div>
+                  ) : activeTour ? (
+                    <motion.div
+                      key={`tour-${activeTour}-${tourStep}`}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="bg-blue-500/10 border border-blue-500/20 p-6 rounded-2xl space-y-4"
+                    >
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="text-xs font-bold text-blue-500 uppercase tracking-widest">Passo {tourStep + 1} de {guidedToursData[activeTour].steps.length}</div>
+                        <button onClick={() => {setActiveTour(null); setTourStep(0);}} className="text-xs text-blue-500 hover:underline">Sair da Trilha</button>
+                      </div>
+                      <h2 className="text-xl font-bold text-blue-600 dark:text-blue-400" style={{ fontFamily: "var(--font-heading)" }}>
+                        {guidedToursData[activeTour].steps[tourStep].title}
+                      </h2>
+                      <p className="text-sm text-[var(--c-text)] leading-relaxed">
+                        {guidedToursData[activeTour].steps[tourStep].content}
+                      </p>
+                      
+                      <div className="flex justify-between items-center pt-4 border-t border-blue-500/20">
+                        <button 
+                          disabled={tourStep === 0}
+                          onClick={() => setTourStep(prev => prev - 1)}
+                          className="p-2 rounded-full bg-blue-500/20 text-blue-600 disabled:opacity-30 transition-opacity"
+                        >
+                          <ChevronLeft size={20} />
+                        </button>
+                        <button 
+                          disabled={tourStep === guidedToursData[activeTour].steps.length - 1}
+                          onClick={() => setTourStep(prev => prev + 1)}
+                          className="p-2 rounded-full bg-blue-500/20 text-blue-600 disabled:opacity-30 transition-opacity"
+                        >
+                          <ChevronRight size={20} />
+                        </button>
+                      </div>
                     </motion.div>
                   ) : selectedInfo ? (
                     <motion.div
