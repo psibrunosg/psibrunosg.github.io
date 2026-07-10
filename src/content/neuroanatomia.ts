@@ -354,8 +354,8 @@ export const disordersData: Record<DisorderId, DisorderData> = {
   tag: {
     id: 'tag',
     name: 'Transtorno de Ansiedade Generalizada',
-    description: 'Sistema de alarme cronicamente ativado.',
-    details: 'No TAG, a Amígdala encontra-se hiperativa, detectando ameaças em situações neutras. O Córtex Pré-Frontal, que deveria inibir essa resposta, perde força, gerando um estado de alerta constante (partículas vermelhas rápidas e agitadas).',
+    description: 'Um sistema de ameaça que pode permanecer ativado por tempo demais.',
+    details: 'No TAG, estudos descrevem alterações em redes relacionadas à detecção de ameaça, regulação emocional e antecipação. A animação destaca Amígdala e Córtex Pré-Frontal como uma metáfora didática, mas o transtorno não se reduz a duas estruturas nem aparece da mesma forma em todas as pessoas.',
     ambientIntensity: 0.3,
     dirIntensity: 2.0,
     dirColor: '#fee2e2',
@@ -370,8 +370,8 @@ export const disordersData: Record<DisorderId, DisorderData> = {
   tept: {
     id: 'tept',
     name: 'Transtorno de Estresse Pós-Traumático',
-    description: 'Falha no filtro de contexto do Hipocampo.',
-    details: 'No TEPT, o Hipocampo (memória de contexto) se torna disfuncional e escurece. Ele não consegue avisar a Amígdala de que o evento traumático ficou no passado. A Amígdala, portanto, reage a gatilhos atuais com intensidade máxima de sobrevivência.',
+    description: 'Memórias e sinais atuais podem ser processados como ameaça presente.',
+    details: 'No TEPT, redes de memória, contexto, saliência e resposta à ameaça podem funcionar de maneira diferente. A animação usa Hipocampo e Amígdala para explicar por que um gatilho atual pode evocar uma reação intensa, sem afirmar que uma única região esteja danificada ou desligada.',
     ambientIntensity: 0.2,
     dirIntensity: 2.5,
     dirColor: '#ffcccc',
@@ -386,8 +386,8 @@ export const disordersData: Record<DisorderId, DisorderData> = {
   tdm: {
     id: 'tdm',
     name: 'Transtorno Depressivo Maior',
-    description: 'Letargia global e apagamento neuronal.',
-    details: 'Na Depressão Maior, observamos uma hipoatividade global. O Córtex Pré-Frontal e o Hipocampo perdem brilho. As partículas, representando neurotransmissores como serotonina e dopamina, ficam extremamente escassas e lentas.',
+    description: 'Mudanças em motivação, recompensa, memória, energia e regulação emocional.',
+    details: 'Na depressão maior, diferentes redes podem apresentar alterações de atividade e conectividade. A redução de brilho representa dificuldades de energia, motivação e flexibilidade cognitiva. Ela não significa apagamento neuronal nem simples falta de serotonina ou dopamina.',
     ambientIntensity: 0.1,
     dirIntensity: 0.3,
     dirColor: '#4b5563', // gray
@@ -402,8 +402,8 @@ export const disordersData: Record<DisorderId, DisorderData> = {
   tdah: {
     id: 'tdah',
     name: 'Transtorno de Déficit de Atenção (TDAH)',
-    description: 'Disfunção Executiva por subativação do Córtex.',
-    details: 'No TDAH, o Córtex Pré-Frontal sofre com a subativação devido à recaptação acelerada de dopamina e noradrenalina. Ele pisca de forma instável, o que explica a dificuldade em sustentar o foco, frear impulsos e gerenciar tarefas executivas.',
+    description: 'Diferenças na regulação da atenção, motivação e funções executivas.',
+    details: 'No TDAH, estudos descrevem diferenças em redes de controle executivo, atenção, recompensa e tempo. O piscar do Córtex Pré-Frontal é uma metáfora para a variabilidade do foco e do controle inibitório, não uma imagem individual nem uma causa única do transtorno.',
     ambientIntensity: 0.5,
     dirIntensity: 1.0,
     dirColor: '#fef3c7', // yellow tint

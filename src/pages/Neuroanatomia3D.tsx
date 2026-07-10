@@ -1,13 +1,12 @@
 import React, { useState, useEffect, Suspense, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, BookOpen, AlertCircle, Loader2, Activity, Maximize2, Minimize2, Flower2, Link as LinkIcon, Wind, Stethoscope, Pill, HeartPulse, BrainCircuit, Target, CheckCircle2, XCircle, Brain, Map, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, BookOpen, AlertCircle, Loader2, Activity, Maximize2, Minimize2, Flower2, Link as LinkIcon, Wind, Stethoscope, Pill, Target, CheckCircle2, XCircle, Brain, Map, ChevronLeft, ChevronRight } from "lucide-react";
 import { Canvas } from "@react-three/fiber";
 import { CameraControls, Html } from "@react-three/drei";
 import { motion, AnimatePresence } from "framer-motion";
 import { MobileMenu } from "@/components/ui/MobileMenu";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
 import { SkipLink } from "@/components/shared/SkipLink";
-import { WhatsAppFloat } from "@/components/shared/WhatsAppFloat";
 import { contato } from "@/content/copy";
 import { BrainModel } from "@/components/3d/BrainModel";
 import { brainPartsData, disordersData, guidedToursData, type BrainPartId, type DisorderId, type GuidedTourId } from "@/content/neuroanatomia";
@@ -178,20 +177,14 @@ export default function Neuroanatomia3D() {
     setQuizFinished(false);
   };
 
-  // Cálculos do Monitor Biométrico
-  const simulatedHeartRate = isMindfulness ? 60 : (isMedicated ? 75 : (70 + (stressLevel / 100) * 80));
-  const simulatedCortisol = isMindfulness ? 10 : (isMedicated ? 20 : (stressLevel));
-  const cognitiveLoad = isMindfulness ? 90 : (isMedicated ? 85 : (100 - stressLevel));
-
   return (
     <div className="flex flex-col min-h-screen bg-[var(--c-bg)]">
       <SkipLink />
       <MobileMenu items={navItems} crp={contato.crp} whatsappLink={contato.whatsappLink} />
-      <WhatsAppFloat />
 
       <main id="main" className="flex-1 flex flex-col md:flex-row pt-20">
         {/* Painel Esquerdo: Canvas 3D */}
-        <div className="flex-1 relative h-[50vh] md:h-auto border-b md:border-b-0 md:border-r border-[var(--c-border)] bg-black/5">
+        <div className="relative shrink-0 h-[56dvh] min-h-[360px] md:flex-1 md:h-[calc(100dvh-80px)] md:min-h-0 border-b md:border-b-0 md:border-r border-[var(--c-border)] bg-black/5">
           <Link
             to="/psicoeducacao"
             className="absolute top-4 left-4 z-10 inline-flex items-center gap-2 text-sm text-[var(--c-text)] hover:text-[var(--c-accent)] transition-colors bg-[var(--c-surface)]/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-[var(--c-border)] shadow-sm"
@@ -199,33 +192,6 @@ export default function Neuroanatomia3D() {
             <ArrowLeft size={16} />
             Voltar
           </Link>
-
-          {/* Monitor Biométrico UI */}
-          {!isQuizMode && (
-            <div className="absolute top-16 left-4 z-10 flex flex-col gap-2">
-              <div className="bg-[var(--c-surface)]/80 backdrop-blur-md px-3 py-2 rounded-xl border border-[var(--c-border)] shadow-sm flex items-center gap-3">
-                <HeartPulse className={stressLevel > 50 ? "text-red-500 animate-pulse" : "text-emerald-500"} size={18} />
-                <div>
-                  <div className="text-[10px] text-[var(--c-muted)] font-bold uppercase tracking-wider">BPM Fictício</div>
-                  <div className="text-sm font-bold text-[var(--c-text)]">{Math.round(simulatedHeartRate)} bpm</div>
-                </div>
-              </div>
-              <div className="bg-[var(--c-surface)]/80 backdrop-blur-md px-3 py-2 rounded-xl border border-[var(--c-border)] shadow-sm flex items-center gap-3">
-                <Activity className={stressLevel > 50 ? "text-orange-500" : "text-blue-500"} size={18} />
-                <div>
-                  <div className="text-[10px] text-[var(--c-muted)] font-bold uppercase tracking-wider">Cortisol / Estresse</div>
-                  <div className="text-sm font-bold text-[var(--c-text)]">{Math.round(simulatedCortisol)}%</div>
-                </div>
-              </div>
-              <div className="bg-[var(--c-surface)]/80 backdrop-blur-md px-3 py-2 rounded-xl border border-[var(--c-border)] shadow-sm flex items-center gap-3">
-                <BrainCircuit className={stressLevel > 50 ? "text-gray-400" : "text-indigo-500"} size={18} />
-                <div>
-                  <div className="text-[10px] text-[var(--c-muted)] font-bold uppercase tracking-wider">Capacidade Cognitiva</div>
-                  <div className="text-sm font-bold text-[var(--c-text)]">{Math.round(cognitiveLoad)}%</div>
-                </div>
-              </div>
-            </div>
-          )}
 
           <AnimatePresence>
             {isBreathing && !activeDisorder && (
@@ -273,12 +239,12 @@ export default function Neuroanatomia3D() {
             )}
           </AnimatePresence>
           
-          <div className="absolute top-4 right-4 z-10 bg-[var(--c-surface)]/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-[var(--c-border)] shadow-sm text-xs text-[var(--c-muted)]">
+          <div className="hidden sm:block absolute top-4 right-4 z-10 bg-[var(--c-surface)]/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-[var(--c-border)] shadow-sm text-xs text-[var(--c-muted)]">
             Use o mouse/dedo para girar e dar zoom
           </div>
 
           <ErrorBoundary>
-            <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
+            <Canvas camera={{ position: [0, 0.5, 14], fov: 45 }} dpr={[1, 1.5]} gl={{ antialias: false, powerPreference: "high-performance" }}>
               <Suspense fallback={
                 <Html center>
                   <div className="flex flex-col items-center text-[var(--c-text)]">
@@ -326,7 +292,7 @@ export default function Neuroanatomia3D() {
         </div>
 
         {/* Painel Direito */}
-        <div className="w-full md:w-[400px] lg:w-[480px] bg-[var(--c-surface)] overflow-y-auto h-[50vh] md:h-[calc(100vh-80px)] p-6 md:p-8 flex flex-col">
+        <div className="w-full md:w-[400px] lg:w-[480px] bg-[var(--c-surface)] overflow-y-auto min-h-[44dvh] md:h-[calc(100dvh-80px)] p-5 md:p-8 flex flex-col">
           <div className="mb-6 flex justify-between items-start">
             <div>
               <p className="text-xs tracking-[0.3em] uppercase text-[var(--c-accent)] font-semibold mb-2">
@@ -336,7 +302,7 @@ export default function Neuroanatomia3D() {
                 Neuroanatomia
               </h1>
               <p className="text-[11px] text-[var(--c-muted)] leading-snug max-w-[280px]">
-                Simulação educacional simplificada. Não substitui avaliação, diagnóstico ou tratamento profissional.
+                Representação visual simplificada. Redes cerebrais são dinâmicas e variam entre pessoas.
               </p>
             </div>
             {/* Botão do Quiz */}
@@ -419,7 +385,7 @@ export default function Neuroanatomia3D() {
               <div className="mb-6">
                 <label className="text-sm font-semibold flex items-center gap-2 text-[var(--c-text)] mb-2">
                   <Stethoscope size={16} className="text-purple-500" />
-                  Perfis Clínicos (DSM-5-TR)
+                  Temas clínicos
                 </label>
                 <select
                   value={activeDisorder || ""}
@@ -427,7 +393,7 @@ export default function Neuroanatomia3D() {
                   className="w-full bg-[var(--c-bg)] border border-[var(--c-border)] text-[var(--c-text)] text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all appearance-none cursor-pointer font-medium"
                   style={{ backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23666%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 12px center", backgroundSize: "16px" }}
                 >
-                  <option value="">Selecione um Transtorno...</option>
+                  <option value="">Escolha um tema para explorar...</option>
                   {Object.values(disordersData).map(d => (
                     <option key={d.id} value={d.id}>{d.name}</option>
                   ))}
@@ -438,18 +404,22 @@ export default function Neuroanatomia3D() {
                       onClick={() => handleDisorderSelect("")}
                       className="text-xs text-purple-500 hover:text-purple-600 font-semibold transition-colors"
                     >
-                      Limpar Diagnóstico
+                      Limpar tema
                     </button>
-                    <span className="text-xs text-[var(--c-muted)]">|</span>
-                    <button 
-                      onClick={() => setIsMedicated(!isMedicated)}
-                      className={`text-xs font-semibold flex items-center gap-1 transition-colors ${
-                        isMedicated ? "text-emerald-500" : "text-[var(--c-muted)] hover:text-[var(--c-text)]"
-                      }`}
-                    >
-                      <Pill size={12} />
-                      {isMedicated ? "Remover Fármaco" : "Simular Fármaco (ISRS)"}
-                    </button>
+                    {activeDisorder !== 'tdah' && (
+                      <>
+                        <span className="text-xs text-[var(--c-muted)]">|</span>
+                        <button
+                          onClick={() => setIsMedicated(!isMedicated)}
+                          className={`text-xs font-semibold flex items-center gap-1 transition-colors ${
+                            isMedicated ? "text-emerald-500" : "text-[var(--c-muted)] hover:text-[var(--c-text)]"
+                          }`}
+                        >
+                          <Pill size={12} />
+                          {isMedicated ? "Remover ilustração" : "Ilustrar apoio medicamentoso"}
+                        </button>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -485,10 +455,13 @@ export default function Neuroanatomia3D() {
               <div className="w-full h-px bg-[var(--c-border)] my-6"></div>
 
               {/* Ferramentas Manuais */}
-              <div className={`mb-6 space-y-4 transition-opacity ${activeDisorder ? 'opacity-30 pointer-events-none' : 'opacity-100'}`}>
-                <label className="text-sm font-semibold flex items-center gap-2 text-[var(--c-text)]">
-                  Modo Manual Interativo
-                </label>
+              <details className="mb-6 group" open={false}>
+                <summary className="min-h-12 px-4 py-3 rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)] text-sm font-semibold text-[var(--c-text)] cursor-pointer list-none flex items-center justify-between">
+                  <span>Exploração livre</span>
+                  <span className="text-xs text-[var(--c-muted)] group-open:hidden">Abrir ferramentas</span>
+                  <span className="text-xs text-[var(--c-muted)] hidden group-open:inline">Fechar ferramentas</span>
+                </summary>
+                <div className={`pt-4 space-y-4 transition-opacity ${activeDisorder ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}>
                 <div className={`p-4 rounded-2xl border transition-colors ${stressLevel > 0 ? 'border-red-500/30 bg-red-500/5' : 'border-[var(--c-border)] bg-[var(--c-bg)]'}`}>
                   <div className="flex justify-between items-center mb-2">
                     <label className="text-sm font-semibold flex items-center gap-2 text-[var(--c-text)]">
@@ -578,7 +551,8 @@ export default function Neuroanatomia3D() {
                     {showContext ? "Ocultar Córtex" : "Mostrar Córtex"}
                   </button>
                 </div>
-              </div>
+                </div>
+              </details>
 
               {/* Textos Psicoeducativos Dinâmicos */}
               <div className="flex-1 mt-4">
@@ -594,17 +568,17 @@ export default function Neuroanatomia3D() {
                       <div className="flex items-center gap-3 mb-2">
                         <Pill className="text-emerald-600 dark:text-emerald-400 shrink-0" size={24} />
                         <h2 className="text-xl font-bold text-emerald-600 dark:text-emerald-400 leading-tight" style={{ fontFamily: "var(--font-heading)" }}>
-                          Efeito Farmacológico (ISRS)
+                          Apoio medicamentoso
                         </h2>
                       </div>
                       <p className="text-sm text-[var(--c-text)] leading-relaxed">
-                        A medicação aumenta a disponibilidade de neurotransmissores (como a Serotonina) na fenda sináptica, representada pelas densas partículas verdes.
+                        Esta animação representa, de forma simplificada, que a medicação pode contribuir para regular circuitos envolvidos nos sintomas. Ela não mostra uma medição individual do cérebro.
                       </p>
                       <p className="text-sm text-[var(--c-text)] leading-relaxed">
-                        Isso ajuda a "restaurar o brilho" do Córtex Pré-Frontal e do Hipocampo, e simultaneamente acalma a Amígdala hiperativa, estabilizando o transtorno.
+                        A resposta varia entre pessoas, depende do quadro clínico e costuma fazer parte de um plano que também pode incluir psicoterapia, rotina, suporte social e outras intervenções.
                       </p>
                       <p className="text-xs text-emerald-700/70 dark:text-emerald-300/70 italic leading-relaxed border-t border-emerald-500/20 pt-3">
-                        Na prática clínica esse efeito não é instantâneo — ISRS costumam levar de 2 a 6 semanas de uso contínuo para o efeito terapêutico pleno aparecer. Aqui simulamos o resultado final para fins didáticos.
+                        O efeito visual é uma metáfora psicoeducativa. Não representa mecanismo único, resposta garantida ou recomendação de medicamento.
                       </p>
                     </motion.div>
                   ) : activeDisorder && disorderInfo ? (
