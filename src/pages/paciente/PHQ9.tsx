@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, ChevronLeft, User, Check, Brain } from "lucide-react";
@@ -26,14 +26,6 @@ const opcoes = [
   { label: "Quase todos os dias", valor: 3 },
 ];
 
-function classificar(score: number) {
-  if (score <= 4) return { nivel: "Minima ou nenhuma", cor: "#4A6B47", orientacao: "Seu rastreio indica ausencia ou nivel minimo de sintomas depressivos." };
-  if (score <= 9) return { nivel: "Leve", cor: "#8A6A3A", orientacao: "Ha indicios leves. Compartilhe com seu psicologo para avaliacao conjunta." };
-  if (score <= 14) return { nivel: "Moderada", cor: "#B05D3A", orientacao: "Nivel moderado. E importante discutir esses resultados com seu psicologo." };
-  if (score <= 19) return { nivel: "Moderadamente grave", cor: "#A0522D", orientacao: "Nivel significativo. Traga esses resultados para a proxima sessao." };
-  return { nivel: "Grave", cor: "#8B1A1A", orientacao: "Nivel elevado. Entre em contato com seu psicologo o quanto antes." };
-}
-
 export default function PHQ9() {
   const [etapa, setEtapa] = useState<"dados" | "intro" | "form" | "resultado">("dados");
   const [nome, setNome] = useState("");
@@ -51,10 +43,8 @@ export default function PHQ9() {
 
   const dadosValidos = nome.trim().length > 2 && nascimento.length > 0 && consentimento;
   const pontuacao = respostas.reduce<number>((acc, r) => acc + (r ?? 0), 0);
-  const resultado = classificar(pontuacao);
   const emRisco = (respostas[8] ?? 0) >= 1 || ehFaixaGrave("phq9", pontuacao);
   const pct = Math.round(((atual + 1) / perguntas.length) * 100);
-  const ringMax = 27, r = 52, circ = 2 * Math.PI * r;
 
   function finalizar() {
     salvarResposta({ tipo: "phq9", nome: nome.trim(), telefone: telefone.trim(), nascimento, respostas: respostas as number[], pontuacao, consentimento_lgpd: consentimento });
@@ -151,7 +141,7 @@ export default function PHQ9() {
                 <div className="mb-2 flex items-center justify-between text-xs font-medium text-[var(--c-muted)]">
                   <span>Pergunta {atual + 1} de {perguntas.length}</span><span className="text-[var(--c-accent)]">{pct}%</span>
                 </div>
-                <div className="mb-6 h-2 overflow-hidden rounded-full bg-[var(--c-border)]" role="progressbar" aria-valuenow={atual + 1} aria-valuemin={1} aria-valuemax={perguntas.length} aria-label="Progresso do questionário">
+                <div className="mb-6 h-2 overflow-hidden rounded-full bg-[var(--c-border)]" role="progressbar" aria-valuenow={atual + 1} aria-valuemin={1} aria-valuemax={perguntas.length} aria-label="Progresso do questionÃƒÂ¡rio">
                   <motion.div className="h-full rounded-full" style={{ background: "linear-gradient(90deg, var(--c-accent), var(--c-accent-lt))" }} animate={{ width: pct + "%" }} transition={{ duration: 0.4 }} />
                 </div>
                 <div className="glass-card mb-5 rounded-2xl p-6">
@@ -187,21 +177,12 @@ export default function PHQ9() {
 
             {etapa === "resultado" && (
               <motion.div key="resultado" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-                {emRisco && <CrisisCard variant="suicida" />}
-                <div className="relative mx-auto mb-5 h-32 w-32">
-                  <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
-                    <circle cx="60" cy="60" r={r} fill="none" stroke="var(--c-border)" strokeWidth="10" opacity="0.5" />
-                    <motion.circle cx="60" cy="60" r={r} fill="none" stroke={resultado.cor} strokeWidth="10" strokeLinecap="round" strokeDasharray={circ}
-                      initial={{ strokeDashoffset: circ }} animate={{ strokeDashoffset: circ * (1 - Math.min(1, pontuacao / ringMax)) }} transition={{ duration: 1.1, ease: "easeOut", delay: 0.2 }} />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <motion.span initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.5, type: "spring" }} className="text-3xl font-bold text-[var(--c-text)]">{pontuacao}</motion.span>
-                  </div>
+                {emRisco && <CrisisCard variant={emRisco ? ("suicida" as const) : ("apoio" as const)} />}
+                <div className="glass-card mb-6 rounded-3xl p-8">
+                  <span className="mb-3 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--c-accent)]">Envio concluÃƒÂ­do</span>
+                  <h2 className="mb-3 text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Respostas registradas</h2>
+                  <p className="mx-auto max-w-sm leading-relaxed text-[var(--c-muted)]">Suas respostas foram enviadas ao seu psicÃƒÂ³logo. A correÃƒÂ§ÃƒÂ£o e a devolutiva serÃƒÂ£o realizadas em conjunto com ele.</p>
                 </div>
-                <span className="mb-1 block text-xs font-bold uppercase tracking-widest" style={{ color: resultado.cor }}>{resultado.nivel}</span>
-                <h2 className="mb-3 text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Respostas registradas</h2>
-                <p className="mx-auto mb-7 max-w-sm leading-relaxed text-[var(--c-muted)]">{resultado.orientacao}</p>
-                <p className="mb-8 text-xs italic text-[var(--c-muted)]">Suas respostas foram enviadas ao seu psicologo de forma segura.</p>
                 <Link to="/paciente" className="rounded-full border border-[var(--c-border)] px-6 py-3 text-sm text-[var(--c-text)] transition-colors hover:border-[var(--c-accent)]">Voltar</Link>
               </motion.div>
             )}

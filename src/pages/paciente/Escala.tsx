@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useParams, Navigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, ChevronLeft, User, Check, ClipboardList } from "lucide-react";
@@ -10,7 +10,7 @@ import type { EscalaGeralConfig, BDIItem } from "@/content/escalas-gerais";
 import { AppAurora } from "@/components/ui/AppAurora";
 import {
   computeGeralScore, computeSchemaAvg, computeThreshold,
-  classificarResposta, pacienteEmRisco, type SchemaResult,
+  pacienteEmRisco,
 } from "@/lib/scoring";
 import { CrisisCard } from "@/components/shared/CrisisCard";
 
@@ -26,52 +26,23 @@ function isBDIItem(item: unknown): item is BDIItem {
 
 // ===== Merged config lookup =====
 const allConfigs: Record<string, AnyConfig> = { ...escalas, ...escalasGerais };
-
-// ===== Shared visual bits =====
-function ScoreRing({ value, max, color = "var(--c-accent)", caption }: { value: number; max: number; color?: string; caption?: string }) {
-  const pct = max > 0 ? Math.min(1, value / max) : 0;
-  const r = 52;
-  const circ = 2 * Math.PI * r;
-  return (
-    <div className="relative mx-auto mb-5 h-32 w-32">
-      <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
-        <circle cx="60" cy="60" r={r} fill="none" stroke="var(--c-border)" strokeWidth="10" opacity="0.5" />
-        <motion.circle
-          cx="60" cy="60" r={r} fill="none" stroke={color} strokeWidth="10" strokeLinecap="round"
-          strokeDasharray={circ}
-          initial={{ strokeDashoffset: circ }}
-          animate={{ strokeDashoffset: circ * (1 - pct) }}
-          transition={{ duration: 1.1, ease: "easeOut", delay: 0.2 }}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <motion.span initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.5, type: "spring" }} className="text-3xl font-bold text-[var(--c-text)]">
-          {value}
-        </motion.span>
-        {caption && <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--c-muted)]">{caption}</span>}
-      </div>
-    </div>
-  );
-}
-
-function AnimatedBar({ pct, color, delay = 0 }: { pct: number; color: string; delay?: number }) {
-  return (
-    <div className="h-2 overflow-hidden rounded-full bg-[var(--c-border)]">
-      <motion.div className="h-full rounded-full" style={{ background: color }} initial={{ width: 0 }} animate={{ width: Math.min(100, pct) + "%" }} transition={{ duration: 0.8, ease: "easeOut", delay }} />
-    </div>
-  );
-}
+const ESCALAS_RESTRITAS = new Set(["neoffir", "neopir", "bdi", "bai", "bhs", "bss"]);
 
 type Rascunho = { nome: string; nascimento: string; telefone: string; consentimento: boolean; respostas: (number | null)[]; atual: number };
 
 export default function Escala() {
   const { escalaId } = useParams<{ escalaId: string }>();
   const config = escalaId ? allConfigs[escalaId] : undefined;
+  const requerCodigo = Boolean(config && ESCALAS_RESTRITAS.has(config.id));
 
-  const [etapa, setEtapa] = useState<"dados" | "intro" | "form" | "resultado">("dados");
+  const [etapa, setEtapa] = useState<"codigo" | "dados" | "intro" | "form" | "resultado">("dados");
   const [nome, setNome] = useState("");
   const [nascimento, setNascimento] = useState("");
   const [telefone, setTelefone] = useState("");
+  const [codigoDigitado, setCodigoDigitado] = useState("");
+  const [patientCode, setPatientCode] = useState("");
+  const [erroCodigo, setErroCodigo] = useState("");
+  const [validandoCodigo, setValidandoCodigo] = useState(false);
   const [consentimento, setConsentimento] = useState(false);
   const [rascunho, setRascunho] = useState<Rascunho | null>(null);
   const [respostas, setRespostas] = useState<(number | null)[]>([]);
@@ -99,6 +70,9 @@ export default function Escala() {
     return () => document.documentElement.removeAttribute("data-theme");
   }, [config]);
 
+  useEffect(() => {
+    if (requerCodigo && etapa === "dados" && !patientCode) setEtapa("codigo");
+  }, [requerCodigo, etapa, patientCode]);
   const storageKey = escalaId ? `escala-rascunho-${escalaId}` : "";
 
   useEffect(() => {
@@ -140,11 +114,34 @@ export default function Escala() {
     if (isEscalaGeral(config!)) pontuacao = computeGeralScore(config!, r).total;
     else if (config!.scoring === "schema-avg") pontuacao = computeSchemaAvg(config! as EscalaConfig, r).pontuacao;
     else pontuacao = computeThreshold(r).pontuacao;
-    salvarResposta({ tipo: config!.id, nome: nome.trim(), telefone: telefone.trim(), nascimento, respostas: r, pontuacao, consentimento_lgpd: consentimento });
+    salvarResposta({ tipo: config!.id, nome: nome.trim(), telefone: telefone.trim(), nascimento, patient_code: patientCode || undefined, respostas: r, pontuacao, consentimento_lgpd: consentimento });
     if (storageKey) localStorage.removeItem(storageKey);
     setEtapa("resultado");
   }
 
+  async function validarCodigo() {
+    if (!config || !/^\d{8}$/.test(codigoDigitado)) {
+      setErroCodigo("Informe o código de 8 dígitos fornecido pelo psicólogo.");
+      return;
+    }
+    setValidandoCodigo(true);
+    setErroCodigo("");
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/validate-code`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: codigoDigitado, scale: config.id }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.valid) throw new Error(data.error || "Código não autorizado.");
+      setPatientCode(codigoDigitado);
+      setEtapa("dados");
+    } catch (error) {
+      setErroCodigo(error instanceof Error ? error.message : "Não foi possível validar o código.");
+    } finally {
+      setValidandoCodigo(false);
+    }
+  }
   function retomarRascunho() {
     if (!rascunho) return;
     setNome(rascunho.nome); setNascimento(rascunho.nascimento); setTelefone(rascunho.telefone);
@@ -203,6 +200,20 @@ export default function Escala() {
         <div className="w-full max-w-lg">
           <AnimatePresence mode="wait">
 
+            {etapa === "codigo" && (
+              <motion.div key="codigo" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-md">
+                <div className="glass-card rounded-3xl p-8">
+                  <span className="mb-3 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--c-accent)]">Acesso protegido</span>
+                  <h1 className="mb-3 text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{config.nome}</h1>
+                  <p className="mb-6 text-sm leading-relaxed text-[var(--c-muted)]">Esta escala foi liberada pelo seu psicólogo. Informe o código recebido para continuar.</p>
+                  <input value={codigoDigitado} onChange={(event) => setCodigoDigitado(event.target.value.replace(/\D/g, "").slice(0, 8))} inputMode="numeric" autoComplete="one-time-code" placeholder="Código de 8 dígitos" className="mb-3 w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-center font-mono text-lg tracking-[0.25em] text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
+                  {erroCodigo && <p className="mb-3 text-sm text-red-400">{erroCodigo}</p>}
+                  <button onClick={validarCodigo} disabled={validandoCodigo || codigoDigitado.length !== 8} className="flex w-full items-center justify-center rounded-full px-6 py-3.5 font-medium text-white disabled:opacity-40" style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
+                    {validandoCodigo ? "Validando..." : "Continuar"}
+                  </button>
+                </div>
+              </motion.div>
+            )}
             {etapa === "dados" && (
               <motion.div key="dados" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="mx-auto max-w-md">
                 <div className="glass-card rounded-3xl p-8">
@@ -354,149 +365,22 @@ export default function Escala() {
 
 // ===== RESULT SCREENS =====
 function ResultadoScreen({ config, respostas }: { config: AnyConfig; respostas: number[]; pacienteNome: string }) {
-  if (isEscalaGeral(config)) return <ResultadoGeral config={config} respostas={respostas} />;
-  if (config.scoring === "schema-avg") return <ResultadoSchemaAvg config={config} respostas={respostas} />;
-  return <ResultadoThreshold config={config} respostas={respostas} />;
-}
-
-function ResultadoGeral({ config, respostas }: { config: EscalaGeralConfig; respostas: number[] }) {
-  const result = useMemo(() => computeGeralScore(config, respostas), [config, respostas]);
-  const maxPossible = config.pontuacaoMaxima ?? (config.opcoes ? Math.max(...config.opcoes.map((o) => o.valor)) * respostas.length : result.total);
-  const maxOp = config.opcoes ? Math.max(...config.opcoes.map((o) => o.valor)) : 6;
-  const classif = classificarResposta(config.id, result.total);
-  const emRisco = pacienteEmRisco(config.id, result.total, respostas);
-  const crisisVariant: "suicida" | "apoio" = config.id === "bhs" || config.id === "bdi" ? "suicida" : "apoio";
+  let emRisco = false;
+  let crisisVariant: "suicida" | "apoio" = "apoio";
+  if (isEscalaGeral(config)) {
+    const total = computeGeralScore(config, respostas).total;
+    emRisco = pacienteEmRisco(config.id, total, respostas);
+    crisisVariant = config.id === "bhs" || config.id === "bdi" ? "suicida" : "apoio";
+  }
 
   return (
     <motion.div key="resultado" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
       {emRisco && <CrisisCard variant={crisisVariant} />}
-      <ScoreRing value={result.total} max={maxPossible} caption="Total" />
-      {classif && <span className="mb-1 block text-xs font-bold uppercase tracking-widest text-[var(--c-accent)]">{classif.classificacao}</span>}
-      <h2 className="mb-3 text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Respostas registradas</h2>
-      <p className="mx-auto mb-7 max-w-sm leading-relaxed text-[var(--c-muted)]">
-        {classif ? `${classif.descricao} ` : `Pontuacao: ${result.total}${maxPossible > 0 ? ` de ${maxPossible}` : ""}. `}Este é um rastreio, não um diagnóstico — converse com seu psicólogo sobre estes resultados.
-      </p>
-
-      {result.dominios.length > 0 && (
-        <div className="mb-8 space-y-3 text-left">
-          {result.dominios.map((dom, i) => (
-            <div key={dom.id} className="glass-card rounded-xl p-4">
-              <div className="mb-2 flex justify-between text-sm">
-                <span className="font-semibold text-[var(--c-text)]">{dom.nome}</span>
-                <span className="font-bold text-[var(--c-accent)]">{dom.media.toFixed(1)} (soma: {dom.soma})</span>
-              </div>
-              <AnimatedBar pct={(dom.media / maxOp) * 100} color="var(--c-accent)" delay={i * 0.08} />
-            </div>
-          ))}
-        </div>
-      )}
-
-      <p className="mb-8 text-xs italic text-[var(--c-muted)]">Suas respostas foram enviadas ao seu psicologo de forma segura.</p>
-      <Link to="/paciente" className="rounded-full border border-[var(--c-border)] px-6 py-3 text-sm text-[var(--c-text)] transition-colors hover:border-[var(--c-accent)]">Voltar</Link>
-    </motion.div>
-  );
-}
-
-function SchemaRodadaBlock({ label, schemas, color }: { label: string; schemas: SchemaResult[]; color: string }) {
-  const ativos = schemas.filter((s) => s.media > 3.5);
-  const groups = useMemo(() => {
-    const map = new Map<string, SchemaResult[]>();
-    for (const s of schemas) { const arr = map.get(s.dominio) ?? []; arr.push(s); map.set(s.dominio, arr); }
-    return map;
-  }, [schemas]);
-
-  return (
-    <div className="mb-6">
-      <div className="mb-3 flex items-center gap-2">
-        <span className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider" style={{ background: color + "1A", color }}>{label}</span>
-        <span className="text-xs text-[var(--c-muted)]">{ativos.length} ativo{ativos.length !== 1 ? "s" : ""} de {schemas.length}</span>
+      <div className="glass-card mb-6 rounded-3xl p-8">
+        <span className="mb-3 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--c-accent)]">Envio concluído</span>
+        <h2 className="mb-3 text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Respostas registradas</h2>
+        <p className="mx-auto max-w-sm leading-relaxed text-[var(--c-muted)]">Suas respostas foram enviadas ao seu psicólogo. A correção e a devolutiva serão realizadas em conjunto com ele.</p>
       </div>
-      <div className="space-y-3">
-        {Array.from(groups.entries()).map(([domNome, esquemas]) => (
-          <div key={domNome} className="glass-card rounded-xl p-4">
-            <h3 className="mb-3 text-sm font-semibold text-[var(--c-text)]">{domNome}</h3>
-            <div className="space-y-2.5">
-              {esquemas.map((e, i) => (
-                <div key={e.id}>
-                  <div className="mb-1 flex justify-between text-xs">
-                    <span className={e.media > 3.5 ? "font-bold" : "text-[var(--c-muted)]"} style={e.media > 3.5 ? { color } : undefined}>{e.nome}</span>
-                    <span className={e.media > 3.5 ? "font-bold" : "text-[var(--c-muted)]"} style={e.media > 3.5 ? { color } : undefined}>{e.media.toFixed(1)}</span>
-                  </div>
-                  <AnimatedBar pct={(e.media / 6) * 100} color={e.media > 3.5 ? color : "var(--c-muted)"} delay={i * 0.05} />
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ResultadoSchemaAvg({ config, respostas }: { config: EscalaConfig; respostas: number[] }) {
-  const hasRodadas = config.rodadas && config.rodadas.length > 1;
-  const itensBase = config.itens.length;
-
-  const rodadasData = useMemo(() => {
-    if (!hasRodadas) return [{ label: "", schemas: computeSchemaAvg(config, respostas).schemas }];
-    return config.rodadas!.map((label, i) => {
-      const slice = respostas.slice(i * itensBase, (i + 1) * itensBase);
-      return { label, schemas: computeSchemaAvg(config, slice).schemas };
-    });
-  }, [config, respostas, hasRodadas, itensBase]);
-
-  const totalAtivos = rodadasData.reduce((acc, r) => acc + r.schemas.filter((s) => s.media > 3.5).length, 0);
-  const totalSchemas = rodadasData.reduce((acc, r) => acc + r.schemas.length, 0);
-  const rodadaCores = ["#B05D3A", "#3A6B8C", "#6B3A8C", "#4A6B47"];
-
-  return (
-    <motion.div key="resultado" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-      <ScoreRing value={totalAtivos} max={totalSchemas} caption="Ativos" />
-      <span className="mb-1 block text-xs font-bold uppercase tracking-widest text-[var(--c-accent)]">
-        {totalAtivos === 0 ? "Nenhum esquema ativado" : `${totalAtivos} esquema${totalAtivos > 1 ? "s" : ""} ativo${totalAtivos > 1 ? "s" : ""}`}
-      </span>
-      <h2 className="mb-3 text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Respostas registradas</h2>
-      <p className="mx-auto mb-7 max-w-sm leading-relaxed text-[var(--c-muted)]">Esquemas com media acima de 3.5 sao considerados ativos. Converse com seu psicologo sobre estes resultados.</p>
-
-      <div className="mb-8 text-left">
-        {rodadasData.map((rd, i) => (
-          <SchemaRodadaBlock key={rd.label || i} label={rd.label || "Resultado"} schemas={rd.schemas} color={rodadaCores[i % rodadaCores.length]} />
-        ))}
-      </div>
-
-      <p className="mb-8 text-xs italic text-[var(--c-muted)]">Suas respostas foram enviadas ao seu psicologo de forma segura.</p>
-      <Link to="/paciente" className="rounded-full border border-[var(--c-border)] px-6 py-3 text-sm text-[var(--c-text)] transition-colors hover:border-[var(--c-accent)]">Voltar</Link>
-    </motion.div>
-  );
-}
-
-function ResultadoThreshold({ config, respostas }: { config: EscalaConfig; respostas: number[] }) {
-  const { flagged, pontuacao } = useMemo(() => computeThreshold(respostas), [respostas]);
-
-  return (
-    <motion.div key="resultado" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-      <ScoreRing value={pontuacao} max={respostas.length} caption="Defesas" />
-      <span className="mb-1 block text-xs font-bold uppercase tracking-widest text-[var(--c-accent)]">
-        {pontuacao === 0 ? "Nenhuma defesa ativada" : `${pontuacao} defesa${pontuacao > 1 ? "s" : ""} ativa${pontuacao > 1 ? "s" : ""}`}
-      </span>
-      <h2 className="mb-3 text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Respostas registradas</h2>
-      <p className="mx-auto mb-7 max-w-sm leading-relaxed text-[var(--c-muted)]">Itens com nota 5 ou 6 indicam forte ativacao da estrategia compensatoria. Compartilhe esses resultados com seu psicologo.</p>
-
-      {flagged.length > 0 && (
-        <div className="glass-card mb-8 rounded-xl border border-[var(--c-accent)]/30 p-4 text-left">
-          <h3 className="mb-3 text-sm font-semibold text-[var(--c-accent)]">Defesas ativas</h3>
-          <ul className="space-y-2">
-            {flagged.map((f, i) => (
-              <motion.li key={f.index} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }} className="flex items-start gap-3 text-sm">
-                <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-[var(--c-accent)] text-xs font-bold text-white">{f.valor}</span>
-                <span className="leading-snug text-[var(--c-text)]">{config.itens[f.index]}</span>
-              </motion.li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      <p className="mb-8 text-xs italic text-[var(--c-muted)]">Suas respostas foram enviadas ao seu psicologo de forma segura.</p>
       <Link to="/paciente" className="rounded-full border border-[var(--c-border)] px-6 py-3 text-sm text-[var(--c-text)] transition-colors hover:border-[var(--c-accent)]">Voltar</Link>
     </motion.div>
   );

@@ -1,4 +1,4 @@
-﻿import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
 
 const url = import.meta.env.VITE_SUPABASE_URL ?? "";
 const key = import.meta.env.VITE_SUPABASE_ANON_KEY ?? "";
@@ -10,7 +10,11 @@ export interface QuestionnaireResponse {
   tipo: string;
   nome: string;
   telefone?: string;
+  email?: string;
   nascimento?: string;
+  patient_code?: string;
+  situacao_clinica?: string;
+  classificacao_profissional?: string;
   respostas: number[];
   pontuacao: number;
   criado_em?: string;

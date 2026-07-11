@@ -8,12 +8,25 @@ interface PacienteCodigo {
   codigo: string;
   nome: string;
   unlockedExercises: string[];
+  allowedScales?: string[];
+  expiresAt?: string | null;
 }
+
+const ESCALAS_RESTRITAS = [
+  { id: "neoffir", label: "NEO-FFI-R" },
+  { id: "neopir", label: "NEO-PI-R" },
+  { id: "bdi", label: "BDI" },
+  { id: "bai", label: "BAI" },
+  { id: "bhs", label: "BHS" },
+  { id: "bss", label: "BSS" },
+];
 
 export function PainelPacientes() {
   const [pacientes, setPacientes] = useState<PacienteCodigo[]>([]);
   const [gerando, setGerando] = useState(false);
   const [nomePaciente, setNomePaciente] = useState("");
+  const [escalaRestrita, setEscalaRestrita] = useState("");
+  const [validadeHoras, setValidadeHoras] = useState("48");
   const [showNomes, setShowNomes] = useState(false);
   const [copiado, setCopiado] = useState<string | null>(null);
   const [expandido, setExpandido] = useState<string | null>(null);
@@ -38,10 +51,6 @@ export function PainelPacientes() {
   }, [pacientes]);
 
   const handleGenerarCodigo = async () => {
-    if (!nomePaciente.trim()) {
-      alert("Digite o nome do paciente");
-      return;
-    }
 
     setGerando(true);
     try {
@@ -50,6 +59,7 @@ export function PainelPacientes() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${(await supabase?.auth.getSession())?.data?.session?.access_token || ""}` },
+          body: JSON.stringify({ allowed_scales: escalaRestrita ? [escalaRestrita] : [], expires_in_hours: Number(validadeHoras) }),
         }
       );
 
@@ -58,8 +68,10 @@ export function PainelPacientes() {
       const data = await response.json();
       const novoPaciente: PacienteCodigo = {
         codigo: data.code,
-        nome: nomePaciente,
+        nome: nomePaciente.trim() || "Sem identificação",
         unlockedExercises: [],
+        allowedScales: data.allowed_scales || [],
+        expiresAt: data.expires_at || null,
       };
       setPacientes([...pacientes, novoPaciente]);
       setNomePaciente("");
@@ -144,6 +156,18 @@ export function PainelPacientes() {
           >
             <Plus size={14} /> {gerando ? "..." : "Gerar"}
           </button>
+        </div>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          <select value={escalaRestrita} onChange={(e) => setEscalaRestrita(e.target.value)} className="rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none">
+            <option value="">Código geral para exercícios</option>
+            {ESCALAS_RESTRITAS.map((escala) => <option key={escala.id} value={escala.id}>{escala.label} · acesso restrito</option>)}
+          </select>
+          <select value={validadeHoras} onChange={(e) => setValidadeHoras(e.target.value)} disabled={!escalaRestrita} className="rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-sm text-[var(--c-text)] disabled:opacity-40 focus:border-[var(--c-accent)] focus:outline-none">
+            <option value="24">Válido por 24 horas</option>
+            <option value="48">Válido por 48 horas</option>
+            <option value="72">Válido por 72 horas</option>
+            <option value="168">Válido por 7 dias</option>
+          </select>
         </div>
       </motion.div>
 

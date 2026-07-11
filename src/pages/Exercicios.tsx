@@ -367,8 +367,8 @@ export default function Exercicios() {
   );
 
   const handleValidateCode = async () => {
-    if (!/^\d{5}$/.test(codeInput)) {
-      setCodeError("Código deve ter 5 dígitos");
+    if (!/^\d{5}(\d{3})?$/.test(codeInput)) {
+      setCodeError("Código deve ter 5 ou 8 dígitos");
       return;
     }
     setCodeSaving(true);
