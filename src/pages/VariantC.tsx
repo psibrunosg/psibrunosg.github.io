@@ -83,7 +83,7 @@ export default function VariantC() {
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 1, delay: 2.2 }}
+                transition={{ duration: 1, delay: 0.3 }}
                 className="text-lg text-white/70 max-w-xl mx-auto mb-12 leading-relaxed"
               >
                 {hero.subline}
@@ -92,7 +92,7 @@ export default function VariantC() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 2.6 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
               >
                 <AnimatedCTA href={contato.whatsappLink} label={hero.cta} />
               </motion.div>

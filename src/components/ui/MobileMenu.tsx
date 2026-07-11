@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -81,13 +82,23 @@ export function MobileMenu({ items, crp, whatsappLink }: Props) {
               <ul className="flex flex-col">
                 {items.map((item) => (
                   <li key={item.href}>
-                    <a
-                      href={item.href}
-                      onClick={() => setOpen(false)}
-                      className="block px-5 py-2.5 text-sm text-[var(--c-text)] hover:bg-[var(--c-accent)]/10 hover:text-[var(--c-accent)] transition-colors"
-                    >
-                      {item.label}
-                    </a>
+                    {item.href.startsWith("/") ? (
+                      <Link
+                        to={item.href}
+                        onClick={() => setOpen(false)}
+                        className="block px-5 py-2.5 text-sm text-[var(--c-text)] hover:bg-[var(--c-accent)]/10 hover:text-[var(--c-accent)] transition-colors"
+                      >
+                        {item.label}
+                      </Link>
+                    ) : (
+                      <a
+                        href={item.href}
+                        onClick={() => setOpen(false)}
+                        className="block px-5 py-2.5 text-sm text-[var(--c-text)] hover:bg-[var(--c-accent)]/10 hover:text-[var(--c-accent)] transition-colors"
+                      >
+                        {item.label}
+                      </a>
+                    )}
                   </li>
                 ))}
               </ul>

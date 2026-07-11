@@ -454,7 +454,7 @@ export default function Exercicios() {
               </motion.p>
               <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-semibold text-[var(--c-text)]">
                 <span className="inline-flex items-center gap-1.5">
-                  <Sparkles size={15} style={{ color: "var(--c-warm)" }} /> 20 exercícios
+                  <Sparkles size={15} style={{ color: "var(--c-warm)" }} /> {exercicios.length} exercícios
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <Clock3 size={15} style={{ color: "var(--c-warm)" }} /> 1 a 10 min

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link, useParams, Navigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, ChevronLeft, User, Check, ClipboardList } from "lucide-react";
+import { ChevronRight, ChevronLeft, User, Check, ClipboardList, AlertTriangle, Loader2 } from "lucide-react";
 import { salvarResposta } from "@/lib/supabase";
 import { escalas } from "@/content/escalas";
 import type { EscalaConfig } from "@/content/escalas";
@@ -28,14 +28,14 @@ function isBDIItem(item: unknown): item is BDIItem {
 const allConfigs: Record<string, AnyConfig> = { ...escalas, ...escalasGerais };
 const ESCALAS_RESTRITAS = new Set(["neoffir", "neopir", "bdi", "bai", "bhs", "bss"]);
 
-type Rascunho = { nome: string; nascimento: string; telefone: string; consentimento: boolean; respostas: (number | null)[]; atual: number };
+type Rascunho = { nome: string; nascimento: string; telefone: string; consentimento: boolean; respostas: (number | null)[]; atual: number; etapa: "form" | "dados" };
 
 export default function Escala() {
   const { escalaId } = useParams<{ escalaId: string }>();
   const config = escalaId ? allConfigs[escalaId] : undefined;
   const requerCodigo = Boolean(config && ESCALAS_RESTRITAS.has(config.id));
 
-  const [etapa, setEtapa] = useState<"codigo" | "dados" | "intro" | "form" | "resultado">("dados");
+  const [etapa, setEtapa] = useState<"codigo" | "intro" | "form" | "dados" | "enviando" | "erro" | "resultado">(requerCodigo ? "codigo" : "intro");
   const [nome, setNome] = useState("");
   const [nascimento, setNascimento] = useState("");
   const [telefone, setTelefone] = useState("");
@@ -47,6 +47,7 @@ export default function Escala() {
   const [rascunho, setRascunho] = useState<Rascunho | null>(null);
   const [respostas, setRespostas] = useState<(number | null)[]>([]);
   const [atual, setAtual] = useState(0);
+  const [erroEnvio, setErroEnvio] = useState("");
 
   const rodadas = !config ? [] : (!isEscalaGeral(config) && config.rodadas) ? config.rodadas : [];
   const numRodadas = rodadas.length || 1;
@@ -70,9 +71,6 @@ export default function Escala() {
     return () => document.documentElement.removeAttribute("data-theme");
   }, [config]);
 
-  useEffect(() => {
-    if (requerCodigo && etapa === "dados" && !patientCode) setEtapa("codigo");
-  }, [requerCodigo, etapa, patientCode]);
   const storageKey = escalaId ? `escala-rascunho-${escalaId}` : "";
 
   useEffect(() => {
@@ -87,9 +85,10 @@ export default function Escala() {
   }, [storageKey]);
 
   useEffect(() => {
-    if (!storageKey || etapa !== "form") return;
+    if (!storageKey || (etapa !== "form" && etapa !== "dados" && etapa !== "erro")) return;
     try {
-      localStorage.setItem(storageKey, JSON.stringify({ nome, nascimento, telefone, consentimento, respostas, atual }));
+      const etapaRascunho: "form" | "dados" = etapa === "form" ? "form" : "dados";
+      localStorage.setItem(storageKey, JSON.stringify({ nome, nascimento, telefone, consentimento, respostas, atual, etapa: etapaRascunho }));
     } catch { /* storage indisponível, ignora */ }
   }, [storageKey, etapa, nome, nascimento, telefone, consentimento, respostas, atual]);
 
@@ -105,18 +104,32 @@ export default function Escala() {
     setRespostas(novo);
     setTimeout(() => {
       if (atual < total - 1) setAtual(atual + 1);
-      else finalizar(novo as number[]);
+      else setEtapa("dados");
     }, 220);
   }
 
-  function finalizar(r: number[]) {
+  async function enviarRespostas() {
+    const r = respostas as number[];
     let pontuacao = 0;
     if (isEscalaGeral(config!)) pontuacao = computeGeralScore(config!, r).total;
     else if (config!.scoring === "schema-avg") pontuacao = computeSchemaAvg(config! as EscalaConfig, r).pontuacao;
     else pontuacao = computeThreshold(r).pontuacao;
-    salvarResposta({ tipo: config!.id, nome: nome.trim(), telefone: telefone.trim(), nascimento, patient_code: patientCode || undefined, respostas: r, pontuacao, consentimento_lgpd: consentimento });
-    if (storageKey) localStorage.removeItem(storageKey);
-    setEtapa("resultado");
+
+    setErroEnvio("");
+    setEtapa("enviando");
+    try {
+      const { error } = await salvarResposta({ tipo: config!.id, nome: nome.trim(), telefone: telefone.trim(), nascimento, patient_code: patientCode || undefined, respostas: r, pontuacao, consentimento_lgpd: consentimento });
+      if (error) throw error;
+      if (storageKey) localStorage.removeItem(storageKey);
+      setEtapa("resultado");
+    } catch (err) {
+      const mensagem = err instanceof Error ? err.message
+        : (typeof err === "object" && err !== null && "message" in err && typeof (err as { message?: unknown }).message === "string")
+          ? (err as { message: string }).message
+          : "Não foi possível enviar suas respostas. Verifique sua conexão e tente novamente.";
+      setErroEnvio(mensagem);
+      setEtapa("erro");
+    }
   }
 
   async function validarCodigo() {
@@ -135,7 +148,7 @@ export default function Escala() {
       const data = await response.json();
       if (!response.ok || !data.valid) throw new Error(data.error || "Código não autorizado.");
       setPatientCode(codigoDigitado);
-      setEtapa("dados");
+      setEtapa("intro");
     } catch (error) {
       setErroCodigo(error instanceof Error ? error.message : "Não foi possível validar o código.");
     } finally {
@@ -146,7 +159,8 @@ export default function Escala() {
     if (!rascunho) return;
     setNome(rascunho.nome); setNascimento(rascunho.nascimento); setTelefone(rascunho.telefone);
     setConsentimento(rascunho.consentimento); setRespostas(rascunho.respostas); setAtual(rascunho.atual);
-    setRascunho(null); setEtapa("form");
+    setEtapa(rascunho.etapa === "dados" ? "dados" : "form");
+    setRascunho(null);
   }
 
   function descartarRascunho() {
@@ -217,15 +231,6 @@ export default function Escala() {
             {etapa === "dados" && (
               <motion.div key="dados" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="mx-auto max-w-md">
                 <div className="glass-card rounded-3xl p-8">
-                  {rascunho && (
-                    <div className="mb-5 rounded-xl border border-[var(--c-accent)]/40 p-4" style={{ background: "color-mix(in oklab, var(--c-accent) 8%, transparent)" }}>
-                      <p className="mb-2 text-sm font-medium text-[var(--c-text)]">Você tem um questionário em andamento.</p>
-                      <div className="flex gap-2">
-                        <button onClick={retomarRascunho} className="rounded-full px-4 py-2 text-xs font-semibold text-white" style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>Retomar</button>
-                        <button onClick={descartarRascunho} className="rounded-full border border-[var(--c-border)] px-4 py-2 text-xs font-semibold text-[var(--c-muted)] transition-colors hover:text-[var(--c-text)]">Recomeçar</button>
-                      </div>
-                    </div>
-                  )}
                   <div className="mb-6 flex items-center gap-3">
                     <div className="flex h-11 w-11 items-center justify-center rounded-2xl" style={{ background: "linear-gradient(140deg, var(--c-accent), var(--c-accent-lt))", boxShadow: "0 10px 26px -10px var(--c-accent)" }}>
                       <User size={20} className="text-white" />
@@ -262,18 +267,56 @@ export default function Escala() {
                     </span>
                   </label>
 
-                  <motion.button whileHover={{ scale: dadosValidos ? 1.02 : 1 }} whileTap={{ scale: 0.98 }} onClick={() => setEtapa("intro")} disabled={!dadosValidos}
+                  <motion.button whileHover={{ scale: dadosValidos ? 1.02 : 1 }} whileTap={{ scale: 0.98 }} onClick={enviarRespostas} disabled={!dadosValidos}
                     className="flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 font-medium text-white transition-opacity disabled:opacity-40"
                     style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))", boxShadow: "0 12px 30px -10px var(--c-accent)" }}>
-                    Continuar <ChevronRight size={16} />
+                    Enviar respostas <Check size={16} />
                   </motion.button>
                   <p className="mt-4 text-center text-xs text-[var(--c-muted)]">Dados protegidos pelo sigilo profissional e acessiveis apenas ao seu psicologo.</p>
                 </div>
               </motion.div>
             )}
 
+            {etapa === "enviando" && (
+              <motion.div key="enviando" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="mx-auto max-w-md text-center">
+                <div className="glass-card rounded-3xl p-8">
+                  <Loader2 size={32} className="mx-auto mb-4 animate-spin text-[var(--c-accent)]" />
+                  <h2 className="mb-2 text-lg font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Enviando suas respostas...</h2>
+                  <p className="text-sm text-[var(--c-muted)]">Isso pode levar alguns segundos. Não feche esta página.</p>
+                </div>
+              </motion.div>
+            )}
+
+            {etapa === "erro" && (
+              <motion.div key="erro" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="mx-auto max-w-md text-center">
+                <div className="glass-card rounded-3xl p-8">
+                  <AlertTriangle size={32} className="mx-auto mb-4 text-red-400" />
+                  <h2 className="mb-2 text-lg font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Não foi possível enviar suas respostas</h2>
+                  <p className="mb-6 text-sm leading-relaxed text-[var(--c-muted)]">{erroEnvio || "Ocorreu um erro inesperado ao enviar seus dados."} Suas respostas foram salvas neste dispositivo e nada foi perdido — tente novamente.</p>
+                  <div className="flex flex-col gap-2">
+                    <button onClick={enviarRespostas} className="flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 font-medium text-white"
+                      style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))", boxShadow: "0 12px 30px -10px var(--c-accent)" }}>
+                      Tentar novamente
+                    </button>
+                    <button onClick={() => setEtapa("dados")} className="w-full rounded-full border border-[var(--c-border)] px-6 py-3 text-sm text-[var(--c-muted)] transition-colors hover:text-[var(--c-text)]">
+                      Revisar meus dados
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
             {etapa === "intro" && (
               <motion.div key="intro" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="text-center">
+                {rascunho && (
+                  <div className="mx-auto mb-6 max-w-md rounded-xl border border-[var(--c-accent)]/40 p-4 text-left" style={{ background: "color-mix(in oklab, var(--c-accent) 8%, transparent)" }}>
+                    <p className="mb-2 text-sm font-medium text-[var(--c-text)]">Você tem um questionário em andamento.</p>
+                    <div className="flex gap-2">
+                      <button onClick={retomarRascunho} className="rounded-full px-4 py-2 text-xs font-semibold text-white" style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>Retomar</button>
+                      <button onClick={descartarRascunho} className="rounded-full border border-[var(--c-border)] px-4 py-2 text-xs font-semibold text-[var(--c-muted)] transition-colors hover:text-[var(--c-text)]">Recomeçar</button>
+                    </div>
+                  </div>
+                )}
                 <motion.div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl"
                   style={{ background: "linear-gradient(140deg, var(--c-accent), var(--c-accent-lt))", boxShadow: "0 16px 40px -12px var(--c-accent)" }}
                   initial={{ scale: 0, rotate: -10 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 200 }}>
@@ -281,7 +324,7 @@ export default function Escala() {
                 </motion.div>
                 <span className="mb-3 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--c-accent)]">{sigla}</span>
                 <h1 className="mb-3 text-3xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{config.nome}</h1>
-                <p className="mb-5 text-sm text-[var(--c-muted)]">Ola, <strong className="text-[var(--c-text)]">{nome.trim()}</strong>.</p>
+                {nome.trim() && <p className="mb-5 text-sm text-[var(--c-muted)]">Ola, <strong className="text-[var(--c-text)]">{nome.trim()}</strong>.</p>}
                 <p className="mx-auto mb-6 max-w-md leading-relaxed text-[var(--c-muted)]">{config.instrucoes}</p>
                 <div className="mb-8 flex items-center justify-center gap-2">
                   <span className="rounded-full bg-[var(--c-surface)] px-3 py-1 text-xs font-medium text-[var(--c-muted)]">{total} perguntas</span>
