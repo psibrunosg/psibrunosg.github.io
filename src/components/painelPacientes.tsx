@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Plus, Copy, Check, Unlock, Eye, EyeOff } from "lucide-react";
+import { Plus, Copy, Check, Unlock, Eye, EyeOff, Link2, Send } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { fadeUp } from "@/lib/motion";
+import { ESCALAS_RESTRITAS } from "@/content/escalas-restritas";
 
 interface PacienteCodigo {
   codigo: string;
@@ -12,14 +13,30 @@ interface PacienteCodigo {
   expiresAt?: string | null;
 }
 
-const ESCALAS_RESTRITAS = [
-  { id: "neoffir", label: "NEO-FFI-R" },
-  { id: "neopir", label: "NEO-PI-R" },
-  { id: "bdi", label: "BDI" },
-  { id: "bai", label: "BAI" },
-  { id: "bhs", label: "BHS" },
-  { id: "bss", label: "BSS" },
-];
+const SITE_URL = "https://psibrunosg.github.io";
+
+function labelDaEscala(id: string): string {
+  return ESCALAS_RESTRITAS.find((e) => e.id === id)?.label ?? id.toUpperCase();
+}
+
+function linkDireto(escalaId: string, codigo: string): string {
+  return `${SITE_URL}/paciente/escala/${escalaId}?codigo=${codigo}`;
+}
+
+function formatarValidade(expiresAt?: string | null): string {
+  if (!expiresAt) return "";
+  try {
+    return new Date(expiresAt).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+  } catch {
+    return "";
+  }
+}
+
+function mensagemPaciente(escalaId: string, codigo: string, expiresAt?: string | null): string {
+  const link = linkDireto(escalaId, codigo);
+  const validade = formatarValidade(expiresAt);
+  return `Olá! Segue o link para responder o questionário ${labelDaEscala(escalaId)}: ${link}${validade ? `\nVálido até ${validade}.` : ""}`;
+}
 
 export function PainelPacientes() {
   const [pacientes, setPacientes] = useState<PacienteCodigo[]>([]);
@@ -75,6 +92,11 @@ export function PainelPacientes() {
       };
       setPacientes([...pacientes, novoPaciente]);
       setNomePaciente("");
+      // Expande automaticamente o código recém-gerado para exibir os
+      // links diretos das escalas autorizadas, se houver.
+      if (novoPaciente.allowedScales && novoPaciente.allowedScales.length > 0) {
+        setExpandido(novoPaciente.codigo);
+      }
     } catch (error) {
       console.error("Erro:", error);
       alert("Erro ao gerar código");
@@ -82,11 +104,13 @@ export function PainelPacientes() {
     setGerando(false);
   };
 
-  const copiarCodigo = (codigo: string) => {
-    navigator.clipboard.writeText(codigo);
-    setCopiado(codigo);
+  const copiarTexto = (chave: string, texto: string) => {
+    navigator.clipboard.writeText(texto);
+    setCopiado(chave);
     setTimeout(() => setCopiado(null), 2000);
   };
+
+  const copiarCodigo = (codigo: string) => copiarTexto(codigo, codigo);
 
   const handleUnlockExercicio = async (codigo: string) => {
     if (!exercicioUnlock.trim()) {
@@ -198,6 +222,37 @@ export function PainelPacientes() {
 
               {expandido === p.codigo && (
                 <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="mt-3 pt-3 border-t border-[var(--c-border)] space-y-3">
+                  {p.allowedScales && p.allowedScales.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--c-accent)]">
+                        Links diretos das escalas autorizadas
+                        {p.expiresAt && <span className="ml-1 font-normal normal-case text-[var(--c-muted)]">· válido até {formatarValidade(p.expiresAt)}</span>}
+                      </p>
+                      {p.allowedScales.map((escalaId) => {
+                        const linkKey = `link-${p.codigo}-${escalaId}`;
+                        const msgKey = `msg-${p.codigo}-${escalaId}`;
+                        return (
+                          <div key={escalaId} className="flex items-center justify-between gap-2 rounded-lg border border-[var(--c-border)] px-2.5 py-1.5">
+                            <span className="text-xs font-semibold text-[var(--c-text)]">{labelDaEscala(escalaId)}</span>
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => copiarTexto(linkKey, linkDireto(escalaId, p.codigo))}
+                                className="flex items-center gap-1 rounded-lg px-2.5 py-1 bg-[var(--c-accent)]/10 text-[var(--c-accent)] font-semibold text-[11px] hover:bg-[var(--c-accent)]/20 transition-colors"
+                              >
+                                {copiado === linkKey ? <Check size={12} /> : <Link2 size={12} />} Copiar link
+                              </button>
+                              <button
+                                onClick={() => copiarTexto(msgKey, mensagemPaciente(escalaId, p.codigo, p.expiresAt))}
+                                className="flex items-center gap-1 rounded-lg px-2.5 py-1 border border-[var(--c-border)] text-[var(--c-muted)] font-semibold text-[11px] hover:text-[var(--c-text)] transition-colors"
+                              >
+                                {copiado === msgKey ? <Check size={12} /> : <Send size={12} />} Copiar mensagem
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                   <div className="flex gap-2">
                     <input
                       type="text"

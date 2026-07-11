@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { Link, useParams, Navigate } from "react-router-dom";
+import { Link, useParams, useSearchParams, Navigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, ChevronLeft, User, Check, ClipboardList, AlertTriangle, Loader2 } from "lucide-react";
 import { salvarResposta } from "@/lib/supabase";
@@ -7,6 +7,7 @@ import { escalas } from "@/content/escalas";
 import type { EscalaConfig } from "@/content/escalas";
 import { escalasGerais } from "@/content/escalas-gerais";
 import type { EscalaGeralConfig, BDIItem } from "@/content/escalas-gerais";
+import { ESCALAS_RESTRITAS_IDS } from "@/content/escalas-restritas";
 import { AppAurora } from "@/components/ui/AppAurora";
 import {
   computeGeralScore, computeSchemaAvg, computeThreshold,
@@ -26,14 +27,14 @@ function isBDIItem(item: unknown): item is BDIItem {
 
 // ===== Merged config lookup =====
 const allConfigs: Record<string, AnyConfig> = { ...escalas, ...escalasGerais };
-const ESCALAS_RESTRITAS = new Set(["neoffir", "neopir", "bdi", "bai", "bhs", "bss"]);
 
 type Rascunho = { nascimento: string; email: string; consentimento: boolean; respostas: (number | null)[]; atual: number; etapa: "form" | "dados" };
 
 export default function Escala() {
   const { escalaId } = useParams<{ escalaId: string }>();
+  const [searchParams] = useSearchParams();
   const config = escalaId ? allConfigs[escalaId] : undefined;
-  const requerCodigo = Boolean(config && ESCALAS_RESTRITAS.has(config.id));
+  const requerCodigo = Boolean(config && ESCALAS_RESTRITAS_IDS.has(config.id));
 
   const [etapa, setEtapa] = useState<"codigo" | "intro" | "form" | "dados" | "enviando" | "erro" | "resultado">(requerCodigo ? "codigo" : "intro");
   const [nascimento, setNascimento] = useState("");
@@ -72,6 +73,21 @@ export default function Escala() {
     }
     return () => document.documentElement.removeAttribute("data-theme");
   }, [config]);
+
+  // Pré-preenche e, se o formato for válido, valida automaticamente o
+  // código recebido via ?codigo= na URL (link direto gerado no painel).
+  useEffect(() => {
+    if (!requerCodigo) return;
+    const paramCodigo = searchParams.get("codigo");
+    if (!paramCodigo) return;
+    const digits = paramCodigo.replace(/\D/g, "").slice(0, 8);
+    if (!digits) return;
+    setCodigoDigitado(digits);
+    if (/^\d{5}(\d{3})?$/.test(digits)) {
+      validarCodigo(digits);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [requerCodigo]);
 
   const storageKey = escalaId ? `escala-rascunho-${escalaId}` : "";
 
@@ -152,9 +168,10 @@ export default function Escala() {
     }
   }
 
-  async function validarCodigo() {
-    if (!config || !/^\d{8}$/.test(codigoDigitado)) {
-      setErroCodigo("Informe o código de 8 dígitos fornecido pelo psicólogo.");
+  async function validarCodigo(codigoParam?: string) {
+    const codigo = codigoParam ?? codigoDigitado;
+    if (!config || !/^\d{5}(\d{3})?$/.test(codigo)) {
+      setErroCodigo("Informe o código de 5 ou 8 dígitos fornecido pelo psicólogo.");
       return;
     }
     setValidandoCodigo(true);
@@ -163,11 +180,11 @@ export default function Escala() {
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/validate-code`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: codigoDigitado, scale: config.id }),
+        body: JSON.stringify({ code: codigo, scale: config.id }),
       });
       const data = await response.json();
       if (!response.ok || !data.valid) throw new Error(data.error || "Código não autorizado.");
-      setPatientCode(codigoDigitado);
+      setPatientCode(codigo);
       setEtapa("intro");
     } catch (error) {
       setErroCodigo(error instanceof Error ? error.message : "Não foi possível validar o código.");
@@ -240,9 +257,9 @@ export default function Escala() {
                   <span className="mb-3 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--c-accent)]">Acesso protegido</span>
                   <h1 className="mb-3 text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{config.nome}</h1>
                   <p className="mb-6 text-sm leading-relaxed text-[var(--c-muted)]">Esta escala foi liberada pelo seu psicólogo. Informe o código recebido para continuar.</p>
-                  <input value={codigoDigitado} onChange={(event) => setCodigoDigitado(event.target.value.replace(/\D/g, "").slice(0, 8))} inputMode="numeric" autoComplete="one-time-code" placeholder="Código de 8 dígitos" className="mb-3 w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-center font-mono text-lg tracking-[0.25em] text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
+                  <input value={codigoDigitado} onChange={(event) => setCodigoDigitado(event.target.value.replace(/\D/g, "").slice(0, 8))} inputMode="numeric" autoComplete="one-time-code" placeholder="Código de 5 ou 8 dígitos" className="mb-3 w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-center font-mono text-lg tracking-[0.25em] text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
                   {erroCodigo && <p className="mb-3 text-sm text-red-400">{erroCodigo}</p>}
-                  <button onClick={validarCodigo} disabled={validandoCodigo || codigoDigitado.length !== 8} className="flex w-full items-center justify-center rounded-full px-6 py-3.5 font-medium text-white disabled:opacity-40" style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
+                  <button onClick={() => validarCodigo()} disabled={validandoCodigo || !/^\d{5}(\d{3})?$/.test(codigoDigitado)} className="flex w-full items-center justify-center rounded-full px-6 py-3.5 font-medium text-white disabled:opacity-40" style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
                     {validandoCodigo ? "Validando..." : "Continuar"}
                   </button>
                 </div>

@@ -7,6 +7,7 @@ import { EthicalFooter } from "@/components/shared/EthicalFooter";
 import { AppAurora } from "@/components/ui/AppAurora";
 import { contato } from "@/content/copy";
 import { fadeUp, stagger } from "@/lib/motion";
+import { ESCALAS_RESTRITAS_IDS } from "@/content/escalas-restritas";
 
 type Ferramenta = {
   id: string; href: string; icon: typeof Brain; sigla: string; nome: string; descricao: string; cor: string;
@@ -93,6 +94,10 @@ function Secao({ titulo, count, children }: { titulo: string; count: number; chi
   );
 }
 
+// Escalas restritas exigem código gerado pelo psicólogo (ver Escala.tsx) e
+// não devem aparecer na listagem pública; continuam acessíveis por link direto.
+const ferramentasGeraisPublicas = ferramentasGerais.filter((f) => !ESCALAS_RESTRITAS_IDS.has(f.id));
+
 export default function PacienteHub() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
@@ -142,8 +147,8 @@ export default function PacienteHub() {
               {ferramentasRastreio.map((f) => <FerramentaCard key={f.id} f={f} />)}
             </Secao>
 
-            <Secao titulo="Escalas Gerais" count={ferramentasGerais.length}>
-              {ferramentasGerais.map((f) => <FerramentaCard key={f.id} f={f} />)}
+            <Secao titulo="Escalas Gerais" count={ferramentasGeraisPublicas.length}>
+              {ferramentasGeraisPublicas.map((f) => <FerramentaCard key={f.id} f={f} />)}
             </Secao>
 
             <Secao titulo="Escalas de Esquemas" count={ferramentasEsquemas.length}>
