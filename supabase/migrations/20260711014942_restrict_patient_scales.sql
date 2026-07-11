@@ -1,4 +1,11 @@
 -- Códigos de acesso por escala. Esta migration não remove dados existentes.
+
+-- Drop first: these policies reference patient_codes.code and block the type change.
+drop policy if exists "Anon insert sessions with active code" on public.exercise_sessions;
+drop policy if exists "Anon read sessions with active code" on public.exercise_sessions;
+drop policy if exists "Anon update own sessions with active code" on public.exercise_sessions;
+drop policy if exists "Anon read active codes" on public.patient_codes;
+
 alter table public.patient_codes
   alter column code type varchar(8),
   add column if not exists allowed_scales text[] not null default '{}',
