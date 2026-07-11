@@ -80,6 +80,61 @@ body {
 }
 .shine-host:hover::after { opacity: 1; animation: shine-sweep .9s ease; }
 
+/* ===== Conteudo markdown de posts do blog ===== */
+.blog-article :where(h2, h3) {
+  margin-top: 2em;
+  margin-bottom: 0.6em;
+}
+.blog-article :where(p, ul, ol) {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+.blog-article code:not(pre code) {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: 5px;
+  padding: 0.1em 0.4em;
+  font-size: 0.85em;
+  color: var(--c-text);
+}
+.blog-article pre {
+  background: var(--c-bg-dark);
+  color: #F2EFE9;
+  border-radius: 14px;
+  padding: 1em 1.2em;
+  overflow-x: auto;
+  font-size: 0.85em;
+  line-height: 1.6;
+}
+.blog-article pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+}
+.blog-article table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+.blog-article th,
+.blog-article td {
+  border: 1px solid var(--c-border);
+  padding: 0.55em 0.8em;
+  text-align: left;
+  color: var(--c-muted);
+}
+.blog-article th {
+  background: var(--c-surface);
+  color: var(--c-text);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.blog-article tr:nth-child(even) td {
+  background: color-mix(in oklab, var(--c-surface) 60%, transparent);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

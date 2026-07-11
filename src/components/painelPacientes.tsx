@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Plus, Copy, Check, Unlock, Eye, EyeOff, Link2, Send } from "lucide-react";
+import { Plus, Copy, Check, Unlock, Eye, EyeOff, Link2, Send, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { fadeUp } from "@/lib/motion";
 import { ESCALAS_RESTRITAS } from "@/content/escalas-restritas";
@@ -49,6 +49,7 @@ export function PainelPacientes() {
   const [expandido, setExpandido] = useState<string | null>(null);
   const [unlockingCode, setUnlockingCode] = useState<string | null>(null);
   const [exercicioUnlock, setExercicioUnlock] = useState("");
+  const [excluindo, setExcluindo] = useState<string | null>(null);
 
   // Load pacientes from localStorage on mount
   useEffect(() => {
@@ -145,6 +146,24 @@ export function PainelPacientes() {
     setUnlockingCode(null);
   };
 
+  const handleExcluirCodigo = async (codigo: string, nome: string) => {
+    if (!window.confirm(`Excluir o código de ${nome}? O código também será desativado.`)) {
+      return;
+    }
+
+    setExcluindo(codigo);
+    try {
+      // Desativa o código no Supabase
+      await supabase?.from("patient_codes").update({ active: false }).eq("code", codigo);
+    } catch (error) {
+      console.warn("Erro ao desativar código no Supabase:", error);
+    }
+
+    // Remove localmente mesmo se houver erro no Supabase
+    setPacientes((prev) => prev.filter((p) => p.codigo !== codigo));
+    setExcluindo(null);
+  };
+
   return (
     <motion.div variants={fadeUp}>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -212,12 +231,21 @@ export function PainelPacientes() {
                     {p.unlockedExercises.length} exercício{p.unlockedExercises.length !== 1 ? "s" : ""} liberado{p.unlockedExercises.length !== 1 ? "s" : ""}
                   </p>
                 </div>
-                <button
-                  onClick={() => copiarCodigo(p.codigo)}
-                  className="flex-shrink-0 p-2 rounded-lg text-[var(--c-muted)] hover:text-[var(--c-accent)] transition-colors"
-                >
-                  {copiado === p.codigo ? <Check size={16} /> : <Copy size={16} />}
-                </button>
+                <div className="flex-shrink-0 flex gap-1">
+                  <button
+                    onClick={() => copiarCodigo(p.codigo)}
+                    className="flex-shrink-0 p-2 rounded-lg text-[var(--c-muted)] hover:text-[var(--c-accent)] transition-colors"
+                  >
+                    {copiado === p.codigo ? <Check size={16} /> : <Copy size={16} />}
+                  </button>
+                  <button
+                    onClick={() => handleExcluirCodigo(p.codigo, p.nome)}
+                    disabled={excluindo === p.codigo}
+                    className="flex-shrink-0 p-2 rounded-lg text-[var(--c-muted)] hover:text-[#ff6b6b] transition-colors disabled:opacity-50"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
 
               {expandido === p.codigo && (

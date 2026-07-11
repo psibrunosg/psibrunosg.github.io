@@ -4,6 +4,8 @@ import { ArrowLeft, Clock, Headphones, List, BookOpen } from "lucide-react";
 import { useState, useEffect, useMemo, useRef, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import type { Element as HastElement } from "hast";
+import { RichBlock, LINGUAGENS_RICAS } from "@/components/blog/RichBlock";
 import { getPost, loadDynamicPosts, isDynamicLoaded, type BlogPost as BlogPostType } from "@/content/posts-loader";
 import { areaDe } from "@/content/areas-blog";
 import { MobileMenu } from "@/components/ui/MobileMenu";
@@ -21,6 +23,24 @@ const navItems = [
 
 function slugify(s: string): string {
   return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+// extrai o texto bruto de dentro de um bloco de codigo (nó hast <pre><code>...</code></pre>)
+function textoBrutoDoCodigo(node: HastElement): string {
+  let out = "";
+  function percorrer(n: HastElement["children"][number]) {
+    if (n.type === "text") out += n.value;
+    else if (n.type === "element") n.children.forEach(percorrer);
+  }
+  node.children.forEach(percorrer);
+  return out;
+}
+
+function linguagemDoCodigo(codeNode: HastElement): string | null {
+  const className = codeNode.properties?.className;
+  const classes = Array.isArray(className) ? className : typeof className === "string" ? [className] : [];
+  const langClass = classes.find((c) => typeof c === "string" && c.startsWith("language-"));
+  return typeof langClass === "string" ? langClass.replace("language-", "") : null;
 }
 
 // texto plano a partir dos children do ReactMarkdown
@@ -191,7 +211,7 @@ export default function BlogPost() {
 
             <motion.div
               variants={fadeUp}
-              className="prose prose-stone max-w-none
+              className="blog-article prose prose-stone max-w-none
                 prose-headings:font-semibold prose-headings:text-[var(--c-text)]
                 prose-p:text-[var(--c-muted)] prose-p:leading-relaxed
                 prose-li:text-[var(--c-muted)] prose-li:leading-relaxed
@@ -201,6 +221,23 @@ export default function BlogPost() {
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{
+                  pre: ({ node, children, ...props }) => {
+                    const codeNode = node?.children.find(
+                      (c): c is HastElement => c.type === "element" && c.tagName === "code",
+                    );
+                    if (codeNode) {
+                      const lang = linguagemDoCodigo(codeNode);
+                      if (lang && LINGUAGENS_RICAS.has(lang)) {
+                        return <RichBlock lang={lang} raw={textoBrutoDoCodigo(codeNode)} />;
+                      }
+                    }
+                    return <pre {...props}>{children}</pre>;
+                  },
+                  table: ({ children }) => (
+                    <div className="not-prose my-5 overflow-x-auto rounded-xl border border-[var(--c-border)]">
+                      <table className="w-full">{children}</table>
+                    </div>
+                  ),
                   h2: ({ children }) => {
                     const id = slugify(textoDe(children));
                     return <h2 id={id} className="scroll-mt-24">{children}</h2>;
