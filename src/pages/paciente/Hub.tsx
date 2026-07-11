@@ -159,9 +159,19 @@ export default function PacienteHub() {
                   <strong className="mb-1 block text-sm text-[var(--c-text)]">Privacidade</strong>
                   <p className="text-sm leading-relaxed text-[var(--c-muted)]">
                     Suas respostas sao armazenadas de forma segura e acessiveis exclusivamente por Bruno Souza, {contato.crp}. Estas ferramentas sao de rastreio, nao de diagnostico.
+                    {" "}Leia a <Link to="/privacidade" className="text-[var(--c-accent)] hover:underline">politica de privacidade</Link>.
                   </p>
                 </div>
               </div>
+            </motion.div>
+
+            <motion.div variants={fadeUp} className="mt-4 text-center">
+              <Link
+                to="/crise"
+                className="text-xs text-[var(--c-muted)] underline decoration-dotted underline-offset-4 hover:text-[var(--c-accent)]"
+              >
+                Precisa de ajuda agora? Veja contatos de apoio imediato
+              </Link>
             </motion.div>
 
           </motion.div>

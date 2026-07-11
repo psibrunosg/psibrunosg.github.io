@@ -46,6 +46,10 @@ import PHQ9 from "./pages/paciente/PHQ9";
 import GAD7 from "./pages/paciente/GAD7";
 import Escala from "./pages/paciente/Escala";
 import BrunoPainel from "./pages/bruno/Painel";
+import Crise from "./pages/Crise";
+import Privacidade from "./pages/Privacidade";
+import ComoFunciona from "./pages/ComoFunciona";
+import FAQ from "./pages/FAQ";
 
 export default function App() {
   return (
@@ -98,6 +102,10 @@ export default function App() {
         <Route path="/paciente/gad7" element={<GAD7 />} />
         <Route path="/paciente/escala/:escalaId" element={<Escala />} />
         <Route path="/bruno/painel" element={<BrunoPainel />} />
+        <Route path="/crise" element={<Crise />} />
+        <Route path="/privacidade" element={<Privacidade />} />
+        <Route path="/como-funciona" element={<ComoFunciona />} />
+        <Route path="/faq" element={<FAQ />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

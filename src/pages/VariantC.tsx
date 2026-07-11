@@ -30,6 +30,7 @@ const navItems = [
   { label: "Processo",    href: "#processo" },
   { label: "Abordagens",  href: "#abordagens" },
   { label: "FAQ",         href: "#faq" },
+  { label: "Como funciona", href: "/como-funciona" },
   { label: "Psicoeducação", href: "/psicoeducacao" },
   { label: "Exercícios",  href: "/exercicios" },
   { label: "Blog",        href: "/blog" },
@@ -37,9 +38,11 @@ const navItems = [
 ];
 
 const desktopNavItems = [
+  { label: "Como funciona",   href: "/como-funciona" },
   { label: "Psicoeducação",   href: "/psicoeducacao" },
   { label: "Exercícios",      href: "/exercicios" },
   { label: "Blog",            href: "/blog" },
+  { label: "FAQ",             href: "/faq" },
   { label: "Área do Paciente", href: "/paciente" },
 ];
 
