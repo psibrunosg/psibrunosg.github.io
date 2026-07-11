@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { ExercicioShell } from "@/components/exercicios/ExercicioShell";
 import BaralhoAdulto from "@/components/exercicios/BaralhoAdulto";
 
 export default function BaralhoAdultoPage() {
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "Baralho Adulto | Bruno SG";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "Baralho Adulto | Bruno Souza";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -19,3 +19,4 @@ export default function BaralhoAdultoPage() {
     </ExercicioShell>
   );
 }
+

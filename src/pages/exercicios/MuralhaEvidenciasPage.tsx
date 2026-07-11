@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { ExercicioShell } from "@/components/exercicios/ExercicioShell";
 import MuralhaEvidencias from "@/components/exercicios/MuralhaEvidencias";
 
 export default function MuralhaEvidenciasPage() {
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "Muralha de Evidências | Bruno SG";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "Muralha de Evidências | Bruno Souza";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -19,3 +19,4 @@ export default function MuralhaEvidenciasPage() {
     </ExercicioShell>
   );
 }
+

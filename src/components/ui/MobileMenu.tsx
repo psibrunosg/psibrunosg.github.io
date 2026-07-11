@@ -34,7 +34,7 @@ export function MobileMenu({ items, crp, whatsappLink }: Props) {
   }, [open]);
 
   return (
-    <div ref={menuRef} className="fixed top-4 right-4 z-[70]">
+    <div ref={menuRef} className="md:hidden fixed top-4 right-4 z-[70]">
       {/* Hamburger button */}
       <button
         onClick={() => setOpen(!open)}

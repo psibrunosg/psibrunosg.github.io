@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Link, useParams, Navigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, ChevronLeft, User, Check, ClipboardList, AlertTriangle, Loader2 } from "lucide-react";
@@ -28,7 +28,7 @@ function isBDIItem(item: unknown): item is BDIItem {
 const allConfigs: Record<string, AnyConfig> = { ...escalas, ...escalasGerais };
 const ESCALAS_RESTRITAS = new Set(["neoffir", "neopir", "bdi", "bai", "bhs", "bss"]);
 
-type Rascunho = { nome: string; nascimento: string; telefone: string; consentimento: boolean; respostas: (number | null)[]; atual: number; etapa: "form" | "dados" };
+type Rascunho = { nascimento: string; email: string; consentimento: boolean; respostas: (number | null)[]; atual: number; etapa: "form" | "dados" };
 
 export default function Escala() {
   const { escalaId } = useParams<{ escalaId: string }>();
@@ -36,9 +36,8 @@ export default function Escala() {
   const requerCodigo = Boolean(config && ESCALAS_RESTRITAS.has(config.id));
 
   const [etapa, setEtapa] = useState<"codigo" | "intro" | "form" | "dados" | "enviando" | "erro" | "resultado">(requerCodigo ? "codigo" : "intro");
-  const [nome, setNome] = useState("");
   const [nascimento, setNascimento] = useState("");
-  const [telefone, setTelefone] = useState("");
+  const [email, setEmail] = useState("");
   const [codigoDigitado, setCodigoDigitado] = useState("");
   const [patientCode, setPatientCode] = useState("");
   const [erroCodigo, setErroCodigo] = useState("");
@@ -48,6 +47,9 @@ export default function Escala() {
   const [respostas, setRespostas] = useState<(number | null)[]>([]);
   const [atual, setAtual] = useState(0);
   const [erroEnvio, setErroEnvio] = useState("");
+  const [rovingIndex, setRovingIndex] = useState(0);
+  const questionHeadingRef = useRef<HTMLHeadingElement>(null);
+  const optionRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const rodadas = !config ? [] : (!isEscalaGeral(config) && config.rodadas) ? config.rodadas : [];
   const numRodadas = rodadas.length || 1;
@@ -63,10 +65,10 @@ export default function Escala() {
   }, [total]);
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
+    document.documentElement.setAttribute("data-theme", "lobo");
     if (config) {
       const sigla = "sigla" in config ? config.sigla : "";
-      document.title = `${sigla} | Bruno SG Psicologo`;
+      document.title = `${sigla} | Bruno Souza Psicologo`;
     }
     return () => document.documentElement.removeAttribute("data-theme");
   }, [config]);
@@ -88,13 +90,31 @@ export default function Escala() {
     if (!storageKey || (etapa !== "form" && etapa !== "dados" && etapa !== "erro")) return;
     try {
       const etapaRascunho: "form" | "dados" = etapa === "form" ? "form" : "dados";
-      localStorage.setItem(storageKey, JSON.stringify({ nome, nascimento, telefone, consentimento, respostas, atual, etapa: etapaRascunho }));
+      localStorage.setItem(storageKey, JSON.stringify({ nascimento, email, consentimento, respostas, atual, etapa: etapaRascunho }));
     } catch { /* storage indisponível, ignora */ }
-  }, [storageKey, etapa, nome, nascimento, telefone, consentimento, respostas, atual]);
+  }, [storageKey, etapa, nascimento, email, consentimento, respostas, atual]);
+
+  useEffect(() => {
+    const answered = respostas[atual];
+    if (answered === null || answered === undefined) {
+      setRovingIndex(0);
+      return;
+    }
+    const options = getCurrentOptions();
+    const idx = options.findIndex((o) => o.valor === answered);
+    setRovingIndex(idx >= 0 ? idx : 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [atual]);
+
+  useEffect(() => {
+    if (etapa === "form" && questionHeadingRef.current) {
+      questionHeadingRef.current.focus({ preventScroll: true });
+    }
+  }, [atual, etapa]);
 
   if (!config) return <Navigate to="/paciente" replace />;
 
-  const dadosValidos = nome.trim().length > 2 && nascimento.length > 0 && consentimento;
+  const dadosValidos = nascimento.length > 0 && consentimento;
   const respondidas = respostas as number[];
   const sigla = config.sigla;
 
@@ -118,7 +138,7 @@ export default function Escala() {
     setErroEnvio("");
     setEtapa("enviando");
     try {
-      const { error } = await salvarResposta({ tipo: config!.id, nome: nome.trim(), telefone: telefone.trim(), nascimento, patient_code: patientCode || undefined, respostas: r, pontuacao, consentimento_lgpd: consentimento });
+      const { error } = await salvarResposta({ tipo: config!.id, nascimento, patient_code: patientCode || undefined, email: email.trim() || undefined, respostas: r, pontuacao, consentimento_lgpd: consentimento });
       if (error) throw error;
       if (storageKey) localStorage.removeItem(storageKey);
       setEtapa("resultado");
@@ -157,7 +177,7 @@ export default function Escala() {
   }
   function retomarRascunho() {
     if (!rascunho) return;
-    setNome(rascunho.nome); setNascimento(rascunho.nascimento); setTelefone(rascunho.telefone);
+    setNascimento(rascunho.nascimento); setEmail(rascunho.email ?? "");
     setConsentimento(rascunho.consentimento); setRespostas(rascunho.respostas); setAtual(rascunho.atual);
     setEtapa(rascunho.etapa === "dados" ? "dados" : "form");
     setRascunho(null);
@@ -199,7 +219,7 @@ export default function Escala() {
   const pct = total > 0 ? Math.round(((atual + 1) / total) * 100) : 0;
 
   return (
-    <div className="relative flex min-h-screen flex-col" data-theme="c">
+    <div className="relative flex min-h-screen flex-col" data-theme="lobo">
       <AppAurora />
 
       <header className="fixed left-0 right-0 top-0 z-50 px-6 py-4 glass-panel">
@@ -243,20 +263,18 @@ export default function Escala() {
 
                   <div className="mb-6 space-y-4">
                     <div>
-                      <label className="mb-1.5 block text-sm font-medium text-[var(--c-text)]">Nome completo <span className="text-[var(--c-accent)]">*</span></label>
-                      <input type="text" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Seu nome"
-                        className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors placeholder:text-[var(--c-muted)]/50 focus:border-[var(--c-accent)] focus:outline-none" />
-                    </div>
-                    <div>
-                      <label className="mb-1.5 block text-sm font-medium text-[var(--c-text)]">Data de nascimento <span className="text-[var(--c-accent)]">*</span></label>
-                      <input type="date" value={nascimento} onChange={(e) => setNascimento(e.target.value)}
+                      <label htmlFor="escala-nascimento" className="mb-1.5 block text-sm font-medium text-[var(--c-text)]">Data de nascimento <span className="text-[var(--c-accent)]">*</span></label>
+                      <input id="escala-nascimento" type="date" value={nascimento} onChange={(e) => setNascimento(e.target.value)}
                         className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors focus:border-[var(--c-accent)] focus:outline-none" />
                     </div>
-                    <div>
-                      <label className="mb-1.5 block text-sm font-medium text-[var(--c-text)]">Telefone / WhatsApp <span className="text-xs font-normal text-[var(--c-muted)]">(opcional)</span></label>
-                      <input type="tel" value={telefone} onChange={(e) => setTelefone(e.target.value)} placeholder="(53) 9 9999-9999"
-                        className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors placeholder:text-[var(--c-muted)]/50 focus:border-[var(--c-accent)] focus:outline-none" />
-                    </div>
+                    {requerCodigo && (
+                      <div>
+                        <label htmlFor="escala-email" className="mb-1.5 block text-sm font-medium text-[var(--c-text)]">E-mail <span className="text-xs font-normal text-[var(--c-muted)]">(opcional)</span></label>
+                        <input id="escala-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com"
+                          className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors placeholder:text-[var(--c-muted)]/50 focus:border-[var(--c-accent)] focus:outline-none" />
+                        <p className="mt-1.5 text-xs text-[var(--c-muted)]">Usado apenas para contato do seu psicólogo em caso de necessidade clínica.</p>
+                      </div>
+                    )}
                   </div>
 
                   <label className="mb-5 flex items-start gap-3 cursor-pointer rounded-xl border border-[var(--c-border)] p-4 transition-colors hover:border-[var(--c-accent)]/50">
@@ -324,7 +342,6 @@ export default function Escala() {
                 </motion.div>
                 <span className="mb-3 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--c-accent)]">{sigla}</span>
                 <h1 className="mb-3 text-3xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{config.nome}</h1>
-                {nome.trim() && <p className="mb-5 text-sm text-[var(--c-muted)]">Ola, <strong className="text-[var(--c-text)]">{nome.trim()}</strong>.</p>}
                 <p className="mx-auto mb-6 max-w-md leading-relaxed text-[var(--c-muted)]">{config.instrucoes}</p>
                 <div className="mb-8 flex items-center justify-center gap-2">
                   <span className="rounded-full bg-[var(--c-surface)] px-3 py-1 text-xs font-medium text-[var(--c-muted)]">{total} perguntas</span>
@@ -359,20 +376,40 @@ export default function Escala() {
 
                 <div className="glass-card mb-5 rounded-2xl p-6">
                   {!isBDI ? (
-                    <h2 className="text-xl font-semibold leading-snug text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{getCurrentItemText()}</h2>
+                    <h2 ref={questionHeadingRef} tabIndex={-1} className="text-xl font-semibold leading-snug text-[var(--c-text)] focus:outline-none" style={{ fontFamily: "var(--font-heading)" }}>{getCurrentItemText()}</h2>
                   ) : (
-                    <h2 className="text-lg font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Escolha a afirmacao que melhor descreve voce:</h2>
+                    <h2 ref={questionHeadingRef} tabIndex={-1} className="text-lg font-semibold text-[var(--c-text)] focus:outline-none" style={{ fontFamily: "var(--font-heading)" }}>Escolha a afirmacao que melhor descreve voce:</h2>
                   )}
                 </div>
 
-                <div className="space-y-3" role="radiogroup" aria-label={getCurrentItemText()}>
-                  {getCurrentOptions().map((op) => {
+                <div
+                  className="space-y-3"
+                  role="radiogroup"
+                  aria-label={getCurrentItemText()}
+                  onKeyDown={(e) => {
+                    const options = getCurrentOptions();
+                    const count = options.length;
+                    if (count === 0) return;
+                    let nextIndex: number | null = null;
+                    if (e.key === "ArrowDown" || e.key === "ArrowRight") nextIndex = (rovingIndex + 1) % count;
+                    else if (e.key === "ArrowUp" || e.key === "ArrowLeft") nextIndex = (rovingIndex - 1 + count) % count;
+                    else if (e.key === "Home") nextIndex = 0;
+                    else if (e.key === "End") nextIndex = count - 1;
+                    if (nextIndex === null) return;
+                    e.preventDefault();
+                    setRovingIndex(nextIndex);
+                    optionRefs.current[nextIndex]?.focus();
+                  }}
+                >
+                  {getCurrentOptions().map((op, index) => {
                     const selected = respostas[atual] === op.valor;
                     return (
                       <button
                         key={op.valor}
+                        ref={(el) => { optionRefs.current[index] = el; }}
                         role="radio" aria-checked={selected} aria-label={op.label}
-                        onClick={() => handleResposta(op.valor)}
+                        tabIndex={index === rovingIndex ? 0 : -1}
+                        onClick={() => { setRovingIndex(index); handleResposta(op.valor); }}
                         className="flex w-full items-center gap-3 rounded-xl border px-5 py-4 text-left transition-all duration-150 hover:translate-x-1 active:scale-[0.99]"
                         style={{
                           borderColor: selected ? "var(--c-accent)" : "var(--c-border)",
@@ -398,7 +435,7 @@ export default function Escala() {
               </motion.div>
             )}
 
-            {etapa === "resultado" && <ResultadoScreen config={config} respostas={respondidas} pacienteNome={nome.trim()} />}
+            {etapa === "resultado" && <ResultadoScreen config={config} respostas={respondidas} />}
           </AnimatePresence>
         </div>
       </main>
@@ -407,7 +444,7 @@ export default function Escala() {
 }
 
 // ===== RESULT SCREENS =====
-function ResultadoScreen({ config, respostas }: { config: AnyConfig; respostas: number[]; pacienteNome: string }) {
+function ResultadoScreen({ config, respostas }: { config: AnyConfig; respostas: number[] }) {
   let emRisco = false;
   let crisisVariant: "suicida" | "apoio" = "apoio";
   if (isEscalaGeral(config)) {

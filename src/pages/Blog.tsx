@@ -28,8 +28,8 @@ export default function Blog() {
   const filtered = areaFiltro === "todos" ? allPosts : allPosts.filter((p) => p.area === areaFiltro);
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "Blog | Bruno SG Psicologo | Saude Mental TCC Pelotas";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "Blog | Bruno Souza Psicologo | Saude Mental TCC Pelotas";
     if (!isDynamicLoaded()) {
       loadDynamicPosts().then(() => setAllPosts(getAllPosts()));
     }

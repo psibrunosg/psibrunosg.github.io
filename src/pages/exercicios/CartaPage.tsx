@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { ExercicioShell } from "@/components/exercicios/ExercicioShell";
 import CartaFonte from "@/components/exercicios/CartaFonte";
 
 export default function CartaPage() {
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "Carta à Fonte do Esquema | Bruno SG";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "Carta à Fonte do Esquema | Bruno Souza";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -15,3 +15,4 @@ export default function CartaPage() {
     </ExercicioShell>
   );
 }
+

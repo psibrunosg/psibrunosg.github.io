@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { ExercicioShell } from "@/components/exercicios/ExercicioShell";
 import EscritaExpressiva from "@/components/exercicios/EscritaExpressiva";
 
 export default function EscritaPage() {
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "Escrita Expressiva | Bruno SG";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "Escrita Expressiva | Bruno Souza";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -15,3 +15,4 @@ export default function EscritaPage() {
     </ExercicioShell>
   );
 }
+

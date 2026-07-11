@@ -21,7 +21,17 @@ import { ferramentas, type FerramentaTerapeuta } from "@/content/ferramentas-ter
 import { posts as staticPosts, type BlogPost } from "@/content/posts-loader";
 import { fadeUp, stagger } from "@/lib/motion";
 import { AppAurora } from "@/components/ui/AppAurora";
-import { detectarRiscos, type RespostaRegistro as Resposta } from "@/lib/scoring";
+import { detectarRiscos, type RespostaRegistro } from "@/lib/scoring";
+
+// Decisão clínica (09/07/2026): respostas_questionarios não grava mais nome/telefone
+// diretamente — identificação passa a ser via patient_code. Extensão local do tipo
+// (sem alterar src/lib/scoring.ts) para incluir as colunas usadas apenas aqui.
+type Resposta = RespostaRegistro & { patient_code?: string; email?: string };
+
+// Identificação segura para exibição: nome (dados históricos) > patient_code > id da resposta.
+function nomeSeguro(r: Resposta): string {
+  return r.nome?.trim() || (r.patient_code ? `Código ${r.patient_code}` : `Paciente #${r.id}`);
+}
 import {
   interpretarResposta, correlacoesFactuais,
   type RespostaInterpretada, type RodadaInterpretada, type EsquemaInterpretado, type Correlacao,
@@ -338,7 +348,9 @@ const LIMIAR_TXT = "3.5";
 
 // ===== Perfil por paciente (lista + perfil) =====
 function chavePaciente(r: Resposta): string {
-  return r.nome.trim().toLowerCase() + "|" + (r.nascimento ?? "");
+  if (r.patient_code) return "code:" + r.patient_code;
+  if (r.nome && r.nome.trim()) return "nome:" + r.nome.trim().toLowerCase() + "|" + (r.nascimento ?? "");
+  return "resp:" + r.id;
 }
 
 function PacientesLista({ respostas, onAbrir }: { respostas: Resposta[]; onAbrir: (chave: string) => void }) {
@@ -346,7 +358,7 @@ function PacientesLista({ respostas, onAbrir }: { respostas: Resposta[]; onAbrir
     const m = new Map<string, Resposta[]>();
     for (const r of respostas) { const k = chavePaciente(r); const a = m.get(k) ?? []; a.push(r); m.set(k, a); }
     return Array.from(m.entries())
-      .map(([chave, rs]) => ({ chave, nome: rs[0].nome, nascimento: rs[0].nascimento, rs: [...rs].sort((a, b) => new Date(b.criado_em).getTime() - new Date(a.criado_em).getTime()) }))
+      .map(([chave, rs]) => ({ chave, nome: rs[0].nome, nascimento: rs[0].nascimento, patientCode: rs[0].patient_code, email: rs[0].email, rs: [...rs].sort((a, b) => new Date(b.criado_em).getTime() - new Date(a.criado_em).getTime()) }))
       .sort((a, b) => new Date(b.rs[0].criado_em).getTime() - new Date(a.rs[0].criado_em).getTime());
   })();
   if (grupos.length === 0) return <p className="py-12 text-center text-[var(--c-muted)]">Nenhum paciente.</p>;
@@ -356,12 +368,13 @@ function PacientesLista({ respostas, onAbrir }: { respostas: Resposta[]; onAbrir
         const tipos = Array.from(new Set(g.rs.map((r) => r.tipo)));
         const risco = detectarRiscos(g.rs);
         const ultima = new Date(g.rs[0].criado_em).toLocaleDateString("pt-BR");
+        const identificacao = g.nome?.trim() || (g.patientCode ? `Código ${g.patientCode}` : `Resposta #${g.rs[0].id}`);
         return (
           <div key={g.chave} onClick={() => onAbrir(g.chave)} className="glass-card cursor-pointer rounded-2xl p-5 transition-colors hover:border-[var(--c-accent)]/30">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <h3 className="truncate text-sm font-semibold text-[var(--c-text)]">{g.nome}</h3>
-                <p className="text-[10px] text-[var(--c-muted)]">{g.nascimento ?? "—"} · última {ultima}</p>
+                <h3 className="truncate text-sm font-semibold text-[var(--c-text)]">{identificacao}</h3>
+                <p className="text-[10px] text-[var(--c-muted)]">{g.nascimento ?? "—"} · última {ultima}{g.email ? ` · ${g.email}` : ""}</p>
               </div>
               {risco.length > 0 && <span className="flex-shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase" style={{ background: "#dc26261A", color: "#dc2626" }}>risco</span>}
             </div>
@@ -397,8 +410,10 @@ function PerfilPaciente({ respostas, onVoltar, onAbrirResposta, onExcluir }: { r
   const [confirmNome, setConfirmNome] = useState("");
   const [confirmando, setConfirmando] = useState(false);
   const ordenado = [...respostas].sort((a, b) => new Date(b.criado_em).getTime() - new Date(a.criado_em).getTime());
-  const nome = ordenado[0]?.nome ?? "Paciente";
-  const nascimento = ordenado[0]?.nascimento;
+  const primeiro = ordenado[0];
+  const nome = primeiro ? nomeSeguro(primeiro) : "Paciente";
+  const nascimento = primeiro?.nascimento;
+  const email = primeiro?.email;
   const riscos = detectarRiscos(ordenado);
   const latestPorTipo = (() => {
     const m = new Map<string, Resposta>();
@@ -414,7 +429,7 @@ function PerfilPaciente({ respostas, onVoltar, onAbrirResposta, onExcluir }: { r
         <button onClick={onVoltar} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]"><X size={15} /></button>
         <div>
           <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{nome}</h2>
-          <p className="text-[10px] text-[var(--c-muted)]">{nascimento ?? "—"} · {ordenado.length} resposta{ordenado.length !== 1 ? "s" : ""} · {latestPorTipo.length} escala{latestPorTipo.length !== 1 ? "s" : ""}</p>
+          <p className="text-[10px] text-[var(--c-muted)]">{nascimento ?? "—"} · {ordenado.length} resposta{ordenado.length !== 1 ? "s" : ""} · {latestPorTipo.length} escala{latestPorTipo.length !== 1 ? "s" : ""}{email ? ` · ${email}` : ""}</p>
         </div>
       </motion.div>
 
@@ -532,8 +547,8 @@ export default function BrunoPainel() {
   const [ferramentaDados, setFerramentaDados] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "Painel | Bruno SG";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "Painel | Bruno Souza";
     if (!supabase) {
       setLoginLoading(false);
       return () => document.documentElement.removeAttribute("data-theme");
@@ -547,11 +562,12 @@ export default function BrunoPainel() {
     });
     const channel = supabase.channel("respostas-realtime").on(
       "postgres_changes", { event: "INSERT", schema: "public", table: "respostas_questionarios" },
-      (payload: { new: { id: number; tipo: string; nome: string; criado_em: string; respostas: number[]; pontuacao: number } }) => {
+      (payload: { new: { id: number; tipo: string; nome: string | null; patient_code?: string | null; criado_em: string; respostas: number[]; pontuacao: number } }) => {
         const r = payload.new;
-        const riscos = detectarRiscos([{ id: r.id, tipo: r.tipo, nome: r.nome, respostas: r.respostas ?? [], pontuacao: r.pontuacao ?? 0, criado_em: r.criado_em }]);
+        const nomeExibicao = r.nome?.trim() || (r.patient_code ? `Código ${r.patient_code}` : `Resposta #${r.id}`);
+        const riscos = detectarRiscos([{ id: r.id, tipo: r.tipo, nome: nomeExibicao, respostas: r.respostas ?? [], pontuacao: r.pontuacao ?? 0, criado_em: r.criado_em }]);
         const critico = riscos.some((x) => x.nivel === "critico");
-        const nota: Notificacao = { id: r.id, tipo: r.tipo, nome: r.nome, tempo: "agora", critico };
+        const nota: Notificacao = { id: r.id, tipo: r.tipo, nome: nomeExibicao, tempo: "agora", critico };
         setNotificacoes((prev) => [nota, ...prev].slice(0, 5));
         if (!critico) setTimeout(() => setNotificacoes((prev) => prev.filter((n) => n.id !== r.id)), 8000);
       }
@@ -665,8 +681,9 @@ export default function BrunoPainel() {
       const dt = new Date(r.criado_em).toLocaleDateString("pt-BR");
       const sigla = testesDisponiveis.find((t) => t.id === r.tipo)?.sigla ?? r.tipo.toUpperCase();
       const interp = interpretarResposta(r.tipo, r.respostas, r.pontuacao);
-      const doc = gerarPDF({ tipo: sigla, nome: r.nome, pontuacao: r.pontuacao, nivel: interp.resumo, respostas: r.respostas, perguntas, data: dt, interp, optionLabel: (v) => getOptionLabel(r.tipo, v) });
-      zip.file(sigla + "_" + r.nome.replace(/\s+/g, "_") + "_" + dt.replace(/\//g, "-") + ".pdf", doc.output("arraybuffer"));
+      const nomeResp = nomeSeguro(r);
+      const doc = gerarPDF({ tipo: sigla, nome: nomeResp, pontuacao: r.pontuacao, nivel: interp.resumo, respostas: r.respostas, perguntas, data: dt, interp, optionLabel: (v) => getOptionLabel(r.tipo, v) });
+      zip.file(sigla + "_" + nomeResp.replace(/\s+/g, "_") + "_" + dt.replace(/\//g, "-") + ".pdf", doc.output("arraybuffer"));
     }
     const blob = await zip.generateAsync({ type: "blob" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
@@ -692,12 +709,12 @@ export default function BrunoPainel() {
 
 
   if (loginLoading && !auth) {
-    return <div className="flex min-h-screen items-center justify-center" data-theme="c"><AppAurora /><p className="relative z-10 text-[var(--c-muted)]">Carregando...</p></div>;
+    return <div className="flex min-h-screen items-center justify-center" data-theme="lobo"><AppAurora /><p className="relative z-10 text-[var(--c-muted)]">Carregando...</p></div>;
   }
 
   if (!auth) {
     return (
-      <div className="relative flex min-h-screen items-center justify-center px-6" data-theme="c">
+      <div className="relative flex min-h-screen items-center justify-center px-6" data-theme="lobo">
         <AppAurora />
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="glass-card relative z-10 w-full max-w-sm rounded-3xl p-8 text-center">
           <motion.div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl"
@@ -705,7 +722,7 @@ export default function BrunoPainel() {
             initial={{ scale: 0, rotate: -10 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 200 }}>
             <Lock size={26} className="text-white" />
           </motion.div>
-          <h1 className="mb-1 text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Painel Bruno SG</h1>
+          <h1 className="mb-1 text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Painel Bruno Souza</h1>
           <p className="mb-6 text-xs text-[var(--c-muted)]">Acesso restrito ao psicologo</p>
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
             placeholder="Email" className="mb-3 w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors focus:border-[var(--c-accent)] focus:outline-none" />
@@ -755,9 +772,9 @@ export default function BrunoPainel() {
 
   function abrirDashboard(r: Resposta) {
     setRespostaAberta(r);
-    const hist = respostas.filter((x) => x.nome.toLowerCase() === r.nome.toLowerCase());
+    const hist = respostas.filter((x) => chavePaciente(x) === chavePaciente(r));
     setHistoricoAberto(hist);
-    setPaciente({ nome: r.nome, idade: r.nascimento ?? "", dataAvaliacao: new Date(r.criado_em).toLocaleDateString("pt-BR"), escolaridade: "" });
+    setPaciente({ nome: nomeSeguro(r), idade: r.nascimento ?? "", dataAvaliacao: new Date(r.criado_em).toLocaleDateString("pt-BR"), escolaridade: "" });
     const testeInfo = testesDisponiveis.find((t) => t.id === r.tipo);
     if (testeInfo) {
       const novoTeste: ResultadoTeste = { testeId: testeInfo.id, sigla: testeInfo.sigla, nome: testeInfo.nome, dados: { escore: r.pontuacao }, respostasCruas: r.respostas };
@@ -802,7 +819,7 @@ export default function BrunoPainel() {
     }
     y += 4; doc.setDrawColor(200, 200, 200); doc.line(ML, y, ML + W, y); y += 6;
     txt(f.referencia, 8, false, [120, 120, 120]); y += 6;
-    txt("Bruno SG — Psicólogo CRP 07/44472", 9, true, [120, 120, 120]);
+    txt("Bruno Souza · CRP 07/44472", 9, true, [120, 120, 120]);
     doc.save(`${f.id}_${new Date().toISOString().slice(0, 10)}.pdf`);
   }
 
@@ -810,13 +827,13 @@ export default function BrunoPainel() {
     "px-4 py-1.5 rounded-full text-xs font-semibold transition-all " + (tab === id ? "text-white shadow-[0_8px_20px_-8px_var(--c-accent)]" : "text-[var(--c-muted)] hover:text-[var(--c-text)]");
 
   return (
-    <div className="relative min-h-screen" data-theme="c">
+    <div className="relative min-h-screen" data-theme="lobo">
       <AppAurora />
 
       <header className="fixed left-0 right-0 top-0 z-50 px-6 py-4 glass-panel">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link to="/" className="text-sm font-semibold text-[var(--c-text)] transition-colors hover:text-[var(--c-accent)]">Bruno SG</Link>
+            <Link to="/" className="text-sm font-semibold text-[var(--c-text)] transition-colors hover:text-[var(--c-accent)]">Bruno Souza</Link>
             <button onClick={logout} className="rounded-full border border-[var(--c-border)] px-3 py-1 text-[10px] text-[var(--c-muted)] transition-colors hover:text-red-500 hover:border-red-300">Sair</button>
           </div>
           <div className="flex gap-1">
@@ -921,7 +938,7 @@ export default function BrunoPainel() {
                               <td className="px-4 py-3">
                                 <span className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider" style={{ background: cor + "1A", color: cor }}>{r.tipo.toUpperCase()}</span>
                               </td>
-                              <td className="px-4 py-3 font-medium text-[var(--c-text)]">{r.nome}</td>
+                              <td className="px-4 py-3 font-medium text-[var(--c-text)]">{nomeSeguro(r)}</td>
                               <td className="px-4 py-3 text-xs text-[var(--c-muted)]">{r.nascimento ?? "-"}</td>
                               <td className="px-4 py-3 font-semibold text-[var(--c-text)]">{r.pontuacao}</td>
                               <td className="px-4 py-3 text-xs text-[var(--c-muted)]">{interpretarResposta(r.tipo, r.respostas, r.pontuacao).resumo}</td>
@@ -945,7 +962,7 @@ export default function BrunoPainel() {
                     <button onClick={fecharDashboard} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]">
                       <X size={15} />
                     </button>
-                    <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{respostaAberta ? respostaAberta.nome : "Novo Parecer"}</h2>
+                    <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{respostaAberta ? nomeSeguro(respostaAberta) : "Novo Parecer"}</h2>
                   </div>
                   <motion.button whileTap={{ scale: 0.96 }} onClick={exportarParecer} disabled={!parecerTestes.length}
                     className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white transition-opacity disabled:opacity-40"

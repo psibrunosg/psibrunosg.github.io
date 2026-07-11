@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { ExercicioShell } from "@/components/exercicios/ExercicioShell";
 import LESSII from "@/components/exercicios/LESSII";
 
 export default function LESSPage() {
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "LESS-II: Mapa de Esquemas | Bruno SG";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "LESS-II: Mapa de Esquemas | Bruno Souza";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -15,3 +15,4 @@ export default function LESSPage() {
     </ExercicioShell>
   );
 }
+

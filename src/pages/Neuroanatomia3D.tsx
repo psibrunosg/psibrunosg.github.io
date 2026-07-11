@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, useRef } from "react";
+﻿import React, { useState, useEffect, Suspense, useRef } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, BookOpen, AlertCircle, Loader2, Activity, Maximize2, Minimize2, Flower2, Link as LinkIcon, Wind, Stethoscope, Pill, Target, CheckCircle2, XCircle, Brain, Map, ChevronLeft, ChevronRight } from "lucide-react";
 import { Canvas } from "@react-three/fiber";
@@ -103,8 +103,8 @@ export default function Neuroanatomia3D() {
   const currentSelectedPartId = activeTour ? guidedToursData[activeTour].steps[tourStep].partId : selectedPartId;
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "Neuroanatomia 3D | Psicoeducação | Bruno SG";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "Neuroanatomia 3D | Psicoeducação | Bruno Souza";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -756,3 +756,4 @@ export default function Neuroanatomia3D() {
     </div>
   );
 }
+

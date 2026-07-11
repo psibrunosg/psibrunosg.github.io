@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { ExercicioShell } from "@/components/exercicios/ExercicioShell";
 import RoletaTerapeutica from "@/components/exercicios/RoletaTerapeutica";
 
 export default function RoletaPage() {
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "Roleta do E Se | Bruno SG";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "Roleta do E Se | Bruno Souza";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -19,3 +19,4 @@ export default function RoletaPage() {
     </ExercicioShell>
   );
 }
+

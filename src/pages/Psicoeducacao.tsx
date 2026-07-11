@@ -66,8 +66,8 @@ export default function Psicoeducacao() {
   const [resultadoValores, setResultadoValores] = useState<{ area: string; valor: number }[]>([]);
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "Psicoeducacao | Bruno SG Psicologo | Pelotas";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "Psicoeducacao | Bruno Souza Psicologo | Pelotas";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

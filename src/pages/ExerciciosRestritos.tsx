@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+﻿import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Lock, AlertCircle, Wind, Footprints, NotebookPen } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -106,8 +106,8 @@ export default function ExerciciosRestritos() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "Exercícios Restritos | Bruno SG Psicologo | Pelotas";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "Exercícios Restritos | Bruno Souza Psicologo | Pelotas";
 
     const stored = localStorage.getItem("exercise_patient_code");
     const unlocked = localStorage.getItem("exercise_restricted_unlocked");
@@ -139,7 +139,7 @@ export default function ExerciciosRestritos() {
         <SkipLink />
         <MobileMenu items={navItems} crp={contato.crp} whatsappLink={contato.whatsappLink} />
         <WhatsAppFloat />
-        <main id="main" className="min-h-screen bg-[var(--c-bg)] pt-28 pb-24 px-6" data-theme="c">
+        <main id="main" className="min-h-screen bg-[var(--c-bg)] pt-28 pb-24 px-6" data-theme="lobo">
           <div className="max-w-4xl mx-auto">
             <Link
               to="/exercicios"
@@ -186,7 +186,7 @@ export default function ExerciciosRestritos() {
       <SkipLink />
       <MobileMenu items={navItems} crp={contato.crp} whatsappLink={contato.whatsappLink} />
       <WhatsAppFloat />
-      <main id="main" className="min-h-screen bg-[var(--c-bg)] pt-28 pb-24 px-6" data-theme="c">
+      <main id="main" className="min-h-screen bg-[var(--c-bg)] pt-28 pb-24 px-6" data-theme="lobo">
         <div className="max-w-4xl mx-auto">
           <Link
             to="/exercicios"

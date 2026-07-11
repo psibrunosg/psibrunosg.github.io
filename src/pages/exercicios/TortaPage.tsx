@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { ExercicioShell } from "@/components/exercicios/ExercicioShell";
 import TortaResponsabilidade from "@/components/exercicios/TortaResponsabilidade";
 
 export default function TortaPage() {
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "Torta da Responsabilidade | Bruno SG";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "Torta da Responsabilidade | Bruno Souza";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -15,3 +15,4 @@ export default function TortaPage() {
     </ExercicioShell>
   );
 }
+

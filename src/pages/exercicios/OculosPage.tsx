@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { ExercicioShell } from "@/components/exercicios/ExercicioShell";
 import OculosEsquemas from "@/components/exercicios/OculosEsquemas";
 
 export default function OculosPage() {
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "Óculos dos Esquemas | Bruno SG";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "Óculos dos Esquemas | Bruno Souza";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -15,3 +15,4 @@ export default function OculosPage() {
     </ExercicioShell>
   );
 }
+

@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { ExercicioShell } from "@/components/exercicios/ExercicioShell";
 import GPSDecisoes from "@/components/exercicios/GPSDecisoes";
 
 export default function GPSPage() {
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "GPS de Decisões | Bruno SG";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "GPS de Decisões | Bruno Souza";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -15,3 +15,4 @@ export default function GPSPage() {
     </ExercicioShell>
   );
 }
+

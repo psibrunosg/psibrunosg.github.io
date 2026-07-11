@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { ExercicioShell } from "@/components/exercicios/ExercicioShell";
 import DiarioLapsos from "@/components/exercicios/DiarioLapsos";
 
 export default function DiarioPage() {
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "Diário de Lapsos | Bruno SG";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "Diário de Lapsos | Bruno Souza";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -15,3 +15,4 @@ export default function DiarioPage() {
     </ExercicioShell>
   );
 }
+

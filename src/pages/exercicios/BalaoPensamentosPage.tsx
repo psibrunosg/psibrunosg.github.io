@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { ExercicioShell } from "@/components/exercicios/ExercicioShell";
 import BalaoPensamentos from "@/components/exercicios/BalaoPensamentos";
 
 export default function BalaoPensamentosPage() {
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "Balão de Pensamentos | Bruno SG";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "Balão de Pensamentos | Bruno Souza";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -19,3 +19,4 @@ export default function BalaoPensamentosPage() {
     </ExercicioShell>
   );
 }
+

@@ -13,7 +13,7 @@ export const manifesto = {
 
 export const sobre = {
   titulo: "Quem sou eu",
-  subtitulo: "Bruno SG, psicólogo clínico",
+  subtitulo: "Bruno Souza, psicólogo clínico",
   bio: "Sou formado em Psicologia pela Universidade Católica de Pelotas (UCPel) e especializado em Terapia Cognitivo-Comportamental e Terapia do Esquema. Atendo adultos e adolescentes, presencialmente em Pelotas/RS e online para todo o Brasil.",
   complemento:
     "Acredito em um processo terapêutico que respeita o ritmo de cada pessoa. Meu trabalho é criar um espaço seguro para que você possa entender o que está acontecendo e encontrar caminhos mais leves de seguir em frente.",
@@ -149,7 +149,7 @@ export const contato = {
   whatsappLink:
     "https://wa.me/5553991898309?text=Ol%C3%A1%2C%20Bruno!%20Vi%20seu%20site%20e%20gostaria%20de%20agendar%20uma%20conversa%20inicial.",
   crp: "CRP 07/44472",
-  nome: "Bruno SG",
+  nome: "Bruno Souza",
   cidade: "Pelotas, RS",
   foto: "/img/foto.jpg",
   modalidade: "Presencial em Pelotas · Online para todo o Brasil",

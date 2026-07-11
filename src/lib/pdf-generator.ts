@@ -50,10 +50,10 @@ export function gerarPDF(r: ResultadoPDF): jsPDF {
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text("Bruno SG - Psicologo - CRP 07/44472", w / 2, 33, { align: "center" });
+  doc.text("Bruno Souza - Psicologo - CRP 07/44472", w / 2, 33, { align: "center" });
   doc.text("Documento gerado em " + r.data, w / 2, 39, { align: "center" });
 
-  doc.setDrawColor(176, 93, 58);
+  doc.setDrawColor(62, 107, 92);
   doc.line(20, 44, w - 20, 44);
 
   y = 55;
@@ -110,7 +110,7 @@ export function gerarPDF(r: ResultadoPDF): jsPDF {
   }
 
   y += 2;
-  doc.setDrawColor(176, 93, 58);
+  doc.setDrawColor(62, 107, 92);
   doc.line(20, y, w - 20, y);
   y += 9;
 
@@ -123,7 +123,7 @@ export function gerarPDF(r: ResultadoPDF): jsPDF {
 
   y += 5;
   if (y > 278) { doc.addPage(); y = 25; }
-  doc.setDrawColor(176, 93, 58);
+  doc.setDrawColor(62, 107, 92);
   doc.line(20, y, w - 20, y);
   y += 10;
 

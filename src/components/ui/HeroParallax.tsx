@@ -27,7 +27,8 @@ export function HeroParallax({ foto, children }: Props) {
           className="w-full h-full object-cover object-top"
           fetchPriority="high"
         />
-        <div className="absolute inset-0 bg-[var(--c-bg-dark)]/60" />
+        <div className="absolute inset-0 bg-[var(--c-bg-dark)]/70" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--c-bg-dark)]/60 via-transparent to-transparent" />
       </motion.div>
 
       {/* Hero content — pushed slightly above center */}

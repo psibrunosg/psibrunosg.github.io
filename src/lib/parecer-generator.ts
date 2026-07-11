@@ -324,7 +324,7 @@ export function gerarParecerPDF(paciente: DadosPaciente, testes: ResultadoTeste[
   addSpace(12);
   addLine("_______________________________", 10, false, [100, 100, 100]);
   addSpace(2);
-  addLine("Bruno SG", 10, true);
+  addLine("Bruno Souza", 10, true);
   addLine("Psicólogo — CRP 07/44472");
   addSpace(6);
   addLine("Este documento é de caráter sigiloso conforme o Código de Ética do Psicólogo.", 8, false, [140, 140, 140]);

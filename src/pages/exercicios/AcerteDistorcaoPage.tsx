@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { ExercicioShell } from "@/components/exercicios/ExercicioShell";
 import AcerteDistorcao from "@/components/exercicios/AcerteDistorcao";
 
 export default function AcerteDistorcaoPage() {
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "Acerte a Distorção | Bruno SG";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "Acerte a Distorção | Bruno Souza";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -19,3 +19,4 @@ export default function AcerteDistorcaoPage() {
     </ExercicioShell>
   );
 }
+

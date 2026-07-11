@@ -1,12 +1,12 @@
 {
-  "name": "Bruno SG · Psicólogo",
-  "short_name": "Bruno SG",
+  "name": "Clínica Bruno Souza · Psicólogo",
+  "short_name": "Bruno Souza",
   "description": "Psicólogo clínico — TCC e Terapia do Esquema. Pelotas/RS e online.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#f5efe6",
-  "theme_color": "#b05d3a",
+  "background_color": "#F7F3EE",
+  "theme_color": "#3E6B5C",
   "lang": "pt-BR",
   "icons": [
     { "src": "/img/logo.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },

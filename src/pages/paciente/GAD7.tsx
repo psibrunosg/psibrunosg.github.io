@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, ChevronLeft, User, Check, ClipboardList } from "lucide-react";
@@ -26,31 +26,29 @@ const opcoes = [
 
 export default function GAD7() {
   const [etapa, setEtapa] = useState<"dados" | "intro" | "form" | "resultado">("dados");
-  const [nome, setNome] = useState("");
   const [nascimento, setNascimento] = useState("");
-  const [telefone, setTelefone] = useState("");
   const [consentimento, setConsentimento] = useState(false);
   const [respostas, setRespostas] = useState<(number | null)[]>(Array(7).fill(null));
   const [atual, setAtual] = useState(0);
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "GAD-7 | Bruno SG Psicologo";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "GAD-7 | Bruno Souza Psicologo";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
-  const dadosValidos = nome.trim().length > 2 && nascimento.length > 0 && consentimento;
+  const dadosValidos = nascimento.length > 0 && consentimento;
   const pontuacao = respostas.reduce<number>((acc, r) => acc + (r ?? 0), 0);
   const emRisco = ehFaixaGrave("gad7", pontuacao);
   const pct = Math.round(((atual + 1) / perguntas.length) * 100);
 
   function finalizar() {
-    salvarResposta({ tipo: "gad7", nome: nome.trim(), telefone: telefone.trim(), nascimento, respostas: respostas as number[], pontuacao, consentimento_lgpd: consentimento });
+    salvarResposta({ tipo: "gad7", nascimento, respostas: respostas as number[], pontuacao, consentimento_lgpd: consentimento });
     setEtapa("resultado");
   }
 
   return (
-    <div className="relative flex min-h-screen flex-col" data-theme="c">
+    <div className="relative flex min-h-screen flex-col" data-theme="lobo">
       <AppAurora />
       <header className="fixed left-0 right-0 top-0 z-50 px-6 py-4 glass-panel">
         <div className="mx-auto flex max-w-2xl items-center justify-between">
@@ -78,19 +76,9 @@ export default function GAD7() {
                   </div>
                   <div className="mb-6 space-y-4">
                     <div>
-                      <label className="mb-1.5 block text-sm font-medium text-[var(--c-text)]">Nome completo <span className="text-[var(--c-accent)]">*</span></label>
-                      <input type="text" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Seu nome"
-                        className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors placeholder:text-[var(--c-muted)]/50 focus:border-[var(--c-accent)] focus:outline-none" />
-                    </div>
-                    <div>
                       <label className="mb-1.5 block text-sm font-medium text-[var(--c-text)]">Data de nascimento <span className="text-[var(--c-accent)]">*</span></label>
                       <input type="date" value={nascimento} onChange={(e) => setNascimento(e.target.value)}
                         className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors focus:border-[var(--c-accent)] focus:outline-none" />
-                    </div>
-                    <div>
-                      <label className="mb-1.5 block text-sm font-medium text-[var(--c-text)]">Telefone / WhatsApp <span className="text-xs font-normal text-[var(--c-muted)]">(opcional)</span></label>
-                      <input type="tel" value={telefone} onChange={(e) => setTelefone(e.target.value)} placeholder="(53) 9 9999-9999"
-                        className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors placeholder:text-[var(--c-muted)]/50 focus:border-[var(--c-accent)] focus:outline-none" />
                     </div>
                   </div>
                   <label className="mb-5 flex items-start gap-3 cursor-pointer rounded-xl border border-[var(--c-border)] p-4 transition-colors hover:border-[var(--c-accent)]/50">
@@ -120,7 +108,6 @@ export default function GAD7() {
                 </motion.div>
                 <span className="mb-3 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--c-accent)]">GAD-7</span>
                 <h1 className="mb-3 text-3xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Rastreio de Ansiedade</h1>
-                <p className="mb-5 text-sm text-[var(--c-muted)]">Ola, <strong className="text-[var(--c-text)]">{nome.trim()}</strong>.</p>
                 <p className="mx-auto mb-6 max-w-md leading-relaxed text-[var(--c-muted)]">Este questionario pergunta sobre como voce tem se sentido nas <strong>ultimas duas semanas</strong>. Sao 7 perguntas, leva cerca de 2 minutos.</p>
                 <div className="mb-8 flex items-center justify-center gap-2">
                   <span className="rounded-full bg-[var(--c-surface)] px-3 py-1 text-xs font-medium text-[var(--c-muted)]">7 perguntas</span>

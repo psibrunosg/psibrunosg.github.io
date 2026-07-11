@@ -129,12 +129,13 @@ export function ehFaixaGrave(tipo: string, pontuacao: number): boolean {
 export interface RespostaRegistro {
   id: number;
   tipo: string;
-  nome: string;
-  telefone?: string;
+  nome: string | null;
+  telefone?: string | null;
   nascimento?: string;
   respostas: number[];
   pontuacao: number;
   criado_em: string;
+  patient_code?: string | null;
 }
 
 export interface RiscoClinico {
@@ -148,22 +149,24 @@ export interface RiscoClinico {
 export function detectarRiscos(respostas: RespostaRegistro[]): RiscoClinico[] {
   const riscos: RiscoClinico[] = [];
   for (const r of respostas) {
+    // Respostas novas não gravam nome (LGPD); identificar por código ou id.
+    const identificacao = r.nome || (r.patient_code ? `Código ${r.patient_code}` : `Paciente #${r.id}`);
     if (r.tipo === "phq9" && r.respostas[8] >= 1) {
       riscos.push({
         tipo: "phq9_item9",
-        mensagem: `${r.nome} — PHQ-9 item 9 (ideacao suicida): resposta ${r.respostas[8]} em ${new Date(r.criado_em).toLocaleDateString("pt-BR")}`,
+        mensagem: `${identificacao} — PHQ-9 item 9 (ideacao suicida): resposta ${r.respostas[8]} em ${new Date(r.criado_em).toLocaleDateString("pt-BR")}`,
         nivel: r.respostas[8] >= 2 ? "critico" : "alto",
         respostaId: r.id,
-        nome: r.nome,
+        nome: identificacao,
       });
     }
     if (r.tipo === "bhs" && r.pontuacao > 14) {
       riscos.push({
         tipo: "bhs_grave",
-        mensagem: `${r.nome} — BHS grave (${r.pontuacao} pts): desesperanca severa em ${new Date(r.criado_em).toLocaleDateString("pt-BR")}`,
+        mensagem: `${identificacao} — BHS grave (${r.pontuacao} pts): desesperanca severa em ${new Date(r.criado_em).toLocaleDateString("pt-BR")}`,
         nivel: "critico",
         respostaId: r.id,
-        nome: r.nome,
+        nome: identificacao,
       });
     }
   }

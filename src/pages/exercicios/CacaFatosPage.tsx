@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { ExercicioShell } from "@/components/exercicios/ExercicioShell";
 import CacaFatos from "@/components/exercicios/CacaFatos";
 
 export default function CacaFatosPage() {
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "Caça aos Fatos | Bruno SG";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "Caça aos Fatos | Bruno Souza";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -19,3 +19,4 @@ export default function CacaFatosPage() {
     </ExercicioShell>
   );
 }
+

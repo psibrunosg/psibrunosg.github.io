@@ -62,9 +62,9 @@ export default function BlogPost() {
   }, [post]);
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
+    document.documentElement.setAttribute("data-theme", "lobo");
     if (post) {
-      document.title = post.titulo + " | Bruno SG Psicologo";
+      document.title = post.titulo + " | Bruno Souza Psicologo";
       setLoading(false);
     } else if (slug && !isDynamicLoaded()) {
       loadDynamicPosts().then(() => {

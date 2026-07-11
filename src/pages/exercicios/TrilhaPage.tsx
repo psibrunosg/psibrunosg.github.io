@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Check, Flame, Lock, Sparkles } from "lucide-react";
@@ -21,14 +21,14 @@ export default function TrilhaPage() {
   const { trilha, unidades, totalConcluidos, totalExercicios, pct, xp, streak } = useTrilha(trilhaId ?? "");
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = trilha ? `${trilha.titulo} | Bruno SG` : "Trilha | Bruno SG";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = trilha ? `${trilha.titulo} | Bruno Souza` : "Trilha | Bruno Souza";
     return () => document.documentElement.removeAttribute("data-theme");
   }, [trilha]);
 
   if (!trilha) {
     return (
-      <main className="min-h-screen bg-[var(--c-bg)] pt-28 px-6 text-center" data-theme="c">
+      <main className="min-h-screen bg-[var(--c-bg)] pt-28 px-6 text-center" data-theme="lobo">
         <p className="text-[var(--c-muted)]">Trilha não encontrada.</p>
         <Link to="/exercicios" className="text-[var(--c-accent)] font-semibold">Voltar aos exercícios</Link>
       </main>
@@ -41,7 +41,7 @@ export default function TrilhaPage() {
       <MobileMenu items={navItems} crp={contato.crp} whatsappLink={contato.whatsappLink} />
       <WhatsAppFloat />
 
-      <main id="main" className="min-h-screen bg-[var(--c-bg)] pt-28 pb-24 px-6" data-theme="c">
+      <main id="main" className="min-h-screen bg-[var(--c-bg)] pt-28 pb-24 px-6" data-theme="lobo">
         <div className="max-w-2xl mx-auto">
           <Link
             to="/exercicios"

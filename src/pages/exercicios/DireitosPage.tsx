@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { ExercicioShell } from "@/components/exercicios/ExercicioShell";
 import ConstruorDireitos from "@/components/exercicios/ConstruorDireitos";
 
 export default function DireitosPage() {
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "Construtor de Direitos | Bruno SG";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "Construtor de Direitos | Bruno Souza";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -15,3 +15,4 @@ export default function DireitosPage() {
     </ExercicioShell>
   );
 }
+

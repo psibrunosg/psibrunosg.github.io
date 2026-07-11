@@ -49,7 +49,7 @@ export default function Landing() {
           className="text-4xl md:text-6xl font-light text-center text-gray-900 mb-3"
           style={{ fontFamily: "'Cormorant Garamond', serif" }}
         >
-          Bruno SG · Psicólogo
+          Bruno Souza · Psicólogo
         </motion.h1>
         <motion.p
           variants={fadeUp}

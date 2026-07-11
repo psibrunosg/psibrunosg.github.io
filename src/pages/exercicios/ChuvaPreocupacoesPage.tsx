@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { ExercicioShell } from "@/components/exercicios/ExercicioShell";
 import ChuvaPreocupacoes from "@/components/exercicios/ChuvaPreocupacoes";
 
 export default function ChuvaPreocupacoesPage() {
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "Chuva de Preocupações | Bruno SG";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "Chuva de Preocupações | Bruno Souza";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -19,3 +19,4 @@ export default function ChuvaPreocupacoesPage() {
     </ExercicioShell>
   );
 }
+

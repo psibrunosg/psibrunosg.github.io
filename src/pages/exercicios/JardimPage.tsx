@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { ExercicioShell } from "@/components/exercicios/ExercicioShell";
 import JardimMente from "@/components/exercicios/JardimMente";
 
 export default function JardimPage() {
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "Jardim da Mente | Bruno SG";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "Jardim da Mente | Bruno Souza";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -19,3 +19,4 @@ export default function JardimPage() {
     </ExercicioShell>
   );
 }
+

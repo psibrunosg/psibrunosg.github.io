@@ -11,6 +11,7 @@ import { WaveDivider } from "@/components/ui/WaveDivider";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { FloatingBlobs } from "@/components/ui/FloatingBlobs";
 import { MobileMenu } from "@/components/ui/MobileMenu";
+import { Navbar } from "@/components/ui/Navbar";
 import { WhatsAppFloat } from "@/components/shared/WhatsAppFloat";
 import { SkipLink } from "@/components/shared/SkipLink";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
@@ -35,9 +36,16 @@ const navItems = [
   { label: "Paciente",    href: "/paciente" },
 ];
 
+const desktopNavItems = [
+  { label: "Psicoeducação",   href: "/psicoeducacao" },
+  { label: "Exercícios",      href: "/exercicios" },
+  { label: "Blog",            href: "/blog" },
+  { label: "Área do Paciente", href: "/paciente" },
+];
+
 export default function VariantC() {
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
+    document.documentElement.setAttribute("data-theme", "lobo");
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -47,6 +55,7 @@ export default function VariantC() {
     <>
       <SkipLink />
       <ScrollProgress />
+      <Navbar items={desktopNavItems} whatsappLink={contato.whatsappLink} />
       <MobileMenu items={navItems} crp={contato.crp} whatsappLink={contato.whatsappLink} />
       <WhatsAppFloat />
 
@@ -68,7 +77,7 @@ export default function VariantC() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
-                className="text-xs tracking-[0.15em] text-white/50 mb-8"
+                className="text-xs tracking-[0.15em] text-white/80 mb-8"
               >
                 {contato.modalidade}
               </motion.p>
@@ -84,7 +93,7 @@ export default function VariantC() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 1, delay: 0.3 }}
-                className="text-lg text-white/70 max-w-xl mx-auto mb-12 leading-relaxed"
+                className="text-lg text-white/85 max-w-xl mx-auto mb-12 leading-relaxed"
               >
                 {hero.subline}
               </motion.p>
@@ -141,7 +150,7 @@ export default function VariantC() {
                 <div className="rounded-3xl overflow-hidden aspect-[4/5] shadow-xl">
                   <img
                     src={contato.foto}
-                    alt="Bruno SG, Psicólogo"
+                    alt="Bruno Souza, Psicólogo"
                     className="w-full h-full object-cover object-top"
                     loading="lazy"
                   />
@@ -521,7 +530,7 @@ export default function VariantC() {
             >
               Pronto para dar o primeiro passo?
             </motion.h2>
-            <motion.p variants={fadeUp} className="text-white/60 mb-10 leading-relaxed">
+            <motion.p variants={fadeUp} className="text-white/80 mb-10 leading-relaxed">
               Uma conversa inicial, sem compromisso. Vamos ver juntos se faz sentido.
             </motion.p>
             <motion.div variants={fadeUp}>

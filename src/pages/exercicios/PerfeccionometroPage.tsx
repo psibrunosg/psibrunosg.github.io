@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { ExercicioShell } from "@/components/exercicios/ExercicioShell";
 import Perfeccionometro from "@/components/exercicios/Perfeccionometro";
 
 export default function PerfeccionometroPage() {
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "Perfeccionometro | Bruno SG";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "Perfeccionometro | Bruno Souza";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -15,3 +15,4 @@ export default function PerfeccionometroPage() {
     </ExercicioShell>
   );
 }
+

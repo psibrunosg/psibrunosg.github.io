@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { ExercicioShell } from "@/components/exercicios/ExercicioShell";
 import ReformulacaoHistoria from "@/components/exercicios/ReformulacaoHistoria";
 
 export default function ReformulacaoPage() {
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "Reformulação de História | Bruno SG";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "Reformulação de História | Bruno Souza";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -15,3 +15,4 @@ export default function ReformulacaoPage() {
     </ExercicioShell>
   );
 }
+

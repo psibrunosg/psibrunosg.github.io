@@ -4,7 +4,7 @@ import BaloesDoClima from "@/components/exercicios/BaloesDoClima";
 
 export default function BaloesClimaPage() {
   useEffect(() => {
-    document.title = "Balões do Clima | Bruno SG";
+    document.title = "Balões do Clima | Bruno Souza";
   }, []);
 
   return (

@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { ExercicioShell } from "@/components/exercicios/ExercicioShell";
 import AEscavacao from "@/components/exercicios/AEscavacao";
 
 export default function AEscavacaoPage() {
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "A Escavação | Bruno SG";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "A Escavação | Bruno Souza";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -15,3 +15,4 @@ export default function AEscavacaoPage() {
     </ExercicioShell>
   );
 }
+

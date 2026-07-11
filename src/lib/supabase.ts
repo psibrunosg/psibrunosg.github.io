@@ -8,7 +8,10 @@ export const supabase = url && key ? createClient(url, key) : null;
 export interface QuestionnaireResponse {
   id?: number;
   tipo: string;
-  nome: string;
+  // Decisão clínica (09/07/2026): não coletar mais identificação direta
+  // (nome/telefone) nas escalas — identificação passa a ser via patient_code.
+  // Mantidos opcionais apenas para não quebrar dados/telas históricas.
+  nome?: string;
   telefone?: string;
   email?: string;
   nascimento?: string;

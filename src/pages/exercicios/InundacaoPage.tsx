@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { ExercicioShell } from "@/components/exercicios/ExercicioShell";
 import InundacaoIncertezas from "@/components/exercicios/InundacaoIncertezas";
 
 export default function InundacaoPage() {
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "c");
-    document.title = "Inundação com Incertezas | Bruno SG";
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "Inundação com Incertezas | Bruno Souza";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -15,3 +15,4 @@ export default function InundacaoPage() {
     </ExercicioShell>
   );
 }
+

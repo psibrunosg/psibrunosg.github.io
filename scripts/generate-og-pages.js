@@ -14,7 +14,7 @@ const files = readdirSync(blogDir).filter((f) => f.endsWith(".json"));
 for (const file of files) {
   const post = JSON.parse(readFileSync(join(blogDir, file), "utf-8").replace(/^﻿/, ""));
   const slug = post.slug;
-  const title = post.titulo + " | Bruno SG Psicólogo";
+  const title = post.titulo + " | Bruno Souza Psicólogo";
   const description = post.resumo || post.subtitulo || "";
   const url = "https://psibrunosg.github.io/blog/" + slug;
   const image = "https://psibrunosg.github.io/img/foto.jpg";
