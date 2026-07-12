@@ -19,6 +19,10 @@ import BaloesClimaPage from "./pages/exercicios/BaloesClimaPage";
 import ChuvaPreocupacoesPage from "./pages/exercicios/ChuvaPreocupacoesPage";
 import Neuroanatomia3D from "./pages/Neuroanatomia3D";
 import Distorcoes from "./pages/Distorcoes";
+import CicloPanico from "./pages/CicloPanico";
+import JanelaTolerancia from "./pages/JanelaTolerancia";
+import Sono from "./pages/Sono";
+import ModosEsquema from "./pages/ModosEsquema";
 import BalaoPensamentosPage from "./pages/exercicios/BalaoPensamentosPage";
 import CacaFatosPage from "./pages/exercicios/CacaFatosPage";
 import GPSPage from "./pages/exercicios/GPSPage";
@@ -60,6 +64,10 @@ export default function App() {
         <Route path="/psicoeducacao" element={<Psicoeducacao />} />
         <Route path="/psicoeducacao/neuroanatomia" element={<Neuroanatomia3D />} />
         <Route path="/psicoeducacao/distorcoes" element={<Distorcoes />} />
+        <Route path="/psicoeducacao/ciclo-do-panico" element={<CicloPanico />} />
+        <Route path="/psicoeducacao/janela-de-tolerancia" element={<JanelaTolerancia />} />
+        <Route path="/psicoeducacao/sono" element={<Sono />} />
+        <Route path="/psicoeducacao/modos-do-esquema" element={<ModosEsquema />} />
         <Route path="/exercicios" element={<Exercicios />} />
         <Route path="/exercicios/restritos" element={<ExerciciosRestritos />} />
         <Route path="/exercicios/acerte-distorcao" element={<AcerteDistorcaoPage />} />

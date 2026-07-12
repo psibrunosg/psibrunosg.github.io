@@ -11,7 +11,7 @@ export interface Territorio {
   id: string;
   titulo: string;
   descricaoCurta: string;
-  icone: "brain" | "waves" | "scale" | "compass" | "moon";
+  icone: "brain" | "waves" | "scale" | "compass" | "moon" | "layers";
   rota: string;
   status: TerritorioStatus;
   teaser?: string; // exibido quando status = "em-breve"
@@ -44,8 +44,7 @@ export const territorios: Territorio[] = [
     descricaoCurta: "Como uma sensação física vira uma espiral de medo — e onde é possível interromper o ciclo.",
     icone: "waves",
     rota: "/psicoeducacao/ciclo-do-panico",
-    status: "em-breve",
-    teaser: "Em construção: um simulador visual do ciclo sensação → interpretação → pânico → mais sensação.",
+    status: "disponivel",
     posicao: { x: 82, y: 32 },
   },
   {
@@ -54,8 +53,7 @@ export const territorios: Territorio[] = [
     descricaoCurta: "A faixa em que conseguimos pensar com clareza — e o que acontece quando saímos dela.",
     icone: "compass",
     rota: "/psicoeducacao/janela-de-tolerancia",
-    status: "em-breve",
-    teaser: "Em construção: um simulador interativo da janela de ativação (hiper x hipoativação).",
+    status: "disponivel",
     posicao: { x: 30, y: 55 },
   },
   {
@@ -64,9 +62,17 @@ export const territorios: Territorio[] = [
     descricaoCurta: "Por que a mente ansiosa e o sono brigam entre si — e como negociar essa relação.",
     icone: "moon",
     rota: "/psicoeducacao/sono",
-    status: "em-breve",
-    teaser: "Em construção: higiene do sono explicada com um simulador de ciclos de sono.",
+    status: "disponivel",
     posicao: { x: 68, y: 68 },
+  },
+  {
+    id: "modos-do-esquema",
+    titulo: "Modos do Esquema",
+    descricaoCurta: "As diferentes 'vozes' internas que assumem o controle em momentos difíceis — e como fortalecer a que cuida de você.",
+    icone: "layers",
+    rota: "/psicoeducacao/modos-do-esquema",
+    status: "disponivel",
+    posicao: { x: 50, y: 85 },
   },
 ];
 
