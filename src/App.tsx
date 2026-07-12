@@ -43,8 +43,6 @@ import DireitosPage from "./pages/exercicios/DireitosPage";
 import ForcasPage from "./pages/exercicios/ForcasPage";
 import RodaPage from "./pages/exercicios/RodaPage";
 import PacienteHub from "./pages/paciente/Hub";
-import PHQ9 from "./pages/paciente/PHQ9";
-import GAD7 from "./pages/paciente/GAD7";
 import Escala from "./pages/paciente/Escala";
 import BrunoPainel from "./pages/bruno/Painel";
 import Crise from "./pages/Crise";
@@ -100,8 +98,8 @@ export default function App() {
         <Route path="/exercicios/forcas" element={<ForcasPage />} />
         <Route path="/exercicios/emocoes" element={<RodaPage />} />
         <Route path="/paciente" element={<PacienteHub />} />
-        <Route path="/paciente/phq9" element={<PHQ9 />} />
-        <Route path="/paciente/gad7" element={<GAD7 />} />
+        <Route path="/paciente/phq9" element={<Navigate to="/paciente/escala/phq9" replace />} />
+        <Route path="/paciente/gad7" element={<Navigate to="/paciente/escala/gad7" replace />} />
         <Route path="/paciente/escala/:escalaId" element={<Escala />} />
         <Route path="/bruno/painel" element={<BrunoPainel />} />
         <Route path="/crise" element={<Crise />} />

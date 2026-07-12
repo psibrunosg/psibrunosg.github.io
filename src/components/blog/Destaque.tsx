@@ -47,7 +47,7 @@ export function Destaque({ data }: { data: DestaqueData }) {
   }
 
   return (
-    <div className="not-prose my-6 rounded-2xl p-4 sm:p-5" style={{ background: estilo.bg, borderLeft: `4px solid ${estilo.cor}` }}>
+    <div className="not-prose my-6 rounded-2xl p-4 sm:p-5" style={{ background: estilo.bg, border: `1px solid ${estilo.cor}55` }}>
       <div className="flex gap-3">
         <Icon size={18} className="mt-0.5 shrink-0" style={{ color: estilo.cor }} aria-hidden="true" />
         <div className="min-w-0 flex-1">

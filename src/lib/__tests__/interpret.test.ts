@@ -77,12 +77,20 @@ describe("interpretarResposta — YPI (duas rodadas Pai/Mãe)", () => {
   });
 });
 
-describe("interpretarResposta — faixa solta (PHQ-9 / GAD-7)", () => {
-  it("classifica pela pontuação salva", () => {
-    const r = interpretarResposta("phq9", [], 12);
+describe("interpretarResposta — PHQ-9 / GAD-7 (config em escalasGerais)", () => {
+  it("classifica PHQ-9 a partir das respostas completas", () => {
+    // 9 itens somando 12 (dentro da faixa "Moderada": 10-14).
+    const respostas = [3, 3, 3, 3, 0, 0, 0, 0, 0];
+    const r = interpretarResposta("phq9", respostas, 12);
     expect(r.familia).toBe("faixa");
     expect(r.classificacao).toBe("Moderada");
     expect(r.resumo).toBe("Moderada · 12/27");
+  });
+
+  it("cai no fallback de faixa solta quando não há config nem respostas completas", () => {
+    const r = interpretarResposta("tipo-inexistente", [], 12);
+    expect(r.familia).toBe("dominio");
+    expect(r.resumo).toBe("Score: 12");
   });
 });
 

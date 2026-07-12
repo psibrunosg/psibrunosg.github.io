@@ -1549,9 +1549,63 @@ export const cssrs: EscalaGeralConfig = {
   ],
 };
 
+// ============ PHQ-9 (Patient Health Questionnaire) ============
+// Kroenke, Spitzer & Williams (2001). Dominio publico, uso livre.
+export const phq9: EscalaGeralConfig = {
+  id: "phq9",
+  sigla: "PHQ-9",
+  nome: "Rastreio de Depressao",
+  instrucoes: "Nas ultimas duas semanas, com que frequencia voce foi incomodado(a) pelos problemas a seguir?",
+  tipo: "likert",
+  pontuacaoMaxima: 27,
+  opcoes: [
+    { label: "Nenhuma vez", valor: 0 },
+    { label: "Varios dias", valor: 1 },
+    { label: "Mais da metade dos dias", valor: 2 },
+    { label: "Quase todos os dias", valor: 3 },
+  ],
+  itens: [
+    "Pouco interesse ou prazer em fazer as coisas",
+    "Se sentir para baixo, deprimido(a) ou sem perspectiva",
+    "Dificuldade para adormecer ou permanecer dormindo, ou dormir mais do que de costume",
+    "Se sentir cansado(a) ou com pouca energia",
+    "Falta de apetite ou comer demais",
+    "Se sentir mal consigo mesmo(a), achar que e um fracasso ou que decepcionou sua familia",
+    "Dificuldade para se concentrar nas coisas",
+    "Falar ou se mover mais devagar do que o habitual, ou ficar inquieto(a) demais",
+    "Pensar em se machucar ou que seria melhor estar morto(a)",
+  ],
+};
+
+// ============ GAD-7 (Generalized Anxiety Disorder) ============
+// Spitzer, Kroenke, Williams & Lowe (2006). Dominio publico, uso livre.
+export const gad7: EscalaGeralConfig = {
+  id: "gad7",
+  sigla: "GAD-7",
+  nome: "Rastreio de Ansiedade",
+  instrucoes: "Nas ultimas duas semanas, com que frequencia voce foi incomodado(a) pelos problemas a seguir?",
+  tipo: "likert",
+  pontuacaoMaxima: 21,
+  opcoes: [
+    { label: "Nenhuma vez", valor: 0 },
+    { label: "Varios dias", valor: 1 },
+    { label: "Mais da metade dos dias", valor: 2 },
+    { label: "Quase todos os dias", valor: 3 },
+  ],
+  itens: [
+    "Se sentir nervoso(a), ansioso(a) ou no limite",
+    "Nao conseguir parar ou controlar a preocupacao",
+    "Se preocupar muito com diversas coisas",
+    "Dificuldade para relaxar",
+    "Ficar tao agitado(a) que se torna dificil ficar parado(a)",
+    "Ficar facilmente irritado(a) ou irritavel",
+    "Sentir medo como se algo horrivel pudesse acontecer",
+  ],
+};
+
 // ============ MERGED MAP ============
 export const escalasGerais: Record<string, EscalaGeralConfig> = {
   asrs, bai, bdi, bhs, ebep, less, neoffir, neopir, who5, rosenberg, pss10, isi, audit, scs,
   mdq, pcl5, ocir, epworth, dass21, erq, maas, spin,
-  whoqolbref, panas, cbi, cssrs,
+  whoqolbref, panas, cbi, cssrs, phq9, gad7,
 };

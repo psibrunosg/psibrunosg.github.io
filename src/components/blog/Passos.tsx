@@ -26,9 +26,9 @@ export function Passos({ data }: { data: PassosData }) {
 
       <div className="mb-5 h-1.5 w-full overflow-hidden rounded-full bg-[var(--c-bg)]">
         <motion.div
-          className="h-full rounded-full"
-          style={{ background: "var(--c-accent)" }}
-          animate={{ width: `${progresso}%` }}
+          className="h-full w-full rounded-full"
+          style={{ background: "var(--c-accent)", transformOrigin: "left" }}
+          animate={{ scaleX: progresso / 100 }}
           transition={reduzirMovimento ? { duration: 0.01 } : { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
         />
       </div>

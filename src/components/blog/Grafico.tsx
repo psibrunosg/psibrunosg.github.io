@@ -24,10 +24,10 @@ function GraficoBarras({ dados, unidade }: { dados: GraficoData["dados"]; unidad
           </div>
           <div className="h-3 w-full overflow-hidden rounded-full bg-[var(--c-bg)]">
             <motion.div
-              className="h-full rounded-full"
-              style={{ background: CORES[i % CORES.length] }}
-              initial={{ width: 0 }}
-              whileInView={{ width: `${(d.valor / max) * 100}%` }}
+              className="h-full w-full rounded-full"
+              style={{ background: CORES[i % CORES.length], transformOrigin: "left" }}
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: d.valor / max }}
               viewport={{ once: true, amount: 0.6 }}
               transition={reduzirMovimento ? { duration: 0.01 } : { duration: 0.8, delay: i * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
             />

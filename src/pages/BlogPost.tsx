@@ -1,6 +1,6 @@
 import { useParams, Link, Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, Headphones, List, BookOpen } from "lucide-react";
+import { ArrowLeft, Clock, Headphones, List, BookOpen, KeyRound, Puzzle, Microscope } from "lucide-react";
 import { useState, useEffect, useMemo, useRef, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -54,13 +54,13 @@ function textoDe(node: ReactNode): string {
   return "";
 }
 
-const CALLOUTS: Record<string, { emoji: string }> = {
-  "ponto-chave": { emoji: "🔑" },
-  "na pratica": { emoji: "🧩" },
-  "na prática": { emoji: "🧩" },
-  "mito x ciencia": { emoji: "🔬" },
-  "mito × ciência": { emoji: "🔬" },
-  "mito x ciência": { emoji: "🔬" },
+const CALLOUTS: Record<string, { Icon: typeof KeyRound }> = {
+  "ponto-chave": { Icon: KeyRound },
+  "na pratica": { Icon: Puzzle },
+  "na prática": { Icon: Puzzle },
+  "mito x ciencia": { Icon: Microscope },
+  "mito × ciência": { Icon: Microscope },
+  "mito x ciência": { Icon: Microscope },
 };
 
 export default function BlogPost() {
@@ -246,11 +246,11 @@ export default function BlogPost() {
                     const texto = textoDe(children).trim().toLowerCase();
                     const chave = Object.keys(CALLOUTS).find((k) => texto.startsWith(k));
                     if (chave) {
-                      const { emoji } = CALLOUTS[chave];
+                      const { Icon } = CALLOUTS[chave];
                       return (
-                        <div className="not-prose my-5 rounded-2xl p-4" style={{ background: cor + "12", borderLeft: `4px solid ${cor}` }}>
+                        <div className="not-prose my-5 rounded-2xl p-4" style={{ background: cor + "12", border: `1px solid ${cor}55` }}>
                           <div className="flex gap-3">
-                            <span className="text-xl leading-none" aria-hidden="true">{emoji}</span>
+                            <Icon size={20} className="mt-0.5 shrink-0" style={{ color: cor }} aria-hidden="true" />
                             <div className="text-sm leading-relaxed text-[var(--c-text)] [&_p]:m-0 [&_p]:mt-1 first:[&_p]:mt-0 [&_strong]:font-bold [&_strong]:uppercase [&_strong]:tracking-wide">
                               {children}
                             </div>

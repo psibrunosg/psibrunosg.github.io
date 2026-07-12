@@ -120,40 +120,39 @@ export function MindMap({ data }: { data: MindMapData }) {
             );
           })}
 
-          {/* filhos */}
-          <AnimatePresence>
-            {data.nos.map((no, i) => {
-              if (!abertos.has(i) || !no.filhos?.length) return null;
-              const ang = -90 + i * anguloPasso;
-              const pai = ponto(CENTRO, CENTRO, RAIO_NOS, ang);
-              const cor = no.cor ?? CORES_DEFAULT[i % CORES_DEFAULT.length];
-              const arco = 46;
-              const idNo = `${baseId}-no-${i}`;
-              return (
-                <div key={`filhos-${i}`} id={`${idNo}-filhos`}>
-                  {no.filhos.map((filho, j) => {
-                    const totalFilhos = no.filhos!.length;
-                    const offset = (j - (totalFilhos - 1) / 2) * (arco / Math.max(totalFilhos, 1));
-                    const angFilho = ang + offset;
-                    const pf = ponto(pai.x, pai.y, RAIO_FILHOS, angFilho);
-                    return (
-                      <motion.span
-                        key={filho}
-                        initial={{ opacity: 0, scale: 0.6 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.6 }}
-                        transition={transition}
-                        className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-medium shadow-sm"
-                        style={{ left: pf.x, top: pf.y, borderColor: cor + "88", color: "var(--c-text)", background: "var(--c-bg)" }}
-                      >
-                        {filho}
-                      </motion.span>
-                    );
-                  })}
-                </div>
-              );
-            })}
-          </AnimatePresence>
+          {/* filhos — entrance-only: os filhos diretos não são motion components,
+              então exit via AnimatePresence não funcionaria (risco de exit-stall,
+              ver bug já corrigido no QuizEngine). Fechamento é imediato. */}
+          {data.nos.map((no, i) => {
+            if (!abertos.has(i) || !no.filhos?.length) return null;
+            const ang = -90 + i * anguloPasso;
+            const pai = ponto(CENTRO, CENTRO, RAIO_NOS, ang);
+            const cor = no.cor ?? CORES_DEFAULT[i % CORES_DEFAULT.length];
+            const arco = 46;
+            const idNo = `${baseId}-no-${i}`;
+            return (
+              <div key={`filhos-${i}`} id={`${idNo}-filhos`}>
+                {no.filhos.map((filho, j) => {
+                  const totalFilhos = no.filhos!.length;
+                  const offset = (j - (totalFilhos - 1) / 2) * (arco / Math.max(totalFilhos, 1));
+                  const angFilho = ang + offset;
+                  const pf = ponto(pai.x, pai.y, RAIO_FILHOS, angFilho);
+                  return (
+                    <motion.span
+                      key={filho}
+                      initial={{ opacity: 0, scale: 0.6 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={transition}
+                      className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-medium shadow-sm"
+                      style={{ left: pf.x, top: pf.y, borderColor: cor + "88", color: "var(--c-text)", background: "var(--c-bg)" }}
+                    >
+                      {filho}
+                    </motion.span>
+                  );
+                })}
+              </div>
+            );
+          })}
         </div>
       </div>
 

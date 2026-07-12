@@ -258,7 +258,7 @@ export default function Escala() {
                   <h1 className="mb-3 text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{config.nome}</h1>
                   <p className="mb-6 text-sm leading-relaxed text-[var(--c-muted)]">Esta escala foi liberada pelo seu psicólogo. Informe o código recebido para continuar.</p>
                   <input value={codigoDigitado} onChange={(event) => setCodigoDigitado(event.target.value.replace(/\D/g, "").slice(0, 8))} inputMode="numeric" autoComplete="one-time-code" placeholder="Código de 5 ou 8 dígitos" className="mb-3 w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-center font-mono text-lg tracking-[0.25em] text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
-                  {erroCodigo && <p className="mb-3 text-sm text-red-400">{erroCodigo}</p>}
+                  {erroCodigo && <p className="mb-3 text-sm" style={{ color: "var(--c-danger)" }}>{erroCodigo}</p>}
                   <button onClick={() => validarCodigo()} disabled={validandoCodigo || !/^\d{5}(\d{3})?$/.test(codigoDigitado)} className="flex w-full items-center justify-center rounded-full px-6 py-3.5 font-medium text-white disabled:opacity-40" style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
                     {validandoCodigo ? "Validando..." : "Continuar"}
                   </button>
@@ -287,7 +287,7 @@ export default function Escala() {
                     {requerCodigo && (
                       <div>
                         <label htmlFor="escala-email" className="mb-1.5 block text-sm font-medium text-[var(--c-text)]">E-mail <span className="text-xs font-normal text-[var(--c-muted)]">(opcional)</span></label>
-                        <input id="escala-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com"
+                        <input id="escala-email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com"
                           className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors placeholder:text-[var(--c-muted)]/50 focus:border-[var(--c-accent)] focus:outline-none" />
                         <p className="mt-1.5 text-xs text-[var(--c-muted)]">Usado apenas para contato do seu psicólogo em caso de necessidade clínica.</p>
                       </div>
@@ -375,11 +375,11 @@ export default function Escala() {
             {etapa === "form" && (
               <motion.div key="form" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
                 <div className="mb-2 flex items-center justify-between text-xs font-medium text-[var(--c-muted)]" aria-live="polite">
-                  <span>Pergunta {atual + 1} de {total}</span>
-                  <span className="text-[var(--c-accent)]">{pct}%</span>
+                  <span className="tabular-nums">Pergunta {atual + 1} de {total}</span>
+                  <span className="tabular-nums text-[var(--c-accent)]">{pct}%</span>
                 </div>
                 <div className="mb-6 h-2 overflow-hidden rounded-full bg-[var(--c-border)]" role="progressbar" aria-valuenow={atual + 1} aria-valuemin={1} aria-valuemax={total} aria-label="Progresso do questionário">
-                  <div className="h-full rounded-full transition-[width] duration-300 ease-out" style={{ width: pct + "%", background: "linear-gradient(90deg, var(--c-accent), var(--c-accent-lt))" }} />
+                  <div className="h-full w-full rounded-full transition-transform duration-300 ease-out" style={{ transform: `scaleX(${pct / 100})`, transformOrigin: "left", background: "linear-gradient(90deg, var(--c-accent), var(--c-accent-lt))" }} />
                 </div>
 
                 {rodadaLabel && (
@@ -467,7 +467,7 @@ function ResultadoScreen({ config, respostas }: { config: AnyConfig; respostas: 
   if (isEscalaGeral(config)) {
     const total = computeGeralScore(config, respostas).total;
     emRisco = pacienteEmRisco(config.id, total, respostas);
-    crisisVariant = config.id === "bhs" || config.id === "bdi" || config.id === "cssrs" ? "suicida" : "apoio";
+    crisisVariant = config.id === "bhs" || config.id === "bdi" || config.id === "cssrs" || config.id === "phq9" ? "suicida" : "apoio";
   }
 
   return (

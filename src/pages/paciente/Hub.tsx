@@ -14,8 +14,8 @@ type Ferramenta = {
 };
 
 const ferramentasRastreio: Ferramenta[] = [
-  { id: "phq9", href: "/paciente/phq9", icon: Brain, sigla: "PHQ-9", nome: "Rastreio de Depressao", descricao: "9 perguntas sobre humor nas ultimas duas semanas. ~3 min.", cor: "#B05D3A" },
-  { id: "gad7", href: "/paciente/gad7", icon: ClipboardList, sigla: "GAD-7", nome: "Rastreio de Ansiedade", descricao: "7 perguntas sobre ansiedade e preocupacao. ~2 min.", cor: "#4A6B47" },
+  { id: "phq9", href: "/paciente/escala/phq9", icon: Brain, sigla: "PHQ-9", nome: "Rastreio de Depressao", descricao: "9 perguntas sobre humor nas ultimas duas semanas. ~3 min.", cor: "#B05D3A" },
+  { id: "gad7", href: "/paciente/escala/gad7", icon: ClipboardList, sigla: "GAD-7", nome: "Rastreio de Ansiedade", descricao: "7 perguntas sobre ansiedade e preocupacao. ~2 min.", cor: "#4A6B47" },
 ];
 
 const ferramentasGerais: Ferramenta[] = [
@@ -62,9 +62,9 @@ function FerramentaCard({ f, featured = false }: { f: Ferramenta; featured?: boo
       <Link
         to={f.href}
         className={`shine-host glass-card group relative block h-full overflow-hidden rounded-2xl transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_18px_44px_-16px_rgba(58,42,31,0.4)] ${featured ? "p-7 sm:p-8" : "p-6"}`}
+        style={{ border: `1px solid ${f.cor}40`, background: `color-mix(in oklab, ${f.cor} 4%, transparent)` }}
       >
-        <span className="absolute left-0 top-0 h-full w-1.5" style={{ background: `linear-gradient(to bottom, ${f.cor}, ${f.cor}55)` }} aria-hidden="true" />
-        <div className={`flex items-start gap-4 pl-1 ${featured ? "sm:gap-5" : ""}`}>
+        <div className={`flex items-start gap-4 ${featured ? "sm:gap-5" : ""}`}>
           <div
             className={`relative flex-shrink-0 rounded-2xl transition-transform duration-200 group-hover:scale-110 group-hover:rotate-6 ${featured ? "p-4" : "p-3.5"}`}
             style={{ background: f.cor + "1A", boxShadow: `0 8px 22px -8px ${f.cor}88` }}
@@ -126,7 +126,7 @@ function Secao({ titulo, count, children, cols = "sm:grid-cols-2" }: { titulo: s
     <motion.section variants={fadeUp} className="mb-12">
       <div className="mb-5 flex items-center gap-3">
         <h2 className="text-sm font-bold tracking-[0.18em] uppercase text-[var(--c-muted)]">{titulo}</h2>
-        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--c-accent)]/12 px-1.5 text-[11px] font-bold text-[var(--c-accent)]">{count}</span>
+        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--c-accent)]/12 px-1.5 text-[11px] font-bold tabular-nums text-[var(--c-accent)]">{count}</span>
         <div className="h-px flex-1 rounded-full bg-gradient-to-r from-[var(--c-border)] to-transparent" />
       </div>
       <div className={`grid gap-5 ${cols}`}>{children}</div>
@@ -175,7 +175,7 @@ export default function PacienteHub() {
                   aria-hidden="true"
                 />
               </motion.div>
-              <h1 className="mb-4 text-4xl font-semibold md:text-5xl" style={{ fontFamily: "var(--font-heading)", background: "linear-gradient(120deg, var(--c-text), var(--c-accent))", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>
+              <h1 className="mb-4 text-4xl font-semibold md:text-5xl" style={{ fontFamily: "var(--font-heading)", color: "var(--c-accent)" }}>
                 Area do Paciente
               </h1>
               <p className="mx-auto max-w-lg leading-relaxed text-[var(--c-muted)]">

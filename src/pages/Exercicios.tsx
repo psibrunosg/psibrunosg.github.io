@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -354,12 +354,49 @@ export default function Exercicios() {
   const [codeSaving, setCodeSaving] = useState(false);
   const [codeError, setCodeError] = useState("");
   const [hasCode, setHasCode] = useState(() => !!localStorage.getItem("exercise_patient_code"));
+  const codeModalRef = useRef<HTMLDivElement>(null);
+  const codeModalTriggerRef = useRef<HTMLButtonElement>(null);
+  const codeInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
     document.title = "Exercícios | Clínica Bruno Souza — Saúde & Bem-estar";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
+
+  // Foco entra no modal ao abrir e retorna ao gatilho ao fechar (nunca no mount inicial).
+  const modalFoiAbertoRef = useRef(false);
+  useEffect(() => {
+    if (showCodeModal) {
+      codeInputRef.current?.focus();
+      modalFoiAbertoRef.current = true;
+    } else if (modalFoiAbertoRef.current) {
+      codeModalTriggerRef.current?.focus();
+      modalFoiAbertoRef.current = false;
+    }
+  }, [showCodeModal]);
+
+  function handleModalKeyDown(e: KeyboardEvent<HTMLDivElement>) {
+    if (e.key === "Escape") {
+      e.stopPropagation();
+      setShowCodeModal(false);
+      return;
+    }
+    if (e.key !== "Tab" || !codeModalRef.current) return;
+    const focusables = codeModalRef.current.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    if (focusables.length === 0) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
 
   const visiveis = useMemo(
     () => (trilhaAtiva === "todas" ? exercicios : exercicios.filter((e) => e.trilha === trilhaAtiva)),
@@ -630,6 +667,7 @@ export default function Exercicios() {
               {!hasCode ? (
                 <div className="flex flex-wrap items-center gap-4">
                   <button
+                    ref={codeModalTriggerRef}
                     onClick={() => setShowCodeModal(true)}
                     className="inline-flex items-center gap-2 rounded-full px-6 py-3 font-bold text-white shadow-md transition-transform hover:scale-[1.03]"
                     style={{ background: "var(--c-warm)" }}
@@ -666,7 +704,7 @@ export default function Exercicios() {
       </main>
 
       {/* ===== Modal código ===== */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {showCodeModal && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -676,6 +714,12 @@ export default function Exercicios() {
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
           >
             <motion.div
+              ref={codeModalRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="code-modal-title"
+              aria-describedby="code-modal-desc"
+              onKeyDown={handleModalKeyDown}
               initial={{ scale: 0.92, y: 24 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.92, y: 24 }}
@@ -689,11 +733,12 @@ export default function Exercicios() {
               >
                 <PawPrint size={24} />
               </span>
-              <h3 className="text-xl font-medium text-[var(--c-text)] mb-1" style={{ fontFamily: "var(--font-heading)" }}>
+              <h3 id="code-modal-title" className="text-xl font-medium text-[var(--c-text)] mb-1" style={{ fontFamily: "var(--font-heading)" }}>
                 Insira seu código
               </h3>
-              <p className="text-xs text-[var(--c-muted)] mb-5">Código de 5 dígitos fornecido pelo terapeuta</p>
+              <p id="code-modal-desc" className="text-xs text-[var(--c-muted)] mb-5">Código de 5 dígitos fornecido pelo terapeuta</p>
               <input
+                ref={codeInputRef}
                 type="text"
                 inputMode="numeric"
                 value={codeInput}

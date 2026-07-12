@@ -45,33 +45,6 @@ for (const [k, v] of Object.entries(escalas)) {
 for (const [k, v] of Object.entries(escalasGerais)) {
   allScaleConfigs[k] = { itens: v.itens as (string | BDIItem)[], opcoes: v.opcoes };
 }
-allScaleConfigs["phq9"] = {
-  itens: [
-    "Pouco interesse ou prazer em fazer as coisas",
-    "Se sentir para baixo, deprimido(a) ou sem perspectiva",
-    "Dificuldade para adormecer ou permanecer dormindo",
-    "Se sentir cansado(a) ou com pouca energia",
-    "Falta de apetite ou comer demais",
-    "Se sentir mal consigo mesmo(a)",
-    "Dificuldade para se concentrar",
-    "Falar ou se mover mais devagar do que o habitual",
-    "Pensar em se machucar ou que seria melhor estar morto(a)",
-  ],
-  opcoes: [{ label: "Nenhuma vez", valor: 0 }, { label: "Varios dias", valor: 1 }, { label: "Mais da metade", valor: 2 }, { label: "Quase todos", valor: 3 }],
-};
-allScaleConfigs["gad7"] = {
-  itens: [
-    "Se sentir nervoso(a), ansioso(a) ou no limite",
-    "Nao conseguir parar ou controlar a preocupacao",
-    "Se preocupar muito com diversas coisas",
-    "Dificuldade para relaxar",
-    "Ficar tao agitado(a) que se torna dificil ficar parado(a)",
-    "Ficar facilmente irritado(a) ou irritavel",
-    "Sentir medo como se algo horrivel pudesse acontecer",
-  ],
-  opcoes: [{ label: "Nenhuma vez", valor: 0 }, { label: "Varios dias", valor: 1 }, { label: "Mais da metade", valor: 2 }, { label: "Quase todos", valor: 3 }],
-};
-
 function getItemText(item: string | BDIItem, index: number): string {
   if (typeof item === "string") return item;
   return item.opcoes?.map((o) => o.texto).join(" / ") || `Item ${index + 1}`;
