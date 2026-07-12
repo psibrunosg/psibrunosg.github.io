@@ -12,7 +12,7 @@ const corsHeaders = {
 const jsonHeaders = { ...corsHeaders, "Content-Type": "application/json" };
 
 const THERAPIST_USER_ID = "d0dddd26-7dd0-4b5c-911a-7d541c7826e6";
-const ALLOWED_SCALES = ["neoffir", "neopir", "bdi", "bai", "bhs", "bss"];
+const ALLOWED_SCALES = ["neoffir", "neopir", "bdi", "bai", "bhs", "bss", "cssrs"];
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -39,6 +39,9 @@ serve(async (req) => {
     const expiresAt = allowedScales.length > 0
       ? new Date(Date.now() + expiresInHours * 60 * 60 * 1000).toISOString()
       : null;
+    const nomePaciente = typeof body.nome_paciente === "string"
+      ? body.nome_paciente.trim().slice(0, 120) || null
+      : null;
 
     let code: string;
     let exists = true;
@@ -56,10 +59,11 @@ serve(async (req) => {
       allowed_scales: allowedScales,
       expires_at: expiresAt,
       created_by: authData.user.id,
+      nome_paciente: nomePaciente,
     });
     if (error) throw error;
 
-    return new Response(JSON.stringify({ code, allowed_scales: allowedScales, expires_at: expiresAt }), { status: 200, headers: jsonHeaders });
+    return new Response(JSON.stringify({ code, allowed_scales: allowedScales, expires_at: expiresAt, nome_paciente: nomePaciente }), { status: 200, headers: jsonHeaders });
   } catch (error) {
     console.error("generate-code error:", error);
     return new Response(JSON.stringify({ error: "Internal error" }), { status: 500, headers: jsonHeaders });

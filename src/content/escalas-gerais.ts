@@ -24,6 +24,11 @@ export interface EscalaGeralConfig {
   invertidos?: number[];
   chaveCorrecao?: Record<number, string>;
   pontuacaoMaxima?: number;
+  /** Min/max da escala de resposta, usado na inversao de itens quando os
+   * itens tem opcoes proprias (tipo "likert-statements") em vez de um
+   * `opcoes` global. Default: min 0, max 4 (compatibilidade retroativa). */
+  escalaMin?: number;
+  escalaMax?: number;
 }
 
 // ============ ASRS-18 ============
@@ -1369,8 +1374,184 @@ export const spin: EscalaGeralConfig = {
   ],
 };
 
+// ============ WHOQOL-bref (Qualidade de Vida — OMS) ============
+// The WHOQOL Group (1998); BR: Fleck et al. (1999, 2000). 26 itens, dominio publico
+// (uso livre para fins clinicos/pesquisa, mediante registro junto ao WHOQOL Group).
+// Domain I (Fisico): 3,4,10,15,16,17,18 | Domain II (Psicologico): 5,6,7,11,19,26
+// Domain III (Relacoes sociais): 20,21,22 | Domain IV (Meio ambiente): 8,9,12,13,14,23,24,25
+// Facetas gerais (fora dos dominios): 1, 2. Itens invertidos: 3, 4, 26.
+// REVISAO CLINICA: texto reconstruido a partir da versao brasileira publicada;
+// confira a redacao exata de cada item antes do uso clinico.
+const wq = (opcoes: BDIItem["opcoes"]) => opcoes;
+const wqRating: BDIItem["opcoes"] = [
+  { texto: "Muito ruim", valor: 1 }, { texto: "Ruim", valor: 2 }, { texto: "Nem ruim nem boa", valor: 3 },
+  { texto: "Boa", valor: 4 }, { texto: "Muito boa", valor: 5 },
+];
+const wqSatisfacao: BDIItem["opcoes"] = [
+  { texto: "Muito insatisfeito(a)", valor: 1 }, { texto: "Insatisfeito(a)", valor: 2 }, { texto: "Nem satisfeito nem insatisfeito", valor: 3 },
+  { texto: "Satisfeito(a)", valor: 4 }, { texto: "Muito satisfeito(a)", valor: 5 },
+];
+const wqExtensao: BDIItem["opcoes"] = [
+  { texto: "Nada", valor: 1 }, { texto: "Muito pouco", valor: 2 }, { texto: "Mais ou menos", valor: 3 },
+  { texto: "Bastante", valor: 4 }, { texto: "Extremamente", valor: 5 },
+];
+const wqCapacidade: BDIItem["opcoes"] = [
+  { texto: "Nada", valor: 1 }, { texto: "Muito pouco", valor: 2 }, { texto: "Medio", valor: 3 },
+  { texto: "Muito", valor: 4 }, { texto: "Completamente", valor: 5 },
+];
+const wqFrequencia: BDIItem["opcoes"] = [
+  { texto: "Nunca", valor: 1 }, { texto: "Algumas vezes", valor: 2 }, { texto: "Frequentemente", valor: 3 },
+  { texto: "Muito frequentemente", valor: 4 }, { texto: "Sempre", valor: 5 },
+];
+export const whoqolbref: EscalaGeralConfig = {
+  id: "whoqolbref",
+  sigla: "WHOQOL-bref",
+  nome: "Escala de Qualidade de Vida (OMS)",
+  instrucoes: "Este questionario pergunta sobre como voce se sente a respeito da sua qualidade de vida, saude e outras areas da sua vida, pensando nas ultimas duas semanas.",
+  tipo: "likert-statements",
+  escalaMin: 1,
+  escalaMax: 5,
+  invertidos: [3, 4, 26],
+  dominios: [
+    { id: "fisico", nome: "Dominio Fisico", itens: [3, 4, 10, 15, 16, 17, 18] },
+    { id: "psicologico", nome: "Dominio Psicologico", itens: [5, 6, 7, 11, 19, 26] },
+    { id: "social", nome: "Relacoes Sociais", itens: [20, 21, 22] },
+    { id: "ambiente", nome: "Meio Ambiente", itens: [8, 9, 12, 13, 14, 23, 24, 25] },
+  ],
+  itens: [
+    { opcoes: wq(wqRating) }, // 1 - Como voce avaliaria sua qualidade de vida?
+    { opcoes: wq(wqSatisfacao) }, // 2 - Quao satisfeito(a) voce esta com a sua saude?
+    { opcoes: wq(wqExtensao) }, // 3 - Em que medida voce acha que sua dor (fisica) impede voce de fazer o que voce precisa? (invertido)
+    { opcoes: wq(wqExtensao) }, // 4 - O quanto voce precisa de algum tratamento medico para levar sua vida diaria? (invertido)
+    { opcoes: wq(wqExtensao) }, // 5 - O quanto voce aproveita a vida?
+    { opcoes: wq(wqExtensao) }, // 6 - Em que medida voce acha que a sua vida tem sentido?
+    { opcoes: wq(wqExtensao) }, // 7 - O quanto voce consegue se concentrar?
+    { opcoes: wq(wqExtensao) }, // 8 - Quao seguro(a) voce se sente em sua vida diaria?
+    { opcoes: wq(wqExtensao) }, // 9 - Quao saudavel e o seu ambiente fisico (clima, barulho, poluicao, atrativos)?
+    { opcoes: wq(wqCapacidade) }, // 10 - Voce tem energia suficiente para seu dia a dia?
+    { opcoes: wq(wqCapacidade) }, // 11 - Voce e capaz de aceitar a sua aparencia fisica?
+    { opcoes: wq(wqCapacidade) }, // 12 - Voce tem dinheiro suficiente para satisfazer suas necessidades?
+    { opcoes: wq(wqCapacidade) }, // 13 - Quao disponiveis para voce estao as informacoes que precisa no seu dia a dia?
+    { opcoes: wq(wqCapacidade) }, // 14 - Em que medida voce tem oportunidades de atividade de lazer?
+    { opcoes: wq(wqCapacidade) }, // 15 - Voce e capaz de se locomover fisicamente?
+    { opcoes: wq(wqSatisfacao) }, // 16 - Quao satisfeito(a) voce esta com o seu sono?
+    { opcoes: wq(wqSatisfacao) }, // 17 - Quao satisfeito(a) voce esta com sua capacidade de desempenhar as atividades do seu dia a dia?
+    { opcoes: wq(wqSatisfacao) }, // 18 - Quao satisfeito(a) voce esta com sua capacidade para o trabalho?
+    { opcoes: wq(wqSatisfacao) }, // 19 - Quao satisfeito(a) voce esta consigo mesmo(a)?
+    { opcoes: wq(wqSatisfacao) }, // 20 - Quao satisfeito(a) voce esta com suas relacoes pessoais (amigos, parentes, conhecidos, colegas)?
+    { opcoes: wq(wqSatisfacao) }, // 21 - Quao satisfeito(a) voce esta com sua vida sexual?
+    { opcoes: wq(wqSatisfacao) }, // 22 - Quao satisfeito(a) voce esta com o apoio que voce recebe de seus amigos?
+    { opcoes: wq(wqSatisfacao) }, // 23 - Quao satisfeito(a) voce esta com as condicoes do local onde mora?
+    { opcoes: wq(wqSatisfacao) }, // 24 - Quao satisfeito(a) voce esta com o seu acesso aos servicos de saude?
+    { opcoes: wq(wqSatisfacao) }, // 25 - Quao satisfeito(a) voce esta com o seu meio de transporte?
+    { opcoes: wq(wqFrequencia) }, // 26 - Com que frequencia voce tem sentimentos negativos, tais como mau humor, desespero, ansiedade ou depressao? (invertido)
+  ],
+};
+
+// ============ PANAS (Escala de Afetos Positivos e Negativos) ============
+// Watson, Clark & Tellegen (1988); BR: Galinha & Ribeiro / Carvalho et al.
+// 20 itens, escala 1-5. Dominio publico, uso livre para fins clinicos/pesquisa.
+// REVISAO CLINICA: confira a traducao exata dos adjetivos de afeto.
+export const panas: EscalaGeralConfig = {
+  id: "panas",
+  sigla: "PANAS",
+  nome: "Escala de Afetos Positivos e Negativos",
+  instrucoes: "Esta escala apresenta uma serie de palavras que descrevem sentimentos e emocoes. Leia cada item e indique o quanto voce tem se sentido assim nas ultimas duas semanas.",
+  tipo: "likert",
+  opcoes: [
+    { label: "Nem um pouco", valor: 1 },
+    { label: "Um pouco", valor: 2 },
+    { label: "Moderadamente", valor: 3 },
+    { label: "Bastante", valor: 4 },
+    { label: "Extremamente", valor: 5 },
+  ],
+  dominios: [
+    { id: "positivo", nome: "Afeto Positivo", itens: [1, 3, 5, 9, 10, 12, 14, 16, 17, 19] },
+    { id: "negativo", nome: "Afeto Negativo", itens: [2, 4, 6, 7, 8, 11, 13, 15, 18, 20] },
+  ],
+  itens: [
+    "Interessado(a)", "Angustiado(a)", "Entusiasmado(a)", "Chateado(a)", "Forte",
+    "Culpado(a)", "Assustado(a)", "Hostil", "Entusiástico(a)", "Orgulhoso(a)",
+    "Irritado(a)", "Alerta", "Envergonhado(a)", "Inspirado(a)", "Nervoso(a)",
+    "Decidido(a)", "Atento(a)", "Inquieto(a)", "Ativo(a)", "Amedrontado(a)",
+  ],
+};
+
+// ============ CBI (Copenhagen Burnout Inventory) ============
+// Kristensen et al. (2005); adaptacao brasileira. 19 itens, dominio publico
+// (instrumento gratuito, preferido ao MBI por nao exigir licenca comercial).
+// Escore de cada subescala = media dos itens (0-100), nao soma.
+// REVISAO CLINICA: confira a traducao exata dos itens e os pontos de corte.
+export const cbi: EscalaGeralConfig = {
+  id: "cbi",
+  sigla: "CBI",
+  nome: "Inventario de Burnout de Copenhague",
+  instrucoes: "As perguntas a seguir se referem a como voce tem se sentido em relacao ao seu trabalho e a sua vida em geral. Responda pensando no ultimo mes.",
+  tipo: "likert",
+  opcoes: [
+    { label: "Nunca / Quase nunca", valor: 0 },
+    { label: "Raramente", valor: 25 },
+    { label: "As vezes", valor: 50 },
+    { label: "Frequentemente", valor: 75 },
+    { label: "Sempre", valor: 100 },
+  ],
+  dominios: [
+    { id: "pessoal", nome: "Burnout Pessoal", itens: [1, 2, 3, 4, 5, 6] },
+    { id: "trabalho", nome: "Burnout Relacionado ao Trabalho", itens: [7, 8, 9, 10, 11, 12, 13], invertidos: [10] },
+    { id: "cliente", nome: "Burnout Relacionado ao Cliente/Paciente", itens: [14, 15, 16, 17, 18, 19] },
+  ],
+  itens: [
+    "Com que frequencia voce se sente cansado(a)?",
+    "Com que frequencia voce se sente fisicamente exausto(a)?",
+    "Com que frequencia voce se sente emocionalmente exausto(a)?",
+    "Com que frequencia voce pensa: 'Eu nao aguento mais isso'?",
+    "Com que frequencia voce se sente esgotado(a)?",
+    "Com que frequencia voce se sente fraco(a) e suscetivel a doencas?",
+    "Voce se sente exausto(a) no final do dia de trabalho?",
+    "Voce se sente exausto(a) pela manha, ao pensar em mais um dia de trabalho?",
+    "Voce sente que cada hora de trabalho e cansativa para voce?",
+    "Voce tem energia suficiente para a familia e amigos durante o tempo livre?",
+    "Seu trabalho e emocionalmente desgastante?",
+    "Seu trabalho o(a) frustra?",
+    "Voce se sente esgotado(a) por causa do seu trabalho?",
+    "Voce acha dificil trabalhar com pacientes/clientes?",
+    "Voce acha frustrante trabalhar com pacientes/clientes?",
+    "Trabalhar com pacientes/clientes drena a sua energia?",
+    "Voce sente que da mais do que recebe de volta ao trabalhar com pacientes/clientes?",
+    "Voce esta cansado(a) de trabalhar com pacientes/clientes?",
+    "Voce as vezes se pergunta por quanto tempo mais conseguira continuar trabalhando com pacientes/clientes?",
+  ],
+};
+
+// ============ C-SSRS (Rastreio — Columbia Suicide Severity Rating Scale) ============
+// Posner et al. (2011); versao screener de 6 perguntas, uso comunitario livre
+// (Columbia Lighthouse Project). ESCALA RESTRITA — ver escalas-restritas.ts.
+// O resultado NUNCA e exibido ao paciente; o CrisisCard e sempre exibido ao
+// final desta escala, independente das respostas (ver pacienteEmRisco em scoring.ts).
+// REVISAO CLINICA: confira a traducao oficial certificada, se disponivel.
+export const cssrs: EscalaGeralConfig = {
+  id: "cssrs",
+  sigla: "C-SSRS",
+  nome: "Rastreio de Risco de Suicidio (Columbia)",
+  instrucoes: "Responda com sinceridade as perguntas abaixo, pensando no ultimo mes. Nao ha respostas certas ou erradas.",
+  tipo: "likert",
+  opcoes: [
+    { label: "Nao", valor: 0 },
+    { label: "Sim", valor: 1 },
+  ],
+  itens: [
+    "Voce deseja estar morto(a) ou deseja poder dormir e nao acordar?",
+    "Voce teve pensamentos reais de tirar a propria vida?",
+    "Voce pensou em como poderia fazer isso (o metodo), sem ter um plano especifico ou intencao de leva-lo adiante?",
+    "Voce teve alguma intencao de agir de acordo com esses pensamentos de se matar, e nao apenas o pensamento em si?",
+    "Voce comecou a elaborar ou elaborou os detalhes de como se matar, e pretende levar esse plano adiante?",
+    "Voce ja fez alguma vez uma tentativa de suicidio ou comecou a fazer algo para se preparar para tirar a propria vida (por exemplo: reunir comprimidos, arranjar uma arma, escrever um bilhete de despedida)?",
+  ],
+};
+
 // ============ MERGED MAP ============
 export const escalasGerais: Record<string, EscalaGeralConfig> = {
   asrs, bai, bdi, bhs, ebep, less, neoffir, neopir, who5, rosenberg, pss10, isi, audit, scs,
   mdq, pcl5, ocir, epworth, dass21, erq, maas, spin,
+  whoqolbref, panas, cbi, cssrs,
 };

@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, Trash2, Lock, FileText, ExternalLink, RefreshCw, Plus, Save, Eye, EyeOff, Edit3, X, Bold, Italic, Heading2, List, RotateCcw, Bell, AlertTriangle } from "lucide-react";
+import { Download, Trash2, Lock, FileText, ExternalLink, RefreshCw, Plus, Save, Eye, EyeOff, Edit3, X, Bold, Italic, Heading2, List, RotateCcw, Bell, AlertTriangle, Sun, Moon } from "lucide-react";
 import { PainelPacientes } from "@/components/painelPacientes";
 import jsPDF from "jspdf";
 import ReactMarkdown from "react-markdown";
@@ -486,22 +486,22 @@ function PerfilPaciente({ respostas, onVoltar, onAbrirResposta, onExcluir }: { r
         </div>
       </motion.div>
 
-      <motion.div variants={fadeUp} className="glass-card mt-4 rounded-2xl border border-red-200/50 p-5">
-        <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-red-500">LGPD — Direito ao esquecimento</p>
+      <motion.div variants={fadeUp} className="glass-card mt-4 rounded-2xl border border-[var(--c-danger)]/25 p-5">
+        <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--c-danger)]">LGPD — Direito ao esquecimento</p>
         {!confirmando ? (
-          <button onClick={() => setConfirmando(true)} className="rounded-full border border-red-300 px-4 py-2 text-xs font-semibold text-red-500 transition-all hover:bg-red-50">
+          <button onClick={() => setConfirmando(true)} className="rounded-full border border-[var(--c-danger)]/40 px-4 py-2 text-xs font-semibold text-[var(--c-danger)] transition-all hover:bg-[var(--c-danger)]/10">
             Excluir todos os dados deste paciente
           </button>
         ) : (
           <div className="space-y-2">
             <p className="text-xs text-[var(--c-muted)]">Digite o nome para confirmar: <span className="font-semibold text-[var(--c-text)]">{nome}</span></p>
             <input value={confirmNome} onChange={(e) => setConfirmNome(e.target.value)} placeholder={nome}
-              className="w-full rounded-xl border border-red-300 bg-[var(--c-bg)]/60 px-4 py-2 text-sm text-[var(--c-text)] focus:outline-none focus:border-red-500" />
+              className="w-full rounded-xl border border-[var(--c-danger)]/40 bg-[var(--c-bg)]/60 px-4 py-2 text-sm text-[var(--c-text)] focus:outline-none focus:border-[var(--c-danger)]" />
             <div className="flex gap-2">
               <button onClick={() => { setConfirmando(false); setConfirmNome(""); }}
                 className="rounded-full border border-[var(--c-border)] px-4 py-2 text-xs text-[var(--c-muted)]">Cancelar</button>
               <button onClick={onExcluir} disabled={confirmNome.trim().toLowerCase() !== nome.trim().toLowerCase()}
-                className="rounded-full bg-red-500 px-4 py-2 text-xs font-semibold text-white disabled:opacity-40">
+                className="rounded-full bg-[var(--c-danger)] px-4 py-2 text-xs font-semibold text-white disabled:opacity-40">
                 Confirmar exclusão permanente
               </button>
             </div>
@@ -545,13 +545,21 @@ export default function BrunoPainel() {
   const [notificacoes, setNotificacoes] = useState<Notificacao[]>([]);
   const [ferramentaAberta, setFerramentaAberta] = useState<FerramentaTerapeuta | null>(null);
   const [ferramentaDados, setFerramentaDados] = useState<Record<string, string>>({});
+  // Preferencia de UI do proprio terapeuta (nao e dado clinico) — persistida so localmente.
+  const [darkMode, setDarkMode] = useState(() => typeof window !== "undefined" && localStorage.getItem("painel_dark_mode") === "true");
+
+  useEffect(() => {
+    if (darkMode) document.documentElement.setAttribute("data-mode", "dark");
+    else document.documentElement.removeAttribute("data-mode");
+    localStorage.setItem("painel_dark_mode", String(darkMode));
+  }, [darkMode]);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
     document.title = "Painel | Bruno Souza";
     if (!supabase) {
       setLoginLoading(false);
-      return () => document.documentElement.removeAttribute("data-theme");
+      return () => { document.documentElement.removeAttribute("data-theme"); document.documentElement.removeAttribute("data-mode"); };
     }
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) { setAuth(true); carregar(); carregarBlog(); }
@@ -572,7 +580,7 @@ export default function BrunoPainel() {
         if (!critico) setTimeout(() => setNotificacoes((prev) => prev.filter((n) => n.id !== r.id)), 8000);
       }
     ).subscribe();
-    return () => { document.documentElement.removeAttribute("data-theme"); subscription.unsubscribe(); channel.unsubscribe(); };
+    return () => { document.documentElement.removeAttribute("data-theme"); document.documentElement.removeAttribute("data-mode"); subscription.unsubscribe(); channel.unsubscribe(); };
   }, []);
 
   async function carregar() {
@@ -728,7 +736,7 @@ export default function BrunoPainel() {
             placeholder="Email" className="mb-3 w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors focus:border-[var(--c-accent)] focus:outline-none" />
           <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") login(); }}
             placeholder="Senha" className="mb-3 w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors focus:border-[var(--c-accent)] focus:outline-none" />
-          {erro && <p className="mb-3 text-xs text-red-500">{erro}</p>}
+          {erro && <p className="mb-3 text-xs text-[var(--c-danger)]">{erro}</p>}
           <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={login} disabled={loginLoading}
             className="w-full rounded-full px-6 py-3 font-medium text-white disabled:opacity-50"
             style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))", boxShadow: "0 12px 30px -10px var(--c-accent)" }}>
@@ -834,7 +842,11 @@ export default function BrunoPainel() {
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <div className="flex items-center gap-3">
             <Link to="/" className="text-sm font-semibold text-[var(--c-text)] transition-colors hover:text-[var(--c-accent)]">Bruno Souza</Link>
-            <button onClick={logout} className="rounded-full border border-[var(--c-border)] px-3 py-1 text-[10px] text-[var(--c-muted)] transition-colors hover:text-red-500 hover:border-red-300">Sair</button>
+            <button onClick={() => setDarkMode((d) => !d)} title={darkMode ? "Modo claro" : "Modo escuro"}
+              className="rounded-full border border-[var(--c-border)] p-1.5 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]">
+              {darkMode ? <Sun size={14} /> : <Moon size={14} />}
+            </button>
+            <button onClick={logout} className="rounded-full border border-[var(--c-border)] px-3 py-1 text-[10px] text-[var(--c-muted)] transition-colors hover:text-[var(--c-danger)] hover:border-[var(--c-danger)]/40">Sair</button>
           </div>
           <div className="flex gap-1">
             <button onClick={() => { setTab("respostas"); fecharDashboard(); }} className={tabBtn("respostas")} style={tab === "respostas" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Respostas</button>
@@ -895,7 +907,7 @@ export default function BrunoPainel() {
                       <Download size={14} /> {exportando ? (exportProgress ? `Gerando ${exportProgress}...` : "...") : "PDF (" + selecionados.size + ")"}
                     </motion.button>}
                     {respView === "lista" && <button onClick={deletar} disabled={!selecionados.size}
-                      className="flex items-center gap-1.5 rounded-full border border-red-300 px-4 py-2 text-xs font-semibold text-red-500 transition-all hover:bg-red-50 disabled:opacity-40">
+                      className="flex items-center gap-1.5 rounded-full border border-[var(--c-danger)]/40 px-4 py-2 text-xs font-semibold text-[var(--c-danger)] transition-all hover:bg-[var(--c-danger)]/10 disabled:opacity-40">
                       <Trash2 size={14} /> ({selecionados.size})
                     </button>}
                   </div>
@@ -1055,7 +1067,7 @@ export default function BrunoPainel() {
                       <div key={idx} className="rounded-xl border border-[var(--c-border)] p-4">
                         <div className="mb-3 flex items-center justify-between">
                           <span className="text-sm font-semibold text-[var(--c-text)]">{t.sigla} — {t.nome}</span>
-                          <button onClick={() => removerTeste(idx)} className="text-red-400 transition-colors hover:text-red-600"><X size={14} /></button>
+                          <button onClick={() => removerTeste(idx)} className="text-[var(--c-danger)]/70 transition-colors hover:text-[var(--c-danger)]"><X size={14} /></button>
                         </div>
 
                         {(t.testeId === "neo-ffi") ? (
@@ -1335,7 +1347,7 @@ export default function BrunoPainel() {
                       </div>
                     </div>
 
-                    {blogMsg && <p className={`text-xs ${blogMsg.startsWith("Erro") ? "text-red-500" : "text-green-600"}`}>{blogMsg}</p>}
+                    {blogMsg && <p className={`text-xs ${blogMsg.startsWith("Erro") ? "text-[var(--c-danger)]" : "text-[var(--c-success)]"}`}>{blogMsg}</p>}
 
                     <div className="flex items-center justify-between">
                       <label className="flex items-center gap-2 text-sm text-[var(--c-muted)] cursor-pointer">
@@ -1372,7 +1384,7 @@ export default function BrunoPainel() {
                                 <div className="mt-1 flex items-center gap-2">
                                   <span className="text-xs font-medium text-[var(--c-accent)]">{p.categoria}</span>
                                   <span className="text-xs text-[var(--c-muted)]">{p.tempo_leitura}</span>
-                                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${p.publicado ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
+                                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${p.publicado ? "bg-[var(--c-success-bg)] text-[var(--c-success)]" : "bg-[var(--c-warning-bg)] text-[var(--c-warning)]"}`}>
                                     {p.publicado ? "Publicado" : "Rascunho"}
                                   </span>
                                 </div>
@@ -1385,7 +1397,7 @@ export default function BrunoPainel() {
                               <button onClick={() => editarPost(p)} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]" title="Editar">
                                 <Edit3 size={14} />
                               </button>
-                              <button onClick={() => deletarPost(p.id!)} className="rounded-full border border-red-200 p-2 text-red-400 transition-colors hover:text-red-600" title="Deletar">
+                              <button onClick={() => deletarPost(p.id!)} className="rounded-full border border-[var(--c-danger)]/25 p-2 text-[var(--c-danger)]/70 transition-colors hover:text-[var(--c-danger)]" title="Deletar">
                                 <Trash2 size={14} />
                               </button>
                             </div>
@@ -1406,7 +1418,7 @@ export default function BrunoPainel() {
                                 <div className="mt-1 flex items-center gap-2">
                                   <span className="text-xs font-medium text-[var(--c-accent)]">{p.categoria}</span>
                                   <span className="text-xs text-[var(--c-muted)]">{p.tempoLeitura}</span>
-                                  <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold uppercase text-gray-500">JSON</span>
+                                  <span className="rounded-full bg-[var(--c-neutral-bg)] px-2 py-0.5 text-[10px] font-bold uppercase text-[var(--c-neutral-text)]">JSON</span>
                                 </div>
                               </div>
                             </div>

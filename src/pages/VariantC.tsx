@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Leaf, Sprout, Heart } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
+import { Leaf, Sprout, Heart, Brain, Layers, type LucideIcon } from "lucide-react";
 import { HeroParallax } from "@/components/ui/HeroParallax";
 import { TextGenerateEffect } from "@/components/ui/TextGenerateEffect";
 import { BentoGrid } from "@/components/ui/BentoGrid";
@@ -36,6 +36,54 @@ const navItems = [
   { label: "Blog",        href: "/blog" },
   { label: "Paciente",    href: "/paciente" },
 ];
+
+const abordagemIcons: Record<string, LucideIcon> = {
+  tcc: Brain,
+  esquema: Layers,
+};
+
+type Abordagem = { id: string; nome: string; sigla: string; descricao: string; detalhe: string };
+
+function ServiceDisplayCard({ ab, i }: { ab: Abordagem; i: number }) {
+  const reduceMotion = useReducedMotion();
+  const Icon = abordagemIcons[ab.id] ?? Brain;
+  const tilt = i % 2 === 0 ? -1.5 : 1.5;
+
+  return (
+    <motion.div
+      variants={fadeUp}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true }}
+      custom={i}
+      className="group relative"
+    >
+      {/* camada de profundidade: borda-fantasma atrás do card */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 rounded-3xl border border-[var(--c-accent)]/15 bg-[var(--c-surface)]/60 transition-transform duration-300 ease-out group-hover:translate-x-1.5 group-hover:translate-y-1.5"
+      />
+      <motion.div
+        whileHover={reduceMotion ? undefined : { rotate: tilt, y: -4 }}
+        transition={{ type: "spring", stiffness: 260, damping: 20 }}
+        className="relative rounded-3xl border border-[var(--c-accent)]/20 bg-[var(--c-surface)] p-8 md:p-9 backdrop-blur-sm transition-shadow duration-300 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06),0_18px_40px_-20px_rgba(0,0,0,0.18)] group-hover:shadow-[0_6px_16px_-4px_rgba(0,0,0,0.1),0_28px_60px_-18px_var(--c-accent)]"
+      >
+        <div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--c-accent)]/10 ring-1 ring-[var(--c-accent)]/20">
+          <Icon size={28} className="text-[var(--c-accent)]" aria-hidden="true" />
+        </div>
+        <span className="text-xs tracking-widest uppercase text-[var(--c-accent)] font-semibold">{ab.sigla}</span>
+        <h3
+          className="text-xl md:text-2xl font-semibold text-[var(--c-text)] mt-2 mb-4"
+          style={{ fontFamily: "var(--font-heading)" }}
+        >
+          {ab.nome}
+        </h3>
+        <p className="text-[var(--c-muted)] text-[15px] leading-relaxed mb-3">{ab.descricao}</p>
+        <p className="text-[var(--c-muted)] text-sm leading-relaxed">{ab.detalhe}</p>
+      </motion.div>
+    </motion.div>
+  );
+}
 
 const desktopNavItems = [
   { label: "Como funciona",   href: "/como-funciona" },
@@ -358,24 +406,9 @@ export default function VariantC() {
             >
               Utilizo abordagens com evidências científicas sólidas, adaptadas à sua história e ao seu momento.
             </motion.p>
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2 gap-8 md:gap-10 pb-2">
               {abordagens.map((ab, i) => (
-                <motion.div
-                  key={ab.id}
-                  variants={fadeUp}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  custom={i}
-                  className="rounded-2xl border-2 border-[var(--c-accent)]/20 hover:border-[var(--c-accent)]/60 transition-colors p-8 bg-[var(--c-surface)]"
-                >
-                  <span className="text-xs tracking-widest uppercase text-[var(--c-accent)] font-semibold">{ab.sigla}</span>
-                  <h3 className="text-xl font-semibold text-[var(--c-text)] mt-1 mb-3" style={{ fontFamily: "var(--font-heading)" }}>
-                    {ab.nome}
-                  </h3>
-                  <p className="text-[var(--c-muted)] text-sm leading-relaxed mb-3">{ab.descricao}</p>
-                  <p className="text-[var(--c-muted)] text-sm leading-relaxed">{ab.detalhe}</p>
-                </motion.div>
+                <ServiceDisplayCard key={ab.id} ab={ab} i={i} />
               ))}
             </div>
           </div>

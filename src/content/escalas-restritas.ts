@@ -9,6 +9,7 @@ export const ESCALAS_RESTRITAS = [
   { id: "bai", label: "BAI" },
   { id: "bhs", label: "BHS" },
   { id: "bss", label: "BSS" },
+  { id: "cssrs", label: "C-SSRS (Rastreio)" },
 ] as const;
 
 export const ESCALAS_RESTRITAS_IDS: Set<string> = new Set(ESCALAS_RESTRITAS.map((e) => e.id));

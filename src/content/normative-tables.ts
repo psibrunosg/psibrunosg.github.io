@@ -327,6 +327,50 @@ export function classificarAtencao(pontuacao: number, tabela: AtencaoNorma[]): {
   return { percentil, classificacao: classif?.classificacao ?? "Médio" };
 }
 
+// ------ WHOQOL-bref (Qualidade de Vida — OMS) — escore por domínio 0-100 ------
+// Fórmula: escore do domínio = (média dos itens do domínio − 1) × 25
+// (equivale a: média × 4 → escore 4-20; convertido linearmente para 0-100).
+// Bandas de classificação informais (nao ha ponto de corte oficial unico do
+// WHOQOL — cada dominio deve idealmente ser comparado a normas populacionais).
+// REVISAO CLINICA recomendada antes de uso normativo formal.
+export function escoreDominioWhoqol(mediaItens: number): number {
+  return Math.round((mediaItens - 1) * 25);
+}
+
+export const whoqolFaixas = [
+  { min: 0, max: 40, classificacao: "Baixa", descricao: "Qualidade de vida reduzida neste domínio." },
+  { min: 41, max: 60, classificacao: "Media", descricao: "Qualidade de vida na faixa média neste domínio." },
+  { min: 61, max: 100, classificacao: "Satisfatoria", descricao: "Qualidade de vida satisfatória neste domínio." },
+] as const;
+
+// ------ PANAS (Afetos Positivos e Negativos) — cada subescala 10-50 ------
+// Não há ponto de corte clínico oficial amplamente validado no Brasil;
+// bandas abaixo são descritivas (terços da amplitude), não diagnósticas.
+// REVISAO CLINICA recomendada.
+export const panasPositivoFaixas = [
+  { min: 10, max: 23, classificacao: "Baixo", descricao: "Afeto positivo reduzido no período avaliado." },
+  { min: 24, max: 36, classificacao: "Medio", descricao: "Afeto positivo em nível médio." },
+  { min: 37, max: 50, classificacao: "Alto", descricao: "Afeto positivo elevado no período avaliado." },
+] as const;
+
+export const panasNegativoFaixas = [
+  { min: 10, max: 23, classificacao: "Baixo", descricao: "Afeto negativo reduzido — indicador favorável." },
+  { min: 24, max: 36, classificacao: "Medio", descricao: "Afeto negativo em nível médio." },
+  { min: 37, max: 50, classificacao: "Alto", descricao: "Afeto negativo elevado — investigar sintomatologia associada." },
+] as const;
+
+// ------ CBI (Copenhagen Burnout Inventory) — cada subescala 0-100 (média) ------
+// Ponto de corte comumente citado na literatura (Kristensen et al., 2005;
+// adaptações internacionais): escore ≥ 50 sugere nível relevante de burnout;
+// ≥ 75 sugere burnout grave. REVISAO CLINICA: confirmar pontos de corte da
+// adaptação brasileira utilizada antes de uso normativo.
+export const cbiFaixas = [
+  { min: 0, max: 24, classificacao: "Baixo", descricao: "Nível baixo de burnout nesta subescala." },
+  { min: 25, max: 49, classificacao: "Leve a moderado", descricao: "Sinais leves a moderados de burnout nesta subescala." },
+  { min: 50, max: 74, classificacao: "Alto", descricao: "Nível alto de burnout nesta subescala — atenção recomendada." },
+  { min: 75, max: 100, classificacao: "Grave", descricao: "Nível grave de burnout nesta subescala — intervenção recomendada." },
+] as const;
+
 // ============================================================
 // Helpers genéricos
 // ============================================================

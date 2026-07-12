@@ -11,7 +11,32 @@ interface PacienteCodigo {
   unlockedExercises: string[];
   allowedScales?: string[];
   expiresAt?: string | null;
+  lastSeenAt?: string | null;
 }
+
+interface PatientCodeRow {
+  code: string;
+  nome_paciente: string | null;
+  restricted_unlocked: string[] | null;
+  allowed_scales: string[] | null;
+  expires_at: string | null;
+  last_seen_at: string | null;
+  active: boolean;
+  created_at: string;
+}
+
+function rowParaPaciente(row: PatientCodeRow): PacienteCodigo {
+  return {
+    codigo: row.code,
+    nome: row.nome_paciente?.trim() || "Sem identificação",
+    unlockedExercises: row.restricted_unlocked || [],
+    allowedScales: row.allowed_scales || [],
+    expiresAt: row.expires_at,
+    lastSeenAt: row.last_seen_at,
+  };
+}
+
+const LOCAL_STORAGE_KEY = "painel_pacientes_local";
 
 const SITE_URL = "https://psibrunosg.github.io";
 
@@ -40,6 +65,8 @@ function mensagemPaciente(escalaId: string, codigo: string, expiresAt?: string |
 
 export function PainelPacientes() {
   const [pacientes, setPacientes] = useState<PacienteCodigo[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erroCarregar, setErroCarregar] = useState<string | null>(null);
   const [gerando, setGerando] = useState(false);
   const [nomePaciente, setNomePaciente] = useState("");
   const [escalaRestrita, setEscalaRestrita] = useState("");
@@ -51,33 +78,73 @@ export function PainelPacientes() {
   const [exercicioUnlock, setExercicioUnlock] = useState("");
   const [excluindo, setExcluindo] = useState<string | null>(null);
 
-  // Load pacientes from localStorage on mount
-  useEffect(() => {
-    const stored = localStorage.getItem("painel_pacientes_local");
-    if (stored) {
-      try {
-        setPacientes(JSON.parse(stored));
-      } catch {
-        setPacientes([]);
-      }
+  const carregarPacientes = async () => {
+    if (!supabase) {
+      setErroCarregar("Supabase não configurado.");
+      setCarregando(false);
+      return;
     }
+    setCarregando(true);
+    setErroCarregar(null);
+    try {
+      const { data, error } = await supabase
+        .from("patient_codes")
+        .select("code, nome_paciente, restricted_unlocked, allowed_scales, expires_at, last_seen_at, active, created_at")
+        .eq("active", true)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setPacientes(((data as PatientCodeRow[]) || []).map(rowParaPaciente));
+    } catch (error) {
+      console.error("Erro ao carregar pacientes:", error);
+      setErroCarregar("Erro ao carregar pacientes do banco.");
+    }
+    setCarregando(false);
+  };
+
+  // Fonte de verdade: Supabase. Carrega a lista ao montar e, se ainda
+  // existir a chave antiga de localStorage, migra os nomes para o banco
+  // (upsert em nome_paciente para codes que já existem) e remove a chave.
+  useEffect(() => {
+    (async () => {
+      await carregarPacientes();
+
+      const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (!stored) return;
+
+      try {
+        const entradasLocais: PacienteCodigo[] = JSON.parse(stored);
+        for (const entrada of entradasLocais) {
+          if (!entrada?.codigo || !entrada?.nome) continue;
+          await supabase
+            ?.from("patient_codes")
+            .update({ nome_paciente: entrada.nome })
+            .eq("code", entrada.codigo);
+        }
+      } catch (error) {
+        console.warn("Erro ao migrar pacientes locais para o banco:", error);
+      } finally {
+        localStorage.removeItem(LOCAL_STORAGE_KEY);
+        await carregarPacientes();
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Save pacientes to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem("painel_pacientes_local", JSON.stringify(pacientes));
-  }, [pacientes]);
-
   const handleGenerarCodigo = async () => {
-
     setGerando(true);
     try {
+      const nomeParaEnviar = nomePaciente.trim();
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-code`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${(await supabase?.auth.getSession())?.data?.session?.access_token || ""}` },
-          body: JSON.stringify({ allowed_scales: escalaRestrita ? [escalaRestrita] : [], expires_in_hours: Number(validadeHoras) }),
+          body: JSON.stringify({
+            allowed_scales: escalaRestrita ? [escalaRestrita] : [],
+            expires_in_hours: Number(validadeHoras),
+            nome_paciente: nomeParaEnviar || undefined,
+          }),
         }
       );
 
@@ -86,12 +153,13 @@ export function PainelPacientes() {
       const data = await response.json();
       const novoPaciente: PacienteCodigo = {
         codigo: data.code,
-        nome: nomePaciente.trim() || "Sem identificação",
+        nome: (data.nome_paciente as string | null) || nomeParaEnviar || "Sem identificação",
         unlockedExercises: [],
         allowedScales: data.allowed_scales || [],
         expiresAt: data.expires_at || null,
+        lastSeenAt: null,
       };
-      setPacientes([...pacientes, novoPaciente]);
+      setPacientes([novoPaciente, ...pacientes]);
       setNomePaciente("");
       // Expande automaticamente o código recém-gerado para exibir os
       // links diretos das escalas autorizadas, se houver.
@@ -153,14 +221,15 @@ export function PainelPacientes() {
 
     setExcluindo(codigo);
     try {
-      // Desativa o código no Supabase
-      await supabase?.from("patient_codes").update({ active: false }).eq("code", codigo);
+      // Desativa o código no Supabase (fonte de verdade); a lista já filtra
+      // por active=true, então isso remove o paciente permanentemente da view.
+      const { error } = await supabase?.from("patient_codes").update({ active: false }).eq("code", codigo) ?? {};
+      if (error) throw error;
+      setPacientes((prev) => prev.filter((p) => p.codigo !== codigo));
     } catch (error) {
-      console.warn("Erro ao desativar código no Supabase:", error);
+      console.error("Erro ao desativar código no Supabase:", error);
+      alert("Erro ao excluir código. Tente novamente.");
     }
-
-    // Remove localmente mesmo se houver erro no Supabase
-    setPacientes((prev) => prev.filter((p) => p.codigo !== codigo));
     setExcluindo(null);
   };
 
@@ -187,7 +256,7 @@ export function PainelPacientes() {
             type="text"
             value={nomePaciente}
             onChange={(e) => setNomePaciente(e.target.value)}
-            placeholder="Nome do paciente (salvo localmente)"
+            placeholder="Nome do paciente"
             className="flex-1 rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none"
             onKeyDown={(e) => e.key === "Enter" && handleGenerarCodigo()}
           />
@@ -215,7 +284,15 @@ export function PainelPacientes() {
       </motion.div>
 
       {/* Lista de pacientes */}
-      {pacientes.length === 0 ? (
+      {carregando ? (
+        <motion.div variants={fadeUp} className="py-12 text-center text-[var(--c-muted)]">
+          Carregando pacientes...
+        </motion.div>
+      ) : erroCarregar ? (
+        <motion.div variants={fadeUp} className="py-12 text-center text-[#ff6b6b]">
+          {erroCarregar}
+        </motion.div>
+      ) : pacientes.length === 0 ? (
         <motion.div variants={fadeUp} className="py-12 text-center text-[var(--c-muted)]">
           Nenhum paciente gerado ainda
         </motion.div>

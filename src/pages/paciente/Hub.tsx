@@ -1,7 +1,7 @@
 ﻿import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ClipboardList, Brain, ArrowRight, Shield, Lock, Heart, Leaf, Activity, BookOpen, Gauge, Zap, Eye, Sprout, Smile, Star, Wine, Flame, Moon, HeartHandshake, ShieldOff, Layers, Sun, AlertTriangle, Repeat, Coffee, BarChart3, Users, Focus, Sparkles } from "lucide-react";
+import { ClipboardList, Brain, ArrowRight, Shield, Lock, Heart, Leaf, Activity, BookOpen, Gauge, Zap, Eye, Sprout, Smile, Star, Wine, Flame, Moon, HeartHandshake, ShieldOff, Layers, Sun, AlertTriangle, Repeat, Coffee, BarChart3, Users, Focus, Sparkles, Scale, Wind, BatteryWarning, LifeBuoy, Dumbbell, GraduationCap } from "lucide-react";
 import { SkipLink } from "@/components/shared/SkipLink";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
 import { AppAurora } from "@/components/ui/AppAurora";
@@ -41,6 +41,10 @@ const ferramentasGerais: Ferramenta[] = [
   { id: "erq", href: "/paciente/escala/erq", icon: Sparkles, sigla: "ERQ", nome: "Regulacao Emocional", descricao: "10 perguntas sobre como voce regula suas emocoes. ~3 min.", cor: "#4A8C6B" },
   { id: "maas", href: "/paciente/escala/maas", icon: Focus, sigla: "MAAS", nome: "Atencao Plena (Mindfulness)", descricao: "15 perguntas sobre atencao e consciencia no dia a dia. ~4 min.", cor: "#3A6B8C" },
   { id: "spin", href: "/paciente/escala/spin", icon: Users, sigla: "SPIN", nome: "Inventario de Fobia Social", descricao: "17 perguntas sobre desconforto em situacoes sociais. ~4 min.", cor: "#8C5B6B" },
+  { id: "whoqolbref", href: "/paciente/escala/whoqolbref", icon: Scale, sigla: "WHOQOL-bref", nome: "Qualidade de Vida (OMS)", descricao: "26 perguntas sobre saude, bem-estar e qualidade de vida. ~8 min.", cor: "#3A8C8C" },
+  { id: "panas", href: "/paciente/escala/panas", icon: Wind, sigla: "PANAS", nome: "Afetos Positivos e Negativos", descricao: "20 palavras sobre sentimentos e emocoes recentes. ~4 min.", cor: "#4A7A9C" },
+  { id: "cbi", href: "/paciente/escala/cbi", icon: BatteryWarning, sigla: "CBI", nome: "Inventario de Burnout de Copenhague", descricao: "19 perguntas sobre esgotamento pessoal, no trabalho e com clientes. ~5 min.", cor: "#B0703A" },
+  { id: "cssrs", href: "/paciente/escala/cssrs", icon: LifeBuoy, sigla: "C-SSRS", nome: "Rastreio de Risco de Suicidio", descricao: "6 perguntas de rastreio (Columbia). Acesso restrito por codigo.", cor: "#8C3A3A" },
 ];
 
 const ferramentasEsquemas: Ferramenta[] = [
@@ -51,26 +55,33 @@ const ferramentasEsquemas: Ferramenta[] = [
   { id: "smi", href: "/paciente/escala/smi", icon: Layers, sigla: "SMI", nome: "Inventario de Modos Esquematicos", descricao: "118 perguntas sobre modos de funcionamento emocional. ~25 min.", cor: "#6B4A8C" },
 ];
 
-function FerramentaCard({ f }: { f: Ferramenta }) {
+function FerramentaCard({ f, featured = false }: { f: Ferramenta; featured?: boolean }) {
   const Icon = f.icon;
   return (
-    <motion.div variants={fadeUp}>
+    <motion.div variants={fadeUp} className={featured ? "sm:col-span-2" : undefined}>
       <Link
         to={f.href}
-        className="shine-host glass-card group relative block h-full overflow-hidden rounded-2xl p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_18px_44px_-16px_rgba(58,42,31,0.4)]"
+        className={`shine-host glass-card group relative block h-full overflow-hidden rounded-2xl transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_18px_44px_-16px_rgba(58,42,31,0.4)] ${featured ? "p-7 sm:p-8" : "p-6"}`}
       >
         <span className="absolute left-0 top-0 h-full w-1.5" style={{ background: `linear-gradient(to bottom, ${f.cor}, ${f.cor}55)` }} aria-hidden="true" />
-        <div className="flex items-start gap-4 pl-1">
+        <div className={`flex items-start gap-4 pl-1 ${featured ? "sm:gap-5" : ""}`}>
           <div
-            className="relative flex-shrink-0 rounded-2xl p-3.5 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-6"
+            className={`relative flex-shrink-0 rounded-2xl transition-transform duration-200 group-hover:scale-110 group-hover:rotate-6 ${featured ? "p-4" : "p-3.5"}`}
             style={{ background: f.cor + "1A", boxShadow: `0 8px 22px -8px ${f.cor}88` }}
           >
-            <Icon size={24} style={{ color: f.cor }} aria-hidden="true" />
+            <Icon size={featured ? 30 : 24} style={{ color: f.cor }} aria-hidden="true" />
           </div>
           <div className="flex-1">
-            <span className="text-[11px] font-bold tracking-[0.15em] uppercase" style={{ color: f.cor }}>{f.sigla}</span>
-            <h3 className="mb-1.5 text-lg font-semibold text-[var(--c-text)] leading-snug" style={{ fontFamily: "var(--font-heading)" }}>{f.nome}</h3>
-            <p className="mb-4 text-sm leading-relaxed text-[var(--c-muted)]">{f.descricao}</p>
+            <div className="mb-1 flex items-center gap-2">
+              <span className={`font-bold tracking-[0.15em] uppercase ${featured ? "text-xs" : "text-[11px]"}`} style={{ color: f.cor }}>{f.sigla}</span>
+              {featured && (
+                <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide" style={{ background: f.cor + "1A", color: f.cor }}>
+                  Mais usada
+                </span>
+              )}
+            </div>
+            <h3 className={`mb-1.5 font-semibold text-[var(--c-text)] leading-snug ${featured ? "text-xl sm:text-2xl" : "text-lg"}`} style={{ fontFamily: "var(--font-heading)" }}>{f.nome}</h3>
+            <p className={`mb-4 leading-relaxed text-[var(--c-muted)] ${featured ? "text-[15px] sm:max-w-md" : "text-sm"}`}>{f.descricao}</p>
             <span className="inline-flex items-center gap-1.5 text-sm font-semibold transition-all group-hover:gap-3" style={{ color: f.cor }}>
               Responder <ArrowRight size={15} />
             </span>
@@ -81,7 +92,36 @@ function FerramentaCard({ f }: { f: Ferramenta }) {
   );
 }
 
-function Secao({ titulo, count, children }: { titulo: string; count: number; children: React.ReactNode }) {
+const acessosRapidos = [
+  { id: "exercicios", href: "/exercicios", icon: Dumbbell, titulo: "Exercicios Praticos", descricao: "Tecnicas e praticas guiadas para aplicar entre as sessoes.", cor: "#2F8C7A" },
+  { id: "psicoeducacao", href: "/psicoeducacao", icon: GraduationCap, titulo: "Psicoeducacao", descricao: "Conteudo para entender melhor o que voce esta vivendo.", cor: "#5B6B8C" },
+];
+
+function AcessoRapidoCard({ item }: { item: (typeof acessosRapidos)[number] }) {
+  const Icon = item.icon;
+  return (
+    <motion.div variants={fadeUp}>
+      <Link
+        to={item.href}
+        className="shine-host glass-card group relative flex h-full items-center gap-4 overflow-hidden rounded-2xl p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_18px_44px_-16px_rgba(58,42,31,0.4)]"
+      >
+        <div
+          className="relative flex-shrink-0 rounded-2xl p-3.5 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-6"
+          style={{ background: item.cor + "1A", boxShadow: `0 8px 22px -8px ${item.cor}88` }}
+        >
+          <Icon size={24} style={{ color: item.cor }} aria-hidden="true" />
+        </div>
+        <div className="flex-1">
+          <h3 className="mb-1 text-base font-semibold text-[var(--c-text)] leading-snug" style={{ fontFamily: "var(--font-heading)" }}>{item.titulo}</h3>
+          <p className="text-sm leading-relaxed text-[var(--c-muted)]">{item.descricao}</p>
+        </div>
+        <ArrowRight size={18} className="flex-shrink-0 text-[var(--c-muted)] transition-all group-hover:translate-x-1 group-hover:text-[var(--c-accent)]" aria-hidden="true" />
+      </Link>
+    </motion.div>
+  );
+}
+
+function Secao({ titulo, count, children, cols = "sm:grid-cols-2" }: { titulo: string; count: number; children: React.ReactNode; cols?: string }) {
   return (
     <motion.section variants={fadeUp} className="mb-12">
       <div className="mb-5 flex items-center gap-3">
@@ -89,7 +129,7 @@ function Secao({ titulo, count, children }: { titulo: string; count: number; chi
         <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--c-accent)]/12 px-1.5 text-[11px] font-bold text-[var(--c-accent)]">{count}</span>
         <div className="h-px flex-1 rounded-full bg-gradient-to-r from-[var(--c-border)] to-transparent" />
       </div>
-      <div className="grid gap-5 md:grid-cols-2">{children}</div>
+      <div className={`grid gap-5 ${cols}`}>{children}</div>
     </motion.section>
   );
 }
@@ -144,10 +184,14 @@ export default function PacienteHub() {
             </motion.div>
 
             <Secao titulo="Rastreio Rapido" count={ferramentasRastreio.length}>
-              {ferramentasRastreio.map((f) => <FerramentaCard key={f.id} f={f} />)}
+              {ferramentasRastreio.map((f) => <FerramentaCard key={f.id} f={f} featured />)}
             </Secao>
 
-            <Secao titulo="Escalas Gerais" count={ferramentasGeraisPublicas.length}>
+            <Secao titulo="Acesso Rapido" count={acessosRapidos.length}>
+              {acessosRapidos.map((item) => <AcessoRapidoCard key={item.id} item={item} />)}
+            </Secao>
+
+            <Secao titulo="Escalas Gerais" count={ferramentasGeraisPublicas.length} cols="sm:grid-cols-2 lg:grid-cols-3">
               {ferramentasGeraisPublicas.map((f) => <FerramentaCard key={f.id} f={f} />)}
             </Secao>
 

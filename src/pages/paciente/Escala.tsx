@@ -467,7 +467,7 @@ function ResultadoScreen({ config, respostas }: { config: AnyConfig; respostas: 
   if (isEscalaGeral(config)) {
     const total = computeGeralScore(config, respostas).total;
     emRisco = pacienteEmRisco(config.id, total, respostas);
-    crisisVariant = config.id === "bhs" || config.id === "bdi" ? "suicida" : "apoio";
+    crisisVariant = config.id === "bhs" || config.id === "bdi" || config.id === "cssrs" ? "suicida" : "apoio";
   }
 
   return (

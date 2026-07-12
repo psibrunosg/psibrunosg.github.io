@@ -67,31 +67,31 @@ export function computeGeralScore(config: EscalaGeralConfig, respostas: number[]
       const resposta = respostas[i] === 1 ? "C" : "E";
       if (resposta === chave) total++;
     }
-  } else if (config.tipo === "likert-statements") {
-    total = respostas.reduce((a, b) => a + b, 0);
-  } else {
-    if (config.dominios && config.dominios.length > 0) {
-      for (const dom of config.dominios) {
-        let soma = 0;
-        const invertidos = dom.invertidos ?? [];
-        const globalInvertidos = config.invertidos ?? [];
-        for (const idx of dom.itens) {
-          let val = respostas[idx - 1] ?? 0;
-          const isInverted = invertidos.includes(idx) || globalInvertidos.includes(idx);
-          if (isInverted) {
-            const maxVal = config.opcoes ? Math.max(...config.opcoes.map((o) => o.valor)) : 4;
-            const minVal = config.opcoes ? Math.min(...config.opcoes.map((o) => o.valor)) : 0;
-            val = maxVal + minVal - val;
-          }
-          soma += val;
+  } else if (config.dominios && config.dominios.length > 0) {
+    // Domínios funcionam independentemente do tipo — inclusive para
+    // "likert-statements" (itens com opções próprias, ex.: WHOQOL-bref),
+    // caso em que não há `config.opcoes` global e o fallback de inversão
+    // usa `escalaMin`/`escalaMax` do config (default 0-4, compatibilidade).
+    for (const dom of config.dominios) {
+      let soma = 0;
+      const invertidos = dom.invertidos ?? [];
+      const globalInvertidos = config.invertidos ?? [];
+      for (const idx of dom.itens) {
+        let val = respostas[idx - 1] ?? 0;
+        const isInverted = invertidos.includes(idx) || globalInvertidos.includes(idx);
+        if (isInverted) {
+          const maxVal = config.opcoes ? Math.max(...config.opcoes.map((o) => o.valor)) : (config.escalaMax ?? 4);
+          const minVal = config.opcoes ? Math.min(...config.opcoes.map((o) => o.valor)) : (config.escalaMin ?? 0);
+          val = maxVal + minVal - val;
         }
-        const media = Math.round((soma / dom.itens.length) * 100) / 100;
-        dominios.push({ id: dom.id, nome: dom.nome, soma, media, itensCount: dom.itens.length });
-        total += soma;
+        soma += val;
       }
-    } else {
-      total = respostas.reduce((a, b) => a + b, 0);
+      const media = Math.round((soma / dom.itens.length) * 100) / 100;
+      dominios.push({ id: dom.id, nome: dom.nome, soma, media, itensCount: dom.itens.length });
+      total += soma;
     }
+  } else {
+    total = respostas.reduce((a, b) => a + b, 0);
   }
 
   return { total, dominios };
@@ -176,7 +176,37 @@ export function detectarRiscos(respostas: RespostaRegistro[]): RiscoClinico[] {
 /** Indica se o resultado individual de um paciente justifica exibir linha de crise (CVV). */
 export function pacienteEmRisco(tipo: string, pontuacao: number, respostas: number[]): boolean {
   if (tipo === "asrs") return false; // rastreio de TDAH não é indicador de crise
+  // C-SSRS: o alerta de crise é sempre exibido ao final desta escala,
+  // independente das respostas — ver instrução do escopo desta feature.
+  if (tipo === "cssrs") return true;
   if (tipo === "phq9" && respostas[8] >= 1) return true;
   if (tipo === "bhs" && pontuacao > 14) return true;
   return ehFaixaGrave(tipo, pontuacao);
+}
+
+// ============================================================
+// C-SSRS — classificação de nível de risco (uso exclusivo do painel/
+// psicólogo; o resultado NUNCA é exibido ao paciente).
+// ============================================================
+export interface CssrsResultado {
+  nivel: "sem_indicativo" | "baixo" | "moderado" | "alto" | "critico";
+  descricao: string;
+}
+
+/**
+ * Classifica o rastreio C-SSRS (6 itens sim/não, respostas[i] = 1 sim / 0 não).
+ * Perguntas 1-2: ideação (desejo de morte / pensamentos ativos).
+ * Perguntas 3-5: gravidade crescente de ideação (método, intenção, plano).
+ * Pergunta 6: comportamento suicida (histórico) — eleva o risco independentemente
+ * das demais respostas, por ser forte preditor de risco futuro.
+ */
+export function classificarCssrs(respostas: number[]): CssrsResultado {
+  const [q1, q2, q3, q4, q5, q6] = respostas.map((r) => Boolean(r));
+  if (q6) return { nivel: "critico", descricao: "Comportamento suicida relatado (tentativa ou preparação) — risco crítico, avaliação presencial imediata indicada." };
+  if (q5) return { nivel: "alto", descricao: "Ideação suicida com plano e intenção — risco alto, avaliação presencial imediata indicada." };
+  if (q4) return { nivel: "alto", descricao: "Intenção de agir sobre os pensamentos suicidas, sem plano específico — risco alto." };
+  if (q3) return { nivel: "moderado", descricao: "Ideação suicida com método considerado, sem plano ou intenção — risco moderado." };
+  if (q2) return { nivel: "moderado", descricao: "Pensamentos ativos de suicídio, sem método definido — risco baixo-moderado." };
+  if (q1) return { nivel: "baixo", descricao: "Desejo passivo de estar morto(a) ou de não acordar — risco baixo (ideação passiva)." };
+  return { nivel: "sem_indicativo", descricao: "Nenhum item endossado neste rastreio." };
 }
