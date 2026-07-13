@@ -13,7 +13,7 @@ export const manifesto = {
 
 export const sobre = {
   titulo: "Quem sou eu",
-  subtitulo: "Bruno Souza, psicólogo clínico",
+  subtitulo: "Bruno Schneider Goulart, psicólogo clínico",
   bio: "Sou psicólogo formado pela Universidade Católica de Pelotas (UCPel). Atualmente curso pós-graduação em Terapia Cognitivo-Comportamental e Terapia do Esquema. Atendo adultos e adolescentes, presencialmente em Pelotas/RS e online para todo o Brasil.",
   complemento:
     "Meu trabalho respeita o ritmo de cada pessoa, mas não se perde em conversa solta. Juntos, organizamos a demanda, entendemos padrões e construímos recursos que possam ajudar também fora da sessão.",
@@ -149,7 +149,7 @@ export const contato = {
   whatsappLink:
     "https://wa.me/5553991898309?text=Ol%C3%A1%2C%20Bruno!%20Vi%20seu%20site%20e%20gostaria%20de%20agendar%20uma%20conversa%20inicial.",
   crp: "CRP 07/44472",
-  nome: "Bruno Souza",
+  nome: "Bruno Schneider Goulart",
   cidade: "Pelotas, RS",
   foto: "/img/foto.jpg",
   modalidade: "Presencial em Pelotas · Online para todo o Brasil",
