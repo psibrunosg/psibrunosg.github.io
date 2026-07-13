@@ -16,7 +16,7 @@ export const sobre = {
   subtitulo: "Bruno Souza, psicólogo clínico",
   bio: "Sou psicólogo formado pela Universidade Católica de Pelotas (UCPel). Atualmente curso pós-graduação em Terapia Cognitivo-Comportamental e Terapia do Esquema. Atendo adultos e adolescentes, presencialmente em Pelotas/RS e online para todo o Brasil.",
   complemento:
-    "Meu trabalho respeita o ritmo de cada pessoa, mas não é uma conversa sem direção. Organizamos a demanda, identificamos padrões e construímos recursos que possam ser usados também fora da sessão.",
+    "Meu trabalho respeita o ritmo de cada pessoa, mas não se perde em conversa solta. Juntos, organizamos a demanda, entendemos padrões e construímos recursos que possam ajudar também fora da sessão.",
   formacao: [
     "Graduação em Psicologia (UCPel)",
     "Pós-graduação em TCC em andamento",
@@ -30,21 +30,21 @@ export const publicos = [
     icon: "Leaf",
     titulo: "Para adultos",
     descricao:
-      "Ansiedade, burnout, padrões relacionais, autoestima, transições de vida. Juntos, exploramos o que está pesando e construímos caminhos mais funcionais.",
+      "Ansiedade, burnout, padrões nos relacionamentos, autoestima, decisões difíceis e transições de vida. O trabalho é entender o que está pesando e construir caminhos mais possíveis.",
   },
   {
     id: "adolescentes",
     icon: "Sprout",
     titulo: "Para adolescentes",
     descricao:
-      "A adolescência pode ser intensa. Pressões, inseguranças, conflitos e a busca por quem se é. Ofereço um espaço seguro, sem julgamentos e sem respostas prontas.",
+      "A adolescência pode ser intensa. Pressões, inseguranças, conflitos e a busca por quem se é. Ofereço um espaço seguro, sem julgamento e sem respostas prontas.",
   },
   {
     id: "pais",
     icon: "Heart",
     titulo: "Para pais de adolescentes",
     descricao:
-      "Entender o que o seu filho vive é o primeiro passo. Posso ajudar a navegar essa fase com mais clareza, tanto no processo do adolescente quanto no seu próprio.",
+      "Entender o que o seu filho vive já muda muita coisa. Posso ajudar a atravessar essa fase com mais clareza, tanto no processo do adolescente quanto no seu próprio lugar como responsável.",
   },
 ];
 
@@ -53,19 +53,19 @@ export const dores = [
     id: "ansiedade",
     titulo: "Você sente que a preocupação nunca para?",
     descricao:
-      "Pensamentos que não param, tensão que se instala no corpo, sensação de que algo pode dar errado a qualquer momento, mesmo quando, de fora, tudo parece bem.",
+      "Pensamentos que não desligam, tensão no corpo e uma sensação constante de que algo pode dar errado, mesmo quando, por fora, parece que está tudo normal.",
   },
   {
     id: "exaustao",
     titulo: "O cansaço vai além do físico?",
     descricao:
-      "Um cansaço que vai muito além do físico. Dificuldade de sentir prazer nas pequenas coisas, de se motivar, de descansar sem que a culpa apareça logo depois.",
+      "Um cansaço que não melhora só com descanso. Fica difícil sentir prazer nas pequenas coisas, retomar energia ou relaxar sem que a culpa apareça logo depois.",
   },
   {
     id: "padroes",
     titulo: "Percebe os mesmos padrões se repetindo?",
     descricao:
-      "Situações parecidas surgem nos relacionamentos, no trabalho ou na forma como você se trata, e por mais que tente, o ciclo continua.",
+      "Situações parecidas reaparecem nos relacionamentos, no trabalho ou na forma como você se trata, e mesmo tentando mudar, o ciclo continua.",
   },
 ];
 
@@ -74,19 +74,19 @@ export const processo = [
     numero: "01",
     titulo: "Acolhimento",
     descricao:
-      "Um espaço para falar sobre o que está vivendo, no seu tempo, sem julgamentos. O primeiro passo é simplesmente ser ouvido com atenção.",
+      "Um espaço para falar do que está acontecendo no seu tempo, sem julgamento. O começo não exige clareza perfeita, exige presença e escuta.",
   },
   {
     numero: "02",
     titulo: "Compreensão",
     descricao:
-      "Juntos, exploramos os padrões que aparecem na sua história e construímos estratégias práticas que façam sentido para a sua realidade.",
+      "Juntos, vamos entendendo os padrões que aparecem na sua história e montando estratégias práticas que façam sentido para a sua realidade.",
   },
   {
     numero: "03",
     titulo: "Autonomia",
     descricao:
-      "O trabalho terapêutico visa desenvolver recursos internos que permaneçam com você, dentro e fora do consultório, ao longo da vida.",
+      "O objetivo é que você desenvolva recursos que continuem com você fora da sessão, no cotidiano, nas relações e nas decisões que precisa tomar.",
   },
 ];
 
