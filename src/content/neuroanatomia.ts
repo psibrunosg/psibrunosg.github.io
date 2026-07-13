@@ -7,6 +7,7 @@ export interface BrainPartData {
   role: string;
   color: string;
   urls: string[];
+  modelCenter: [number, number, number];
   cameraTarget?: [number, number, number];
   cameraPosition?: [number, number, number];
   explodePosition?: [number, number, number]; 
@@ -27,7 +28,8 @@ export const brainPartsData: Record<BrainPartId, BrainPartData> = {
       '/models/FJ3879_BP58158_FMA72654_Left superior frontal gyrus.obj',
       '/models/FJ3880_BP58162_FMA72653_Right superior frontal gyrus.obj'
     ],
-    cameraTarget: [0, 2, 3],
+    modelCenter: [-0.75, -111.66, 1588.49],
+    cameraTarget: [0, -1.6, 1.6],
     cameraPosition: [0, 4, 8],
     explodePosition: [0, 30, 40] 
   },
@@ -41,7 +43,8 @@ export const brainPartsData: Record<BrainPartId, BrainPartData> = {
       '/models/MM179_BP58076_FMA72833_Left amygdala.obj',
       '/models/MM179M_BP58075_FMA72832_Right amygdala.obj'
     ],
-    cameraTarget: [0, -1, 0],
+    modelCenter: [0.04, -100.93, 1534.68],
+    cameraTarget: [0, -1.05, -1.08],
     cameraPosition: [0, -1, 5],
     explodePosition: [-10, -10, 20] 
   },
@@ -55,7 +58,8 @@ export const brainPartsData: Record<BrainPartId, BrainPartData> = {
       '/models/MM164_BP58046_FMA72714_Left hippocampus proper.obj',
       '/models/MM164M_BP58047_FMA72713_Right hippocampus proper.obj'
     ],
-    cameraTarget: [0, -1, -1],
+    modelCenter: [0.01, -81.02, 1537.53],
+    cameraTarget: [0, -0.06, -0.94],
     cameraPosition: [-4, -1, 2],
     explodePosition: [-30, -5, 0] 
   },
@@ -66,9 +70,11 @@ export const brainPartsData: Record<BrainPartId, BrainPartData> = {
     role: "Recebe o alarme da Amígdala e aciona o Eixo HPA (Hipotálamo-Pituitária-Adrenal), liberando CRH que culminará na produção de cortisol (hormônio do estresse) pelas adrenais, preparando o corpo para lutar ou fugir.",
     color: "#f59e0b", // amber
     urls: [
-      '/models/FJ3817_BP58266_FMA62008_Hypothalamus.obj'
+      '/models/FJ3817_BP58266_FMA62008_Hypothalamus.obj',
+      '/models/FJ3860_BP58266_FMA62008_Hypothalamus.obj'
     ],
-    cameraTarget: [0, -2, 1],
+    modelCenter: [-0.66, -101.21, 1542.16],
+    cameraTarget: [0, -1.07, -0.71],
     cameraPosition: [0, -2, 6],
     explodePosition: [10, -15, 10]
   },
@@ -82,7 +88,8 @@ export const brainPartsData: Record<BrainPartId, BrainPartData> = {
       '/models/MM193_BP58215_FMA72718_Left cingulate gyrus.obj',
       '/models/MM193M_BP58196_FMA72717_Right cingulate gyrus.obj'
     ],
-    cameraTarget: [0, 4, 1],
+    modelCenter: [0, -86.59, 1568.24],
+    cameraTarget: [0, -0.34, 0.6],
     cameraPosition: [0, 8, 6],
     explodePosition: [0, 20, 0]
   },
@@ -96,7 +103,8 @@ export const brainPartsData: Record<BrainPartId, BrainPartData> = {
       '/models/MM236_BP58308_FMA72725_Left first short gyrus of insula.obj',
       '/models/MM236M_BP58312_FMA72724_Right first short gyrus of insula.obj'
     ],
-    cameraTarget: [2, 1, 0],
+    modelCenter: [0.02, -105.18, 1558.47],
+    cameraTarget: [0, -1.27, 0.11],
     cameraPosition: [6, 1, 2],
     explodePosition: [30, 0, 10]
   },
@@ -110,7 +118,8 @@ export const brainPartsData: Record<BrainPartId, BrainPartData> = {
       '/models/MM241_BP58034_FMA72827_Left caudate nucleus.obj',
       '/models/MM241M_BP58038_FMA72826_Right caudate nucleus.obj'
     ],
-    cameraTarget: [0, 0, -2],
+    modelCenter: [0.03, -92.11, 1557.42],
+    cameraTarget: [0, -0.62, 0.05],
     cameraPosition: [0, 2, -6],
     explodePosition: [10, 10, -20]
   },
@@ -121,9 +130,11 @@ export const brainPartsData: Record<BrainPartId, BrainPartData> = {
     role: "Fundamental na aprendizagem motora, ajuste fino de movimentos e equilíbrio. No esporte, é onde a 'memória muscular' e a técnica perfeita são consolidadas.",
     color: "#f43f5e", // rose
     urls: [
-      '/models/FJ3834_BP58271_FMA67944_Cerebellum.obj'
+      '/models/FJ3834_BP58271_FMA67944_Cerebellum.obj',
+      '/models/FJ3876_BP58271_FMA67944_Cerebellum.obj'
     ],
-    cameraTarget: [0, -5, -4],
+    modelCenter: [-0.66, -40.32, 1513.87],
+    cameraTarget: [0, 1.98, -2.12],
     cameraPosition: [0, -5, -12],
     explodePosition: [0, -20, -30]
   },
@@ -137,7 +148,8 @@ export const brainPartsData: Record<BrainPartId, BrainPartData> = {
       '/models/FJ3852_BP58221_FMA72662_Left precentral gyrus.obj',
       '/models/FJ3853_BP58189_FMA72661_Right precentral gyrus.obj'
     ],
-    cameraTarget: [0, 8, 2],
+    modelCenter: [-0.68, -72.11, 1593.62],
+    cameraTarget: [0, 0.39, 1.86],
     cameraPosition: [0, 14, 6],
     explodePosition: [0, 40, 20]
   },
@@ -151,7 +163,8 @@ export const brainPartsData: Record<BrainPartId, BrainPartData> = {
       '/models/FJ3849_BP58224_FMA72666_Left postcentral gyrus.obj',
       '/models/FJ3850_BP58212_FMA72665_Right postcentral gyrus.obj'
     ],
-    cameraTarget: [0, 7, -1],
+    modelCenter: [-0.61, -56.07, 1593.8],
+    cameraTarget: [0, 1.19, 1.87],
     cameraPosition: [0, 13, -5],
     explodePosition: [0, 35, -10]
   },
@@ -165,7 +178,8 @@ export const brainPartsData: Record<BrainPartId, BrainPartData> = {
       '/models/FJ3829_BP58036_FMA72829_Left putamen.obj',
       '/models/FJ3870_BP58039_FMA72828_Right putamen.obj'
     ],
-    cameraTarget: [-2, -1, 1],
+    modelCenter: [-0.65, -96.95, 1558.49],
+    cameraTarget: [0, -0.86, 0.11],
     cameraPosition: [-6, 0, 3],
     explodePosition: [-20, 0, 20]
   },
@@ -177,8 +191,12 @@ export const brainPartsData: Record<BrainPartId, BrainPartData> = {
     color: "#e5e7eb", 
     urls: [
       '/models/FJ3828_BP58274_FMA67943_Pons.obj',
-      '/models/FJ3823_BP58279_FMA62004_Medulla oblongata.obj'
+      '/models/FJ3869_BP58274_FMA67943_Pons.obj',
+      '/models/FJ3823_BP58279_FMA62004_Medulla oblongata.obj',
+      '/models/FJ3877_BP58279_FMA62004_Medulla oblongata.obj'
     ],
+    modelCenter: [-0.65, -76.26, 1506.43],
+    cameraTarget: [0, 0.18, -2.5],
     explodePosition: [0, -40, -10] 
   }
 };
@@ -212,7 +230,7 @@ export const guidedToursData: Record<GuidedTourId, GuidedTourData> = {
       {
         partId: 'hypothalamus',
         title: '2. O Mestre da Homeostase',
-        content: 'O sinal chega ao Hipotálamo, que atua como o centro de comando autonômico, iniciando a liberação de CRH (Hormônio Liberador de Corticotrofina).'
+        content: 'O sinal chega ao Hipotálamo, que inicia a liberação de CRH. A sequência hormonal continua fora do cérebro pela hipófise e pelas adrenais, estruturas que não aparecem neste modelo 3D.'
       },
       {
         partId: 'prefrontal',

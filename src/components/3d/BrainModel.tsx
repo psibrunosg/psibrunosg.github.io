@@ -1,6 +1,6 @@
 import { useRef, useState, useMemo } from 'react';
 import { useFrame, useLoader } from '@react-three/fiber';
-import { Html, Sparkles, Center } from '@react-three/drei';
+import { Html, Sparkles, Line } from '@react-three/drei';
 import * as THREE from 'three';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { brainPartsData, disordersData, type BrainPartId, type BrainPartData, type DisorderId } from '@/content/neuroanatomia';
@@ -8,9 +8,26 @@ import { brainPartsData, disordersData, type BrainPartId, type BrainPartData, ty
 // Carrega a lista de todos os arquivos OBJ disponíveis na pasta public/models
 const allModelPaths = Object.keys(import.meta.glob('/public/models/*.obj')).map(p => p.replace('/public', ''));
 
-// Descobre quais arquivos já estão sendo usados pelas peças principais para não duplicar
+// Mantém no contexto apenas a superfície cortical. O atlas também contém ventrículos,
+// tratos e núcleos internos, que não podem ser tratados como córtex.
 const usedUrls = new Set(Object.values(brainPartsData).flatMap(part => part.urls));
-const cortexUrls = allModelPaths.filter(url => !usedUrls.has(url));
+const corticalMarkers = ['gyrus', 'lobule', 'cuneus', 'precuneus', 'operculum', 'pole.obj', 'entorhinal area', 'subiculum', 'uncus'];
+const cortexUrls = allModelPaths.filter(url => !usedUrls.has(url) && corticalMarkers.some(marker => url.toLowerCase().includes(marker)));
+const atlasCenter: [number, number, number] = [0, -79.82, 1556.34];
+const flowAnchors: Record<BrainPartId, [number, number, number]> = {
+  prefrontal: [31.9, -111.66, 1588.49],
+  amygdala: [22.9, -100.93, 1534.68],
+  hippocampus: [25.5, -81.02, 1537.53],
+  hypothalamus: [3.1, -101.21, 1542.16],
+  cingulate: [10.9, -86.59, 1568.24],
+  insula: [34.2, -105.18, 1558.47],
+  caudate: [16.6, -92.11, 1557.42],
+  cerebellum: [26, -40.32, 1513.87],
+  motor_cortex: [31.7, -72.11, 1593.62],
+  somatosensory: [33.9, -56.07, 1593.8],
+  putamen: [25.3, -96.95, 1558.49],
+  context: [9.9, -76.26, 1506.43],
+};
 
 // Componente para o Córtex Completo
 function FullCortex({ visible, opacity }: { visible: boolean, opacity: number }) {
@@ -34,6 +51,8 @@ function FullCortex({ visible, opacity }: { visible: boolean, opacity: number })
             color: '#e5e7eb',
             transparent: true,
             opacity: opacity,
+            depthWrite: false,
+            side: THREE.DoubleSide,
           });
           child.material = material;
           materialsRef.current.push(material);
@@ -274,37 +293,64 @@ function BrainPart({ data, selected, hasSelection, stressLevel, isExploded, isMi
   );
 }
 
-function TherapyLine({ isTherapyActive, isExploded }: { isTherapyActive: boolean, isExploded: boolean }) {
-  const lineRef = useRef<any>(null);
+function FlowSegment({ from, to, active, index }: { from: BrainPartId, to: BrainPartId, active: boolean, index: number }) {
+  const dotRef = useRef<THREE.Mesh>(null);
+  const prefersReducedMotion = useMemo(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches, []);
+  const curve = useMemo(() => {
+    const start = new THREE.Vector3(...flowAnchors[from]);
+    const end = new THREE.Vector3(...flowAnchors[to]);
+    const mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+    mid.x += 12;
+    mid.z += 35;
+    return new THREE.QuadraticBezierCurve3(start, mid, end);
+  }, [from, to]);
+  const points = useMemo(() => curve.getPoints(36), [curve]);
+  const dotPosition = useMemo(() => new THREE.Vector3(), []);
 
-  // Posições são estáticas (vêm de brainPartsData), então a curva é calculada uma única vez
-  // e a BufferGeometry não é recriada (e descartada) a cada re-render do componente.
-  const geometry = useMemo(() => {
-    const start = new THREE.Vector3(...(brainPartsData.prefrontal.cameraTarget || [0, 0, 0]));
-    const end = new THREE.Vector3(...(brainPartsData.amygdala.cameraTarget || [0, 0, 0]));
-    const mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5).add(new THREE.Vector3(5, 5, 0));
-    const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
-    return new THREE.BufferGeometry().setFromPoints(curve.getPoints(50));
-  }, []);
-
-  // Hook sempre chamado (Rules of Hooks) — o early return por isExploded fica só no JSX abaixo.
-  useFrame((state: any) => {
-    if (lineRef.current) {
-      if (isTherapyActive && !isExploded) {
-        lineRef.current.material.opacity = Math.sin(state.clock.elapsedTime * 2) * 0.3 + 0.5;
-      } else {
-        lineRef.current.material.opacity = 0;
-      }
+  useFrame((state) => {
+    if (dotRef.current) {
+      const progress = prefersReducedMotion ? 0.5 : (state.clock.elapsedTime * 0.18 + index * 0.2) % 1;
+      curve.getPointAt(progress, dotPosition);
+      dotRef.current.position.copy(dotPosition);
     }
   });
 
-  if (isExploded) return null;
+  return (
+    <group>
+      <Line
+        points={points}
+        color={active ? '#facc15' : '#38bdf8'}
+        lineWidth={active ? 5 : 3.5}
+        transparent
+        opacity={active ? 0.95 : 0.55}
+        depthTest={false}
+        depthWrite={false}
+        renderOrder={100}
+      />
+      <mesh ref={dotRef} renderOrder={101}>
+        <sphereGeometry args={[active ? 5 : 3.2, 12, 12]} />
+        <meshBasicMaterial color={active ? '#fef08a' : '#7dd3fc'} depthTest={false} depthWrite={false} />
+      </mesh>
+    </group>
+  );
+}
+
+function BrainFlowNetwork({ partIds, activeStep, isExploded }: { partIds: BrainPartId[], activeStep: number, isExploded: boolean }) {
+  if (isExploded || partIds.length < 2) return null;
+  const activeSegment = Math.min(Math.max(activeStep - 1, 0), partIds.length - 2);
 
   return (
-    // @ts-expect-error — R3F <line> resolve para o namespace JSX do SVG em vez do Object3DNode
-    <line ref={lineRef} geometry={geometry}>
-      <lineBasicMaterial color="#3b82f6" transparent opacity={0} linewidth={2} />
-    </line>
+    <group>
+      {partIds.slice(0, -1).map((from, index) => (
+        <FlowSegment
+          key={`${from}-${partIds[index + 1]}-${index}`}
+          from={from}
+          to={partIds[index + 1]}
+          active={index === activeSegment}
+          index={index}
+        />
+      ))}
+    </group>
   );
 }
 
@@ -314,26 +360,26 @@ interface BrainModelProps {
   stressLevel: number;
   isExploded: boolean;
   isMindfulness: boolean;
-  isTherapyActive: boolean;
   isMedicated: boolean;
   activeDisorder: DisorderId | null;
   quizTarget: BrainPartId | null;
   quizHint: boolean;
   showContext: boolean;
+  flowPartIds: BrainPartId[];
+  flowStep: number;
 }
 
-export function BrainModel({ onSelectPart, selectedPartId, stressLevel, isExploded, isMindfulness, isTherapyActive, activeDisorder, isMedicated, quizTarget, quizHint, showContext }: BrainModelProps) {
+export function BrainModel({ onSelectPart, selectedPartId, stressLevel, isExploded, isMindfulness, activeDisorder, isMedicated, quizTarget, quizHint, showContext, flowPartIds, flowStep }: BrainModelProps) {
   const groupRef = useRef<THREE.Group>(null);
+  const prefersReducedMotion = useMemo(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches, []);
 
   useFrame((state: any) => {
-    if (groupRef.current && !selectedPartId && stressLevel === 0 && !isMindfulness && !activeDisorder && !isMedicated) {
+    if (!prefersReducedMotion && groupRef.current && !selectedPartId && stressLevel === 0 && !isMindfulness && !activeDisorder && !isMedicated) {
       groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.1) * 0.1;
     }
   });
 
   const globalScale = 0.05;
-  const globalPosition: [number, number, number] = [0, -3, 0];
-
   const brainParts = Object.values(brainPartsData);
 
   // Default lights
@@ -395,12 +441,13 @@ export function BrainModel({ onSelectPart, selectedPartId, stressLevel, isExplod
     sparkSpeed = 0.1 + (stressLevel / 100) * 0.5;
     sparkCount = 15 + Math.floor((stressLevel / 100) * 30);
   }
+  if (prefersReducedMotion) sparkSpeed = 0;
 
   // Córtex opacity based on selection
   const cortexOpacity = isExploded ? 0.1 : (selectedPartId ? 0.15 : 0.3);
 
   return (
-    <group ref={groupRef} scale={globalScale} position={globalPosition}>
+    <group ref={groupRef}>
       <ambientLight intensity={ambientIntensity} />
       <directionalLight position={[100, 100, 100]} intensity={dirIntensity} color={dirColor} />
       <directionalLight position={[-100, -100, -100]} intensity={0.8} />
@@ -408,7 +455,7 @@ export function BrainModel({ onSelectPart, selectedPartId, stressLevel, isExplod
       {(!isExploded) && (
         <Sparkles 
           count={sparkCount} 
-          scale={5} 
+          scale={9}
           size={sparkScale} 
           speed={sparkSpeed} 
           color={sparkColor}
@@ -417,9 +464,9 @@ export function BrainModel({ onSelectPart, selectedPartId, stressLevel, isExplod
         />
       )}
 
-      {!activeDisorder && !isMedicated && <TherapyLine isTherapyActive={isTherapyActive} isExploded={isExploded} />}
-
-      <Center>
+      <group scale={globalScale}>
+        <group position={[-atlasCenter[0], -atlasCenter[1], -atlasCenter[2]]}>
+        <BrainFlowNetwork partIds={flowPartIds} activeStep={flowStep} isExploded={isExploded} />
         {brainParts.map((part) => (
           <BrainPart
             key={part.id}
@@ -442,7 +489,8 @@ export function BrainModel({ onSelectPart, selectedPartId, stressLevel, isExplod
         ))}
         {/* Renderiza o córtex de fundo, se habilitado */}
         {showContext && <FullCortex visible={showContext} opacity={cortexOpacity} />}
-      </Center>
+        </group>
+      </group>
     </group>
   );
 }

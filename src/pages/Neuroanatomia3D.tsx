@@ -35,26 +35,37 @@ const navItems = [
   { label: "Blog", href: "/blog" },
 ];
 
-function CameraManager({ selectedPartId }: { selectedPartId: BrainPartId | null }) {
+function CameraManager({ selectedPartId, flowPartIds, flowStep }: { selectedPartId: BrainPartId | null, flowPartIds: BrainPartId[], flowStep: number }) {
   const controlsRef = useRef<any>(null);
 
   useEffect(() => {
     if (controlsRef.current) {
-      if (selectedPartId && brainPartsData[selectedPartId]) {
+      if (flowPartIds.length > 1) {
+        const segment = Math.min(Math.max(flowStep - 1, 0), flowPartIds.length - 2);
+        const from = brainPartsData[flowPartIds[segment]].cameraTarget!;
+        const to = brainPartsData[flowPartIds[segment + 1]].cameraTarget!;
+        const target = from.map((value, index) => (value + to[index]) / 2);
+        controlsRef.current.setLookAt(target[0], target[1] + 0.5, target[2] + 13.5, target[0], target[1], target[2], true);
+      } else if (selectedPartId && brainPartsData[selectedPartId]) {
         const data = brainPartsData[selectedPartId];
         if (data.cameraPosition && data.cameraTarget) {
+          const direction = data.cameraPosition.map((value, index) => value - data.cameraTarget![index]);
+          const length = Math.hypot(direction[0], direction[1], direction[2]) || 1;
+          const focusDistance = 12.5;
           controlsRef.current.setLookAt(
-            data.cameraPosition[0], data.cameraPosition[1], data.cameraPosition[2],
+            data.cameraTarget[0] + direction[0] / length * focusDistance,
+            data.cameraTarget[1] + direction[1] / length * focusDistance,
+            data.cameraTarget[2] + direction[2] / length * focusDistance,
             data.cameraTarget[0], data.cameraTarget[1], data.cameraTarget[2],
             true
           );
         }
       } else {
         // Quando volta pro estado default, usamos a posição inicial sem animar drasticamente se for a primeira vez
-        controlsRef.current.setLookAt(0, 0, 6, 0, 0, 0, true);
+        controlsRef.current.setLookAt(0, 0.5, 14, 0, 0, 0, true);
       }
     }
-  }, [selectedPartId]);
+  }, [selectedPartId, flowPartIds, flowStep]);
 
   return <CameraControls ref={controlsRef} makeDefault minDistance={1} maxDistance={30} />;
 }
@@ -73,6 +84,13 @@ const quizQuestions: { target: BrainPartId, question: string }[] = [
   { target: 'somatosensory', question: 'Onde o cérebro recebe e processa o feedback tátil e proprioceptivo do corpo durante o movimento?' },
   { target: 'putamen', question: 'Qual região do estriado libera picos de dopamina com alimentos hiperpalatáveis e ajuda a automatizar rotinas motoras?' }
 ];
+
+const disorderFlowParts: Record<DisorderId, BrainPartId[]> = {
+  tag: ['amygdala', 'hypothalamus', 'prefrontal', 'hippocampus'],
+  tept: ['amygdala', 'hippocampus', 'cingulate', 'prefrontal'],
+  tdm: ['prefrontal', 'cingulate', 'hippocampus'],
+  tdah: ['prefrontal', 'caudate', 'putamen', 'prefrontal'],
+};
 
 export default function Neuroanatomia3D() {
   const [selectedPartId, setSelectedPartId] = useState<BrainPartId | null>(null);
@@ -95,12 +113,27 @@ export default function Neuroanatomia3D() {
   const [quizWrongAttempts, setQuizWrongAttempts] = useState<number>(0);
   const [quizFirstTryCorrect, setQuizFirstTryCorrect] = useState<number>(0);
   const [quizFinished, setQuizFinished] = useState<boolean>(false);
-  // Default false: o Córtex Completo carrega ~200 malhas anatômicas pesadas — só sob demanda.
-  const [showContext, setShowContext] = useState<boolean>(false);
+  // O contexto agora carrega apenas a superfície cortical filtrada, não todos os 240 modelos do atlas.
+  const [showContext, setShowContext] = useState<boolean>(true);
   const [activeTour, setActiveTour] = useState<GuidedTourId | null>(null);
   const [tourStep, setTourStep] = useState<number>(0);
 
   const currentSelectedPartId = activeTour ? guidedToursData[activeTour].steps[tourStep].partId : selectedPartId;
+  const flowPartIds = React.useMemo<BrainPartId[]>(() => activeTour
+      ? guidedToursData[activeTour].steps.map(step => step.partId)
+      : activeDisorder
+        ? disorderFlowParts[activeDisorder]
+        : isTherapyActive
+          ? ['amygdala', 'prefrontal']
+          : isMindfulness
+            ? ['context', 'insula', 'prefrontal', 'amygdala']
+            : stressLevel > 0
+              ? ['amygdala', 'hypothalamus', 'context']
+              : [],
+    [activeTour, activeDisorder, isTherapyActive, isMindfulness, stressLevel]
+  );
+  const flowStep = activeTour ? tourStep : 1;
+  const activeFlowSegment = Math.min(Math.max(flowStep - 1, 0), Math.max(flowPartIds.length - 2, 0));
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
@@ -259,17 +292,33 @@ export default function Neuroanatomia3D() {
                   stressLevel={stressLevel}
                   isExploded={isExploded}
                   isMindfulness={isMindfulness}
-                  isTherapyActive={isTherapyActive}
                   isMedicated={isMedicated}
                   activeDisorder={activeDisorder}
                   quizTarget={isQuizMode ? quizQuestions[currentQuizIndex].target : null}
                   quizHint={isQuizMode && quizWrongAttempts >= 2}
                   showContext={showContext}
+                  flowPartIds={flowPartIds}
+                  flowStep={flowStep}
                 />
-                <CameraManager selectedPartId={currentSelectedPartId} />
+                <CameraManager selectedPartId={currentSelectedPartId} flowPartIds={flowPartIds} flowStep={flowStep} />
               </Suspense>
             </Canvas>
           </ErrorBoundary>
+
+          {flowPartIds.length > 1 && (
+            <div className="absolute bottom-4 left-4 right-4 sm:right-auto z-10 sm:max-w-sm bg-slate-950/80 text-white backdrop-blur-md px-3 py-2 rounded-lg border border-sky-300/30 shadow-lg pointer-events-none">
+              <div className="flex items-center gap-2 text-[11px] font-bold uppercase text-sky-300">
+                <Activity size={14} />
+                Mapa didático da rede
+              </div>
+              <p className="mt-1 text-xs leading-snug">
+                {brainPartsData[flowPartIds[activeFlowSegment]].title} → {brainPartsData[flowPartIds[activeFlowSegment + 1]].title}
+              </p>
+              <p className="mt-1 text-[10px] leading-snug text-slate-300">
+                Sequência explicativa, não um trato anatômico único.
+              </p>
+            </div>
+          )}
 
           <AnimatePresence>
             {!activeDisorder && stressLevel > 50 && !isMindfulness && !isMedicated && (
@@ -548,7 +597,7 @@ export default function Neuroanatomia3D() {
                     }`}
                   >
                     <Brain size={16} />
-                    {showContext ? "Ocultar Córtex" : "Mostrar Córtex"}
+                    {showContext ? "Ocultar contexto" : "Mostrar contexto anatômico"}
                   </button>
                 </div>
                 </div>
@@ -669,6 +718,8 @@ export default function Neuroanatomia3D() {
                       
                       <div className="flex justify-between items-center pt-4 border-t border-blue-500/20">
                         <button 
+                          aria-label="Etapa anterior"
+                          title="Etapa anterior"
                           disabled={tourStep === 0}
                           onClick={() => setTourStep(prev => prev - 1)}
                           className="p-2 rounded-full bg-blue-500/20 text-blue-600 disabled:opacity-30 transition-opacity"
@@ -676,6 +727,8 @@ export default function Neuroanatomia3D() {
                           <ChevronLeft size={20} />
                         </button>
                         <button 
+                          aria-label="Próxima etapa"
+                          title="Próxima etapa"
                           disabled={tourStep === guidedToursData[activeTour].steps.length - 1}
                           onClick={() => setTourStep(prev => prev + 1)}
                           className="p-2 rounded-full bg-blue-500/20 text-blue-600 disabled:opacity-30 transition-opacity"

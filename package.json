@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
+    "check:neuro-models": "node scripts/check-neuro-models.mjs",
     "test:watch": "vitest"
   },
   "dependencies": {
