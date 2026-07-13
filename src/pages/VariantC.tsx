@@ -41,6 +41,15 @@ const navItems = [
   { label: "Dúvidas", href: "#faq" },
 ];
 
+const linksDeRecursos = [
+  { label: "Exercícios", href: "/exercicios" },
+  { label: "Psicoeducação", href: "/psicoeducacao" },
+  { label: "Área do paciente e escalas", href: "/paciente" },
+  { label: "Blog", href: "/blog" },
+  { label: "Como funciona", href: "/como-funciona" },
+  { label: "Perguntas frequentes", href: "/faq" },
+];
+
 const recursos = [
   {
     href: "/como-funciona",
@@ -49,16 +58,34 @@ const recursos = [
     text: "Primeira sessão, frequência, sigilo e os combinados do processo explicados sem rodeios.",
   },
   {
-    href: "/psicoeducacao",
+    href: "/exercicios",
     index: "02",
+    title: "Exercícios para praticar",
+    text: "Práticas guiadas para observar pensamentos, emoções e padrões também fora da sessão.",
+  },
+  {
+    href: "/psicoeducacao",
+    index: "03",
     title: "Entenda o que você vive",
     text: "Materiais sobre ansiedade, sono, esquemas e regulação emocional para consultar no seu tempo.",
   },
   {
+    href: "/paciente",
+    index: "04",
+    title: "Área do paciente e escalas",
+    text: "Questionários e instrumentos de acompanhamento organizados em um só lugar.",
+  },
+  {
     href: "/blog",
-    index: "03",
+    index: "05",
     title: "Leituras para ir além",
     text: "Textos que aproximam psicologia, cotidiano e ciência sem transformar sofrimento em fórmula pronta.",
+  },
+  {
+    href: "/faq",
+    index: "06",
+    title: "Perguntas frequentes",
+    text: "Respostas diretas sobre atendimento, horários, modalidade online e primeiros passos.",
   },
 ];
 
@@ -161,7 +188,7 @@ export default function VariantC() {
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-7 lg:flex" aria-label="Navegação principal">
+          <nav className="hidden items-center gap-5 xl:flex" aria-label="Navegação principal">
             {navItems.map((item) => (
               <a
                 key={item.href}
@@ -171,6 +198,24 @@ export default function VariantC() {
                 {item.label}
               </a>
             ))}
+            <details className="group relative">
+              <summary className="flex min-h-11 cursor-pointer list-none items-center gap-1 text-sm font-bold text-[var(--c-muted)] marker:content-none hover:text-[var(--c-deep)]">
+                Recursos
+                <ChevronDown size={15} className="transition-transform group-open:rotate-180" aria-hidden="true" />
+              </summary>
+              <div className="absolute right-0 top-[calc(100%+0.5rem)] w-72 border border-[var(--c-border)] bg-[var(--c-bg)] p-2 shadow-[0_22px_55px_-28px_rgba(31,46,37,0.55)]">
+                {linksDeRecursos.map((item) => (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    className="flex min-h-11 items-center justify-between px-3 text-sm font-bold text-[var(--c-muted)] transition-colors hover:bg-[var(--c-warm-lt)] hover:text-[var(--c-deep)]"
+                  >
+                    {item.label}
+                    <ArrowUpRight size={14} aria-hidden="true" />
+                  </Link>
+                ))}
+              </div>
+            </details>
             <a
               href={contato.whatsappLink}
               target="_blank"
@@ -184,7 +229,7 @@ export default function VariantC() {
 
           <button
             type="button"
-            className="flex size-11 items-center justify-center border border-[var(--c-deep)] text-[var(--c-deep)] lg:hidden"
+            className="flex size-11 items-center justify-center border border-[var(--c-deep)] text-[var(--c-deep)] xl:hidden"
             aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
             aria-expanded={menuOpen}
             aria-controls="menu-mobile"
@@ -203,7 +248,7 @@ export default function VariantC() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: reduceMotion ? 0 : 0.2 }}
-              className="border-t border-[var(--c-border)] bg-[var(--c-bg)] px-5 pb-6 pt-3 lg:hidden"
+              className="border-t border-[var(--c-border)] bg-[var(--c-bg)] px-5 pb-6 pt-3 xl:hidden"
             >
               <div className="mx-auto flex max-w-7xl flex-col">
                 {navItems.map((item) => (
@@ -215,6 +260,20 @@ export default function VariantC() {
                   >
                     {item.label}
                   </a>
+                ))}
+                <p className="px-1 pb-1 pt-5 text-[0.68rem] font-extrabold uppercase tracking-[0.18em] text-[var(--c-accent)]">
+                  Recursos
+                </p>
+                {linksDeRecursos.map((item) => (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    onClick={() => setMenuOpen(false)}
+                    className="flex min-h-12 items-center justify-between border-b border-[var(--c-border)] px-1 text-base font-bold text-[var(--c-deep)]"
+                  >
+                    {item.label}
+                    <ArrowRight size={16} aria-hidden="true" />
+                  </Link>
                 ))}
                 <a
                   href={contato.whatsappLink}
@@ -535,7 +594,7 @@ export default function VariantC() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-[90rem] px-5 py-20 sm:px-8 lg:px-12 lg:py-28">
+        <section id="recursos" className="mx-auto max-w-[90rem] scroll-mt-24 px-5 py-20 sm:px-8 lg:px-12 lg:py-28">
           <Reveal className="grid gap-7 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
             <div>
               <SectionLabel>Conteúdos de apoio</SectionLabel>
@@ -544,8 +603,8 @@ export default function VariantC() {
               </h2>
             </div>
             <p className="max-w-xl text-lg leading-[1.75] text-[var(--c-muted)] lg:justify-self-end">
-              Ler não substitui terapia, mas pode ajudar a nomear uma dúvida e deixar o primeiro
-              contato menos desconhecido.
+              Aqui você encontra exercícios, psicoeducação, escalas e leituras para usar com
+              autonomia ou como parte do acompanhamento.
             </p>
           </Reveal>
 
@@ -554,7 +613,7 @@ export default function VariantC() {
               <Reveal key={item.href} delay={index * 0.05}>
                 <Link
                   to={item.href}
-                  className={`group block min-h-[20rem] border-b border-[var(--c-border)] p-6 transition-colors duration-200 hover:bg-[var(--c-deep)] hover:text-white sm:p-8 lg:border-b-0 ${index > 0 ? "lg:border-l" : ""}`}
+                  className={`group block min-h-[20rem] border-b border-[var(--c-border)] p-6 transition-colors duration-200 hover:bg-[var(--c-deep)] hover:text-white sm:p-8 lg:border-b-0 ${index % 3 > 0 ? "lg:border-l" : ""} ${index >= 3 ? "lg:border-t lg:border-[var(--c-border)]" : ""}`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-extrabold text-[var(--c-warm)]">{item.index}</span>

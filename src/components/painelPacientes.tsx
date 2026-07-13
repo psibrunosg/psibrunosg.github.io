@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Plus, Copy, Check, Unlock, Eye, EyeOff, Link2, Send, Trash2 } from "lucide-react";
+import { Plus, Copy, Check, Unlock, Eye, EyeOff, Link2, Send, Trash2, Pencil, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { fadeUp } from "@/lib/motion";
 import { ESCALAS_RESTRITAS } from "@/content/escalas-restritas";
@@ -28,7 +28,7 @@ interface PatientCodeRow {
 function rowParaPaciente(row: PatientCodeRow): PacienteCodigo {
   return {
     codigo: row.code,
-    nome: row.nome_paciente?.trim() || "Sem identificação",
+    nome: row.nome_paciente?.trim() || "Nome não informado",
     unlockedExercises: row.restricted_unlocked || [],
     allowedScales: row.allowed_scales || [],
     expiresAt: row.expires_at,
@@ -77,6 +77,9 @@ export function PainelPacientes() {
   const [unlockingCode, setUnlockingCode] = useState<string | null>(null);
   const [exercicioUnlock, setExercicioUnlock] = useState("");
   const [excluindo, setExcluindo] = useState<string | null>(null);
+  const [editandoCodigo, setEditandoCodigo] = useState<string | null>(null);
+  const [nomeEdicao, setNomeEdicao] = useState("");
+  const [salvandoNome, setSalvandoNome] = useState(false);
 
   const carregarPacientes = async () => {
     if (!supabase) {
@@ -128,13 +131,16 @@ export function PainelPacientes() {
         await carregarPacientes();
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleGenerarCodigo = async () => {
+    const nomeParaEnviar = nomePaciente.trim();
+    if (!nomeParaEnviar) {
+      alert("Informe o nome do paciente antes de gerar o código.");
+      return;
+    }
     setGerando(true);
     try {
-      const nomeParaEnviar = nomePaciente.trim();
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-code`,
         {
@@ -143,7 +149,7 @@ export function PainelPacientes() {
           body: JSON.stringify({
             allowed_scales: escalaRestrita ? [escalaRestrita] : [],
             expires_in_hours: Number(validadeHoras),
-            nome_paciente: nomeParaEnviar || undefined,
+            nome_paciente: nomeParaEnviar,
           }),
         }
       );
@@ -153,7 +159,7 @@ export function PainelPacientes() {
       const data = await response.json();
       const novoPaciente: PacienteCodigo = {
         codigo: data.code,
-        nome: (data.nome_paciente as string | null) || nomeParaEnviar || "Sem identificação",
+        nome: (data.nome_paciente as string | null)?.trim() || nomeParaEnviar,
         unlockedExercises: [],
         allowedScales: data.allowed_scales || [],
         expiresAt: data.expires_at || null,
@@ -171,6 +177,29 @@ export function PainelPacientes() {
       alert("Erro ao gerar código");
     }
     setGerando(false);
+  };
+
+  const iniciarEdicaoNome = (paciente: PacienteCodigo) => {
+    setEditandoCodigo(paciente.codigo);
+    setNomeEdicao(paciente.nome === "Nome não informado" ? "" : paciente.nome);
+  };
+
+  const salvarNomePaciente = async (codigo: string) => {
+    const nome = nomeEdicao.trim();
+    if (!nome || !supabase) return;
+    setSalvandoNome(true);
+    try {
+      const { error } = await supabase.from("patient_codes").update({ nome_paciente: nome }).eq("code", codigo);
+      if (error) throw error;
+      setPacientes((atuais) => atuais.map((paciente) => paciente.codigo === codigo ? { ...paciente, nome } : paciente));
+      setEditandoCodigo(null);
+      setNomeEdicao("");
+    } catch (error) {
+      console.error("Erro ao atualizar nome do paciente:", error);
+      alert("Não foi possível atualizar o nome. Tente novamente.");
+    } finally {
+      setSalvandoNome(false);
+    }
   };
 
   const copiarTexto = (chave: string, texto: string) => {
@@ -257,8 +286,10 @@ export function PainelPacientes() {
             value={nomePaciente}
             onChange={(e) => setNomePaciente(e.target.value)}
             placeholder="Nome do paciente"
+            required
+            aria-label="Nome do paciente"
             className="flex-1 rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none"
-            onKeyDown={(e) => e.key === "Enter" && handleGenerarCodigo()}
+            onKeyDown={(e) => e.key === "Enter" && nomePaciente.trim() && handleGenerarCodigo()}
           />
           <button
             onClick={handleGenerarCodigo}
@@ -302,7 +333,33 @@ export function PainelPacientes() {
             <motion.div key={p.codigo} variants={fadeUp} className="glass-card rounded-2xl p-5 border border-[var(--c-border)]">
               <div className="mb-3 flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  {showNomes && <p className="mb-1 font-medium text-[var(--c-text)] text-sm">{p.nome}</p>}
+                  {editandoCodigo === p.codigo ? (
+                    <div className="mb-2 flex items-center gap-1.5">
+                      <input
+                        value={nomeEdicao}
+                        onChange={(event) => setNomeEdicao(event.target.value)}
+                        onKeyDown={(event) => event.key === "Enter" && salvarNomePaciente(p.codigo)}
+                        autoFocus
+                        aria-label="Corrigir nome do paciente"
+                        className="min-w-0 rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-2.5 py-1.5 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none"
+                      />
+                      <button type="button" onClick={() => salvarNomePaciente(p.codigo)} disabled={salvandoNome || !nomeEdicao.trim()} aria-label="Salvar nome" className="rounded-lg p-2 text-[var(--c-accent)] hover:bg-[var(--c-accent)]/10 disabled:opacity-40">
+                        <Check size={15} />
+                      </button>
+                      <button type="button" onClick={() => setEditandoCodigo(null)} aria-label="Cancelar edição" className="rounded-lg p-2 text-[var(--c-muted)] hover:bg-[var(--c-surface)]">
+                        <X size={15} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="mb-1 flex items-center gap-1.5">
+                      <p className="font-medium text-[var(--c-text)] text-sm">{showNomes ? p.nome : "Nome oculto"}</p>
+                      {showNomes && (
+                        <button type="button" onClick={() => iniciarEdicaoNome(p)} aria-label={`Editar nome de ${p.nome}`} className="rounded p-1 text-[var(--c-muted)] hover:text-[var(--c-accent)]">
+                          <Pencil size={12} />
+                        </button>
+                      )}
+                    </div>
+                  )}
                   <p className="font-mono text-lg font-bold text-[var(--c-accent)] tracking-wider">{p.codigo}</p>
                   <p className="text-[10px] text-[var(--c-muted)]">
                     {p.unlockedExercises.length} exercício{p.unlockedExercises.length !== 1 ? "s" : ""} liberado{p.unlockedExercises.length !== 1 ? "s" : ""}
