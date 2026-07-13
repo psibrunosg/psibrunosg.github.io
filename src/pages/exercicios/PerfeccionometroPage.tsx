@@ -5,7 +5,7 @@ import Perfeccionometro from "@/components/exercicios/Perfeccionometro";
 export default function PerfeccionometroPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Perfeccionometro | Bruno Souza";
+    document.title = "Perfeccionometro | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

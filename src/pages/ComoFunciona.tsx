@@ -46,7 +46,7 @@ const topicos = [
 export default function ComoFunciona() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Como funciona a terapia | Bruno Souza Psicólogo";
+    document.title = "Como funciona a terapia | Bruno de Souza Gonçalves Psicólogo";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

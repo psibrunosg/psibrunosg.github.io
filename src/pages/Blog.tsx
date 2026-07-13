@@ -29,7 +29,7 @@ export default function Blog() {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Blog | Bruno Souza Psicologo | Saude Mental TCC Pelotas";
+    document.title = "Blog | Bruno de Souza Gonçalves Psicologo | Saude Mental TCC Pelotas";
     if (!isDynamicLoaded()) {
       loadDynamicPosts().then(() => setAllPosts(getAllPosts()));
     }

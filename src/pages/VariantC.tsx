@@ -116,7 +116,7 @@ export default function VariantC() {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Bruno Schneider Goulart | Psicólogo em Pelotas e online";
+    document.title = "Bruno de Souza Gonçalves | Psicólogo em Pelotas e online";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -148,13 +148,13 @@ export default function VariantC() {
           <Link
             to="/"
             className="group flex min-h-11 items-center gap-3"
-            aria-label="Bruno Schneider Goulart, página inicial"
+            aria-label="Bruno de Souza Gonçalves, página inicial"
           >
             <span
               className="text-[1.08rem] font-semibold leading-none tracking-[-0.02em] text-[var(--c-deep)]"
               style={{ fontFamily: "var(--font-display)" }}
             >
-              Bruno Schneider Goulart
+              Bruno de Souza Gonçalves
             </span>
             <span className="hidden border-l border-[var(--c-border)] pl-3 text-[0.63rem] font-extrabold uppercase tracking-[0.16em] text-[var(--c-muted)] sm:block">
               Psicólogo · CRP 07/44472
@@ -310,13 +310,13 @@ export default function VariantC() {
                   src="/img/foto.webp"
                   width="843"
                   height="1264"
-                  alt="Bruno Schneider Goulart, psicólogo"
+                  alt="Bruno de Souza Gonçalves, psicólogo"
                   fetchPriority="high"
                   className="aspect-[0.78] w-full object-cover object-top contrast-[1.03] saturate-[0.88]"
                 />
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#172c24] via-[#172c24]/72 to-transparent px-6 pb-8 pt-24 text-white sm:px-8">
                   <p className="text-3xl font-medium tracking-[-0.035em]" style={{ fontFamily: "var(--font-display)" }}>
-                    Bruno Schneider Goulart
+                    Bruno de Souza Gonçalves
                   </p>
                   <p className="mt-2 text-sm font-bold uppercase tracking-[0.12em] text-white/72">
                     Psicólogo clínico · CRP 07/44472
@@ -502,13 +502,13 @@ export default function VariantC() {
                 width="843"
                 height="1264"
                 loading="lazy"
-                alt="Retrato de Bruno Schneider Goulart"
+                alt="Retrato de Bruno de Souza Gonçalves"
                 className="absolute inset-0 h-full w-full object-cover object-top grayscale-[0.12]"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#172c24]/84 via-transparent to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-10">
                 <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.18em] text-white/62">Psicólogo clínico</p>
-                <p className="mt-2 text-3xl font-medium" style={{ fontFamily: "var(--font-display)" }}>Bruno Schneider Goulart</p>
+                <p className="mt-2 text-3xl font-medium" style={{ fontFamily: "var(--font-display)" }}>Bruno de Souza Gonçalves</p>
                 <p className="mt-2 text-sm font-bold text-white/76">CRP 07/44472 · registro ativo</p>
               </div>
             </Reveal>

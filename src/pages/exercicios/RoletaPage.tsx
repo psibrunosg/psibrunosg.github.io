@@ -5,7 +5,7 @@ import RoletaTerapeutica from "@/components/exercicios/RoletaTerapeutica";
 export default function RoletaPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Roleta do E Se | Bruno Souza";
+    document.title = "Roleta do E Se | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

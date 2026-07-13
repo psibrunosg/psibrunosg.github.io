@@ -180,7 +180,7 @@ export default function ModosEsquema() {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Modos do Esquema | Psicoeducação | Bruno Souza";
+    document.title = "Modos do Esquema | Psicoeducação | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

@@ -5,7 +5,7 @@ import InundacaoIncertezas from "@/components/exercicios/InundacaoIncertezas";
 export default function InundacaoPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Inundação com Incertezas | Bruno Souza";
+    document.title = "Inundação com Incertezas | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

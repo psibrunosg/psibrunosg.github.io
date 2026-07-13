@@ -5,7 +5,7 @@ import LaboratorioPrevisoes from "@/components/exercicios/LaboratorioPrevisoes";
 export default function LabPrevisaoPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Laboratório de Previsões | Bruno Souza";
+    document.title = "Laboratório de Previsões | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

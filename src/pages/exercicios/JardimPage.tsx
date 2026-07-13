@@ -5,7 +5,7 @@ import JardimMente from "@/components/exercicios/JardimMente";
 export default function JardimPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Jardim da Mente | Bruno Souza";
+    document.title = "Jardim da Mente | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

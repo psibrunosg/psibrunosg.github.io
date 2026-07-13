@@ -29,7 +29,7 @@ export default function Sono() {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Sono | Psicoeducação | Bruno Souza";
+    document.title = "Sono | Psicoeducação | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

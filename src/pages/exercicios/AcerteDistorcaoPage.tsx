@@ -5,7 +5,7 @@ import AcerteDistorcao from "@/components/exercicios/AcerteDistorcao";
 export default function AcerteDistorcaoPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Acerte a Distorção | Bruno Souza";
+    document.title = "Acerte a Distorção | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

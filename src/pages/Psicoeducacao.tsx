@@ -20,7 +20,7 @@ const navItems = [
 export default function Psicoeducacao() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Psicoeducacao | Bruno Souza Psicologo | Pelotas";
+    document.title = "Psicoeducacao | Bruno de Souza Gonçalves Psicologo | Pelotas";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

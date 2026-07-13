@@ -529,7 +529,7 @@ export default function BrunoPainel() {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Painel | Bruno Souza";
+    document.title = "Painel | Bruno de Souza Gonçalves";
     if (!supabase) {
       setLoginLoading(false);
       return () => { document.documentElement.removeAttribute("data-theme"); document.documentElement.removeAttribute("data-mode"); };
@@ -703,7 +703,7 @@ export default function BrunoPainel() {
             initial={{ scale: 0, rotate: -10 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 200 }}>
             <Lock size={26} className="text-white" />
           </motion.div>
-          <h1 className="mb-1 text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Painel Bruno Souza</h1>
+          <h1 className="mb-1 text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Painel Bruno de Souza Gonçalves</h1>
           <p className="mb-6 text-xs text-[var(--c-muted)]">Acesso restrito ao psicologo</p>
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
             placeholder="Email" className="mb-3 w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors focus:border-[var(--c-accent)] focus:outline-none" />
@@ -800,7 +800,7 @@ export default function BrunoPainel() {
     }
     y += 4; doc.setDrawColor(200, 200, 200); doc.line(ML, y, ML + W, y); y += 6;
     txt(f.referencia, 8, false, [120, 120, 120]); y += 6;
-    txt("Bruno Souza · CRP 07/44472", 9, true, [120, 120, 120]);
+    txt("Bruno de Souza Gonçalves · CRP 07/44472", 9, true, [120, 120, 120]);
     doc.save(`${f.id}_${new Date().toISOString().slice(0, 10)}.pdf`);
   }
 
@@ -814,7 +814,7 @@ export default function BrunoPainel() {
       <header className="fixed left-0 right-0 top-0 z-50 px-6 py-4 glass-panel">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link to="/" className="text-sm font-semibold text-[var(--c-text)] transition-colors hover:text-[var(--c-accent)]">Bruno Souza</Link>
+            <Link to="/" className="text-sm font-semibold text-[var(--c-text)] transition-colors hover:text-[var(--c-accent)]">Bruno de Souza Gonçalves</Link>
             <button onClick={() => setDarkMode((d) => !d)} title={darkMode ? "Modo claro" : "Modo escuro"}
               className="rounded-full border border-[var(--c-border)] p-1.5 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]">
               {darkMode ? <Sun size={14} /> : <Moon size={14} />}

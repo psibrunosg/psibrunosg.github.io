@@ -5,7 +5,7 @@ import MuralhaEvidencias from "@/components/exercicios/MuralhaEvidencias";
 export default function MuralhaEvidenciasPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Muralha de Evidências | Bruno Souza";
+    document.title = "Muralha de Evidências | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

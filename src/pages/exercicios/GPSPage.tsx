@@ -5,7 +5,7 @@ import GPSDecisoes from "@/components/exercicios/GPSDecisoes";
 export default function GPSPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "GPS de Decisões | Bruno Souza";
+    document.title = "GPS de Decisões | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

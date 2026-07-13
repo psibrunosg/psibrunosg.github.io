@@ -156,7 +156,7 @@ export default function CicloPanico() {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Ciclo do Pânico | Psicoeducação | Bruno Souza";
+    document.title = "Ciclo do Pânico | Psicoeducação | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

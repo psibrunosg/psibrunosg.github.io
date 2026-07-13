@@ -69,7 +69,7 @@ export default function Escala() {
     document.documentElement.setAttribute("data-theme", "lobo");
     if (config) {
       const sigla = "sigla" in config ? config.sigla : "";
-      document.title = `${sigla} | Bruno Souza Psicologo`;
+      document.title = `${sigla} | Bruno de Souza Gonçalves Psicologo`;
     }
     return () => document.documentElement.removeAttribute("data-theme");
   }, [config]);

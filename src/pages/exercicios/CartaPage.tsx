@@ -5,7 +5,7 @@ import CartaFonte from "@/components/exercicios/CartaFonte";
 export default function CartaPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Carta à Fonte do Esquema | Bruno Souza";
+    document.title = "Carta à Fonte do Esquema | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

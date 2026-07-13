@@ -5,7 +5,7 @@ import OculosEsquemas from "@/components/exercicios/OculosEsquemas";
 export default function OculosPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Óculos dos Esquemas | Bruno Souza";
+    document.title = "Óculos dos Esquemas | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

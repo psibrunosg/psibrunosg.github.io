@@ -5,7 +5,7 @@ import PontosTensao from "@/components/exercicios/PontosTensao";
 export default function PontosPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Pontos de Tensão | Bruno Souza";
+    document.title = "Pontos de Tensão | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

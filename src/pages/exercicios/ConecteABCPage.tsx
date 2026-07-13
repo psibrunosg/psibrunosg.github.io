@@ -5,7 +5,7 @@ import ConecteABC from "@/components/exercicios/ConecteABC";
 export default function ConecteABCPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Conecte A-B-C | Bruno Souza";
+    document.title = "Conecte A-B-C | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

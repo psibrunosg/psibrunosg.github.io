@@ -5,7 +5,7 @@ import BalaoPensamentos from "@/components/exercicios/BalaoPensamentos";
 export default function BalaoPensamentosPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Balão de Pensamentos | Bruno Souza";
+    document.title = "Balão de Pensamentos | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

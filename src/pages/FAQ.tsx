@@ -45,7 +45,7 @@ export default function FAQ() {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Perguntas Frequentes | Bruno Souza Psicólogo";
+    document.title = "Perguntas Frequentes | Bruno de Souza Gonçalves Psicólogo";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

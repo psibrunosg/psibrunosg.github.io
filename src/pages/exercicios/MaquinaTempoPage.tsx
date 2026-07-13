@@ -5,7 +5,7 @@ import MaquinaDoTempo from "@/components/exercicios/MaquinaDoTempo";
 export default function MaquinaTempoPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Máquina do Tempo | Bruno Souza";
+    document.title = "Máquina do Tempo | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

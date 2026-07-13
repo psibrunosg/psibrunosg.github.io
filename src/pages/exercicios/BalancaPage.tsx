@@ -5,7 +5,7 @@ import BalancaTerapeutica from "@/components/exercicios/BalancaTerapeutica";
 export default function BalancaPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Balança de Evidências | Bruno Souza";
+    document.title = "Balança de Evidências | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

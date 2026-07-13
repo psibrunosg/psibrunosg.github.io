@@ -7,7 +7,7 @@ import { contato } from "@/content/copy";
 export default function Crise() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Precisa de ajuda agora? | Bruno Souza Psicólogo";
+    document.title = "Precisa de ajuda agora? | Bruno de Souza Gonçalves Psicólogo";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

@@ -5,7 +5,7 @@ import ChuvaPreocupacoes from "@/components/exercicios/ChuvaPreocupacoes";
 export default function ChuvaPreocupacoesPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Chuva de Preocupações | Bruno Souza";
+    document.title = "Chuva de Preocupações | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

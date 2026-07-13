@@ -29,7 +29,7 @@ export default function Distorcoes() {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Distorções Cognitivas | Psicoeducação | Bruno Souza";
+    document.title = "Distorções Cognitivas | Psicoeducação | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

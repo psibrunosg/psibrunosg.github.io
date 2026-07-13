@@ -5,7 +5,7 @@ import ConstruorDireitos from "@/components/exercicios/ConstruorDireitos";
 export default function DireitosPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Construtor de Direitos | Bruno Souza";
+    document.title = "Construtor de Direitos | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

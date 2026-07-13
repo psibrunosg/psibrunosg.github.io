@@ -5,7 +5,7 @@ import Bussola from "@/components/exercicios/Bussola";
 export default function BussolaPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Bussola de Valores | Bruno Souza";
+    document.title = "Bussola de Valores | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

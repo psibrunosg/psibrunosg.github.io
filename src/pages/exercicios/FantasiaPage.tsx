@@ -5,7 +5,7 @@ import FantasiaTemida from "@/components/exercicios/FantasiaTemida";
 export default function FantasiaPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Fantasia Temida | Bruno Souza";
+    document.title = "Fantasia Temida | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

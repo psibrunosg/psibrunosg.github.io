@@ -95,7 +95,7 @@ export default function JanelaTolerancia() {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Janela de Tolerância | Psicoeducação | Bruno Souza";
+    document.title = "Janela de Tolerância | Psicoeducação | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

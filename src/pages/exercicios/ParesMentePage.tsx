@@ -5,7 +5,7 @@ import ParesMente from "@/components/exercicios/ParesMente";
 export default function ParesMentePage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Pares da Mente | Bruno Souza";
+    document.title = "Pares da Mente | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

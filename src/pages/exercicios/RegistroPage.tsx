@@ -5,7 +5,7 @@ import RegistroV2 from "@/components/exercicios/RegistroV2";
 export default function RegistroPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Registro de Pensamentos | Bruno Souza";
+    document.title = "Registro de Pensamentos | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

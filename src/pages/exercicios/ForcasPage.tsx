@@ -5,7 +5,7 @@ import CofreForças from "@/components/exercicios/CofreForças";
 export default function ForcasPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Cofre de Forças | Bruno Souza";
+    document.title = "Cofre de Forças | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

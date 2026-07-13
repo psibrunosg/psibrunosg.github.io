@@ -22,7 +22,7 @@ export default function TrilhaPage() {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = trilha ? `${trilha.titulo} | Bruno Souza` : "Trilha | Bruno Souza";
+    document.title = trilha ? `${trilha.titulo} | Bruno de Souza Gonçalves` : "Trilha | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, [trilha]);
 

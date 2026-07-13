@@ -32,7 +32,7 @@ function Secao({ titulo, children }: { titulo: string; children: React.ReactNode
 export default function Privacidade() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Política de Privacidade | Bruno Souza Psicólogo";
+    document.title = "Política de Privacidade | Bruno de Souza Gonçalves Psicólogo";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

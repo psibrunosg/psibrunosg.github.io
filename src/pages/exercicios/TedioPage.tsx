@@ -5,7 +5,7 @@ import TecnicaTedio from "@/components/exercicios/TecnicaTedio";
 export default function TedioPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Técnica do Tédio | Bruno Souza";
+    document.title = "Técnica do Tédio | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

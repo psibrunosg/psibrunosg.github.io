@@ -50,7 +50,7 @@ export function gerarPDF(r: ResultadoPDF): jsPDF {
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text("Bruno Souza - Psicologo - CRP 07/44472", w / 2, 33, { align: "center" });
+  doc.text("Bruno de Souza Gonçalves - Psicologo - CRP 07/44472", w / 2, 33, { align: "center" });
   doc.text("Documento gerado em " + r.data, w / 2, 39, { align: "center" });
 
   doc.setDrawColor(62, 107, 92);

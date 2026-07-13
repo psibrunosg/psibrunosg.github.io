@@ -107,7 +107,7 @@ export default function ExerciciosRestritos() {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Exercícios Restritos | Bruno Souza Psicologo | Pelotas";
+    document.title = "Exercícios Restritos | Bruno de Souza Gonçalves Psicologo | Pelotas";
 
     const stored = localStorage.getItem("exercise_patient_code");
     const unlocked = localStorage.getItem("exercise_restricted_unlocked");

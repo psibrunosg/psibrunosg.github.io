@@ -84,7 +84,7 @@ export default function BlogPost() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
     if (post) {
-      document.title = post.titulo + " | Bruno Souza Psicologo";
+      document.title = post.titulo + " | Bruno de Souza Gonçalves Psicologo";
       setLoading(false);
     } else if (slug && !isDynamicLoaded()) {
       loadDynamicPosts().then(() => {

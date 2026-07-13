@@ -137,7 +137,7 @@ export default function Neuroanatomia3D() {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Neuroanatomia 3D | Psicoeducação | Bruno Souza";
+    document.title = "Neuroanatomia 3D | Psicoeducação | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

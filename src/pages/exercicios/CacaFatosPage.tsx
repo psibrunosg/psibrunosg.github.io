@@ -5,7 +5,7 @@ import CacaFatos from "@/components/exercicios/CacaFatos";
 export default function CacaFatosPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Caça aos Fatos | Bruno Souza";
+    document.title = "Caça aos Fatos | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

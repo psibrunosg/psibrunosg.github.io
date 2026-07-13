@@ -8,7 +8,7 @@ interface Props {
   brand?: string;
 }
 
-export function Navbar({ items, whatsappLink, brand = "Clínica Bruno Souza" }: Props) {
+export function Navbar({ items, whatsappLink, brand = "Clínica Bruno de Souza Gonçalves" }: Props) {
   return (
     <header className="hidden md:block fixed top-0 inset-x-0 z-[60]">
       <nav

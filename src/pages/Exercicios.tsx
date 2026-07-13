@@ -360,7 +360,7 @@ export default function Exercicios() {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Exercícios | Clínica Bruno Souza — Saúde & Bem-estar";
+    document.title = "Exercícios | Clínica Bruno de Souza Gonçalves — Saúde & Bem-estar";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -475,7 +475,7 @@ export default function Exercicios() {
                 variants={fadeUp}
                 className="text-[11px] tracking-[0.32em] uppercase font-bold text-[var(--c-accent)] mb-4"
               >
-                Clínica Bruno Souza · Saúde <span className="text-[var(--c-warm)]">&</span> Bem-estar
+                Clínica Bruno de Souza Gonçalves · Saúde <span className="text-[var(--c-warm)]">&</span> Bem-estar
               </motion.p>
               <motion.h1
                 variants={fadeUp}
@@ -515,7 +515,7 @@ export default function Exercicios() {
               >
                 <img
                   src="/img/lobo.svg"
-                  alt="Símbolo da Clínica Bruno Souza: lobo sereno entre folhas e montanhas"
+                  alt="Símbolo da Clínica Bruno de Souza Gonçalves: lobo sereno entre folhas e montanhas"
                   className="w-[82%] h-[82%] object-contain"
                 />
               </div>

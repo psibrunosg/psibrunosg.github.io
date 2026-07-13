@@ -141,7 +141,7 @@ const ferramentasGeraisPublicas = ferramentasGerais.filter((f) => !ESCALAS_RESTR
 export default function PacienteHub() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Area do Paciente | Bruno Souza Psicologo";
+    document.title = "Area do Paciente | Bruno de Souza Gonçalves Psicologo";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
@@ -152,7 +152,7 @@ export default function PacienteHub() {
 
       <header className="fixed top-0 left-0 right-0 z-50 px-6 py-4 glass-panel">
         <div className="mx-auto flex max-w-4xl items-center justify-between">
-          <Link to="/" className="text-sm font-semibold text-[var(--c-text)] transition-colors hover:text-[var(--c-accent)]">Bruno Souza</Link>
+          <Link to="/" className="text-sm font-semibold text-[var(--c-text)] transition-colors hover:text-[var(--c-accent)]">Bruno de Souza Gonçalves</Link>
           <span className="text-xs text-[var(--c-muted)]">{contato.crp}</span>
         </div>
       </header>
@@ -167,7 +167,7 @@ export default function PacienteHub() {
                 style={{ background: "var(--c-warm-lt)", border: "1px solid var(--c-border)", boxShadow: "0 18px 46px -14px var(--c-accent)" }}
                 initial={{ scale: 0, rotate: -12 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", delay: 0.15, stiffness: 200 }}
               >
-                <img src="/img/simbolo-estendido.png" alt="Simbolo Bruno Souza" className="h-16 w-16 object-contain" style={{ mixBlendMode: "multiply" }} draggable={false} />
+                <img src="/img/simbolo-estendido.png" alt="Simbolo Bruno de Souza Gonçalves" className="h-16 w-16 object-contain" style={{ mixBlendMode: "multiply" }} draggable={false} />
                 <motion.span
                   className="absolute inset-0 rounded-full ring-2 ring-[var(--c-accent)]/40"
                   animate={{ scale: [1, 1.16, 1], opacity: [0.55, 0, 0.55] }}
@@ -207,7 +207,7 @@ export default function PacienteHub() {
                 <div>
                   <strong className="mb-1 block text-sm text-[var(--c-text)]">Privacidade</strong>
                   <p className="text-sm leading-relaxed text-[var(--c-muted)]">
-                    Suas respostas sao armazenadas de forma segura e acessiveis exclusivamente por Bruno Souza, {contato.crp}. Estas ferramentas sao de rastreio, nao de diagnostico.
+                    Suas respostas sao armazenadas de forma segura e acessiveis exclusivamente por Bruno de Souza Gonçalves, {contato.crp}. Estas ferramentas sao de rastreio, nao de diagnostico.
                     {" "}Leia a <Link to="/privacidade" className="text-[var(--c-accent)] hover:underline">politica de privacidade</Link>.
                   </p>
                 </div>

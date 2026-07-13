@@ -4,7 +4,7 @@ import SeparandoTudo from "@/components/exercicios/SeparandoTudo";
 
 export default function SeparandoTudoPage() {
   useEffect(() => {
-    document.title = "Separando Tudo | Bruno Souza";
+    document.title = "Separando Tudo | Bruno de Souza Gonçalves";
   }, []);
 
   return (

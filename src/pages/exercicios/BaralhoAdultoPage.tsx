@@ -5,7 +5,7 @@ import BaralhoAdulto from "@/components/exercicios/BaralhoAdulto";
 export default function BaralhoAdultoPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Baralho Adulto | Bruno Souza";
+    document.title = "Baralho Adulto | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

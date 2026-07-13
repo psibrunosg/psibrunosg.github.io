@@ -5,7 +5,7 @@ import TortaResponsabilidade from "@/components/exercicios/TortaResponsabilidade
 export default function TortaPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Torta da Responsabilidade | Bruno Souza";
+    document.title = "Torta da Responsabilidade | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 

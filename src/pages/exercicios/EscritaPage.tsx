@@ -5,7 +5,7 @@ import EscritaExpressiva from "@/components/exercicios/EscritaExpressiva";
 export default function EscritaPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    document.title = "Escrita Expressiva | Bruno Souza";
+    document.title = "Escrita Expressiva | Bruno de Souza Gonçalves";
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
