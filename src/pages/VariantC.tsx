@@ -1,582 +1,556 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { motion, useReducedMotion } from "framer-motion";
-import { Leaf, Sprout, Heart, Brain, Layers, type LucideIcon } from "lucide-react";
-import { HeroParallax } from "@/components/ui/HeroParallax";
-import { TextGenerateEffect } from "@/components/ui/TextGenerateEffect";
-import { BentoGrid } from "@/components/ui/BentoGrid";
-import { InfiniteMovingCards } from "@/components/ui/InfiniteMovingCards";
-import { AnimatedCTA } from "@/components/ui/AnimatedCTA";
-import { WaveDivider } from "@/components/ui/WaveDivider";
-import { ScrollProgress } from "@/components/ui/ScrollProgress";
-import { FloatingBlobs } from "@/components/ui/FloatingBlobs";
-import { MobileMenu } from "@/components/ui/MobileMenu";
-import { Navbar } from "@/components/ui/Navbar";
-import { WhatsAppFloat } from "@/components/shared/WhatsAppFloat";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Check,
+  ChevronDown,
+  Clock,
+  Menu,
+  X,
+} from "lucide-react";
 import { SkipLink } from "@/components/shared/SkipLink";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
 import {
-  hero, manifesto, sobre, publicos, dores, processo,
-  abordagens, faqs, contato, principiosEticos
+  abordagens,
+  contato,
+  dores,
+  faqs,
+  processo,
+  publicos,
+  sobre,
 } from "@/content/copy";
-import { fadeUp, stagger } from "@/lib/motion";
 import { posts } from "@/content/posts-loader";
-import { Clock, ArrowRight } from "lucide-react";
 
 const navItems = [
-  { label: "Início",      href: "#hero" },
-  { label: "Sobre",       href: "#sobre" },
-  { label: "Como ajudo",  href: "#ajudo" },
-  { label: "Processo",    href: "#processo" },
-  { label: "Abordagens",  href: "#abordagens" },
-  { label: "FAQ",         href: "#faq" },
-  { label: "Como funciona", href: "/como-funciona" },
-  { label: "Psicoeducação", href: "/psicoeducacao" },
-  { label: "Exercícios",  href: "/exercicios" },
-  { label: "Blog",        href: "/blog" },
-  { label: "Paciente",    href: "/paciente" },
+  { label: "Atendimento", href: "#atendimento" },
+  { label: "Como funciona", href: "#processo" },
+  { label: "Sobre", href: "#sobre" },
+  { label: "Conteúdos", href: "#conteudos" },
 ];
 
-const abordagemIcons: Record<string, LucideIcon> = {
-  tcc: Brain,
-  esquema: Layers,
-};
-
-type Abordagem = { id: string; nome: string; sigla: string; descricao: string; detalhe: string };
-
-function ServiceDisplayCard({ ab, i }: { ab: Abordagem; i: number }) {
+function Reveal({
+  children,
+  className = "",
+  delay = 0,
+}: {
+  children: ReactNode;
+  className?: string;
+  delay?: number;
+}) {
   const reduceMotion = useReducedMotion();
-  const Icon = abordagemIcons[ab.id] ?? Brain;
-  const tilt = i % 2 === 0 ? -1.5 : 1.5;
 
   return (
     <motion.div
-      variants={fadeUp}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true }}
-      custom={i}
-      className="group relative"
+      initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.18 }}
+      transition={{ duration: reduceMotion ? 0 : 0.45, delay, ease: [0.22, 1, 0.36, 1] }}
+      className={className}
     >
-      {/* camada de profundidade: borda-fantasma atrás do card */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 rounded-3xl border border-[var(--c-accent)]/15 bg-[var(--c-surface)]/60 transition-transform duration-300 ease-out group-hover:translate-x-1.5 group-hover:translate-y-1.5"
-      />
-      <motion.div
-        whileHover={reduceMotion ? undefined : { rotate: tilt, y: -4 }}
-        transition={{ type: "spring", stiffness: 260, damping: 20 }}
-        className="relative rounded-3xl border border-[var(--c-accent)]/20 bg-[var(--c-surface)] p-8 md:p-9 backdrop-blur-sm transition-shadow duration-300 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06),0_18px_40px_-20px_rgba(0,0,0,0.18)] group-hover:shadow-[0_6px_16px_-4px_rgba(0,0,0,0.1),0_28px_60px_-18px_var(--c-accent)]"
-      >
-        <div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--c-accent)]/10 ring-1 ring-[var(--c-accent)]/20">
-          <Icon size={28} className="text-[var(--c-accent)]" aria-hidden="true" />
-        </div>
-        <span className="text-xs tracking-widest uppercase text-[var(--c-accent)] font-semibold">{ab.sigla}</span>
-        <h3
-          className="text-xl md:text-2xl font-semibold text-[var(--c-text)] mt-2 mb-4"
-          style={{ fontFamily: "var(--font-heading)" }}
-        >
-          {ab.nome}
-        </h3>
-        <p className="text-[var(--c-muted)] text-[15px] leading-relaxed mb-3">{ab.descricao}</p>
-        <p className="text-[var(--c-muted)] text-sm leading-relaxed">{ab.detalhe}</p>
-      </motion.div>
+      {children}
     </motion.div>
   );
 }
 
-const desktopNavItems = [
-  { label: "Como funciona",   href: "/como-funciona" },
-  { label: "Psicoeducação",   href: "/psicoeducacao" },
-  { label: "Exercícios",      href: "/exercicios" },
-  { label: "Blog",            href: "/blog" },
-  { label: "FAQ",             href: "/faq" },
-  { label: "Área do Paciente", href: "/paciente" },
-];
+function Eyebrow({ children, light = false }: { children: ReactNode; light?: boolean }) {
+  return (
+    <p
+      className={`mb-5 text-[0.68rem] font-bold uppercase tracking-[0.24em] ${
+        light ? "text-[#c8d7d0]" : "text-[#8d432f]"
+      }`}
+    >
+      {children}
+    </p>
+  );
+}
 
 export default function VariantC() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const reduceMotion = useReducedMotion();
+
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
-
   return (
-    <>
+    <div className="min-h-screen overflow-x-clip bg-[#f4f1e9] text-[#17231e]">
       <SkipLink />
-      <ScrollProgress />
-      <Navbar items={desktopNavItems} whatsappLink={contato.whatsappLink} />
-      <MobileMenu items={navItems} crp={contato.crp} whatsappLink={contato.whatsappLink} />
-      <WhatsAppFloat />
 
-      <main id="main">
-        {/* HERO PARALLAX */}
-        <section id="hero">
-          <HeroParallax foto={contato.foto}>
-            <div className="text-center px-6 max-w-4xl mx-auto">
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className="text-xs tracking-[0.3em] uppercase text-[var(--c-warm)] mb-2"
-              >
-                {contato.crp} · Psicólogo
-              </motion.p>
-
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="text-xs tracking-[0.15em] text-white/80 mb-8"
-              >
-                {contato.modalidade}
-              </motion.p>
-
-              <h1
-                className="text-5xl md:text-7xl font-light leading-tight mb-8 text-white"
-                style={{ fontFamily: "var(--font-display)" }}
-              >
-                <TextGenerateEffect text={hero.headline} delay={0.7} mode="chars" />
-              </h1>
-
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1, delay: 0.3 }}
-                className="text-lg text-white/85 max-w-xl mx-auto mb-12 leading-relaxed"
-              >
-                {hero.subline}
-              </motion.p>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-              >
-                <AnimatedCTA href={contato.whatsappLink} label={hero.cta} />
-              </motion.div>
-            </div>
-          </HeroParallax>
-        </section>
-
-        {/* MANIFESTO */}
-        <section className="py-24 px-6 bg-[var(--c-bg)]">
-          <div className="max-w-3xl mx-auto text-center">
-            <motion.blockquote
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="text-2xl md:text-4xl font-light text-[var(--c-text)] leading-relaxed"
+      <header className="sticky top-0 z-50 border-b border-[#17231e]/15 bg-[#f4f1e9]">
+        <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between px-5 sm:px-8 lg:px-12">
+          <Link to="/" className="group flex min-h-11 items-center gap-3" aria-label="Bruno Souza, página inicial">
+            <span
+              className="text-xl leading-none text-[#17231e]"
               style={{ fontFamily: "var(--font-display)" }}
             >
-              &ldquo;{manifesto.quote}&rdquo;
-            </motion.blockquote>
-          </div>
-        </section>
+              Bruno Souza
+            </span>
+            <span className="hidden border-l border-[#17231e]/25 pl-3 text-[0.62rem] font-bold uppercase tracking-[0.18em] text-[#5f6963] sm:block">
+              Psicologia clínica
+            </span>
+          </Link>
 
-        <WaveDivider from="var(--c-bg)" to="var(--c-surface)" />
-
-        {/* PRINCÍPIOS ÉTICOS — INFINITE SCROLL */}
-        <section className="py-12 bg-[var(--c-surface)]" aria-labelledby="principios-heading">
-          <h2 id="principios-heading" className="sr-only">Princípios éticos</h2>
-          <InfiniteMovingCards items={principiosEticos} speed="slow" />
-        </section>
-
-        <WaveDivider from="var(--c-surface)" to="var(--c-bg)" flip />
-
-        {/* SOBRE */}
-        <section id="sobre" className="py-24 px-6 bg-[var(--c-bg)]">
-          <div className="max-w-5xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              {/* Foto */}
-              <motion.div
-                initial={{ opacity: 0, x: -32 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7 }}
-                className="relative"
+          <nav className="hidden items-center gap-1 lg:flex" aria-label="Navegação principal">
+            {navItems.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="flex min-h-11 items-center px-3 text-sm font-semibold text-[#435049] transition-colors duration-200 hover:text-[#8d432f]"
               >
-                <div className="rounded-3xl overflow-hidden aspect-[4/5] shadow-xl">
-                  <img
-                    src={contato.foto}
-                    alt="Bruno Souza, Psicólogo"
-                    className="w-full h-full object-cover object-top"
-                    loading="lazy"
-                  />
-                </div>
-                {/* CRP badge sobre a foto */}
-                <div className="absolute -bottom-4 -right-4 bg-[var(--c-accent)] text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg tracking-widest uppercase">
-                  {contato.crp}
-                </div>
-              </motion.div>
+                {item.label}
+              </a>
+            ))}
+            <Link
+              to="/psicoeducacao"
+              className="flex min-h-11 items-center px-3 text-sm font-semibold text-[#435049] transition-colors duration-200 hover:text-[#8d432f]"
+            >
+              Psicoeducação
+            </Link>
+            <a
+              href={contato.whatsappLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-3 inline-flex min-h-11 items-center gap-2 bg-[#17231e] px-5 text-sm font-bold text-white transition-colors duration-200 hover:bg-[#8d432f]"
+            >
+              Agendar conversa
+              <ArrowUpRight size={16} aria-hidden="true" />
+            </a>
+          </nav>
 
-              {/* Texto */}
-              <motion.div
-                variants={stagger.container}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-              >
-                <motion.p variants={fadeUp} className="text-xs tracking-[0.3em] uppercase text-[var(--c-accent)] mb-2 font-semibold">
-                  {sobre.titulo}
-                </motion.p>
-                <motion.h2
-                  variants={fadeUp}
-                  className="text-3xl md:text-4xl font-semibold text-[var(--c-text)] mb-6"
-                  style={{ fontFamily: "var(--font-heading)" }}
+          <button
+            type="button"
+            className="flex size-12 items-center justify-center border border-[#17231e]/25 lg:hidden"
+            aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
+            aria-expanded={menuOpen}
+            aria-controls="menu-mobile"
+            onClick={() => setMenuOpen((current) => !current)}
+          >
+            {menuOpen ? <X size={21} aria-hidden="true" /> : <Menu size={21} aria-hidden="true" />}
+          </button>
+        </div>
+
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.nav
+              id="menu-mobile"
+              aria-label="Navegação móvel"
+              initial={reduceMotion ? false : { opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: reduceMotion ? 0 : 0.2 }}
+              className="border-t border-[#17231e]/15 bg-[#f4f1e9] px-5 pb-6 pt-3 lg:hidden"
+            >
+              <div className="mx-auto flex max-w-[1440px] flex-col">
+                {navItems.map((item) => (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMenuOpen(false)}
+                    className="flex min-h-12 items-center border-b border-[#17231e]/10 text-base font-semibold"
+                  >
+                    {item.label}
+                  </a>
+                ))}
+                <Link
+                  to="/psicoeducacao"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex min-h-12 items-center border-b border-[#17231e]/10 text-base font-semibold"
                 >
-                  {sobre.subtitulo}
-                </motion.h2>
-                <motion.p variants={fadeUp} className="text-[var(--c-muted)] leading-relaxed mb-4">
-                  {sobre.bio}
-                </motion.p>
-                <motion.p variants={fadeUp} className="text-[var(--c-muted)] leading-relaxed mb-8">
-                  {sobre.complemento}
-                </motion.p>
-                <motion.ul variants={fadeUp} className="space-y-2">
-                  {sobre.formacao.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-[var(--c-muted)]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--c-accent)] flex-shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </motion.ul>
+                  Psicoeducação
+                </Link>
+                <a
+                  href={contato.whatsappLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-5 inline-flex min-h-12 items-center justify-center gap-2 bg-[#17231e] px-5 font-bold text-white"
+                >
+                  Agendar conversa
+                  <ArrowUpRight size={17} aria-hidden="true" />
+                </a>
+              </div>
+            </motion.nav>
+          )}
+        </AnimatePresence>
+      </header>
+
+      <main id="main">
+        <section className="mx-auto grid min-h-[calc(100svh-72px)] max-w-[1440px] lg:grid-cols-[1.08fr_0.92fr]">
+          <div className="flex items-center px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
+            <div className="max-w-[760px]">
+              <motion.p
+                initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: reduceMotion ? 0 : 0.4 }}
+                className="mb-7 text-[0.68rem] font-bold uppercase tracking-[0.24em] text-[#8d432f]"
+              >
+                Psicólogo clínico · {contato.crp}
+              </motion.p>
+              <motion.h1
+                initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: reduceMotion ? 0 : 0.55, delay: 0.06 }}
+                className="max-w-[780px] text-[clamp(3.4rem,7.5vw,7.4rem)] font-light leading-[0.9] tracking-[-0.055em] text-[#17231e]"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                Você não precisa chegar com tudo organizado.
+              </motion.h1>
+              <motion.p
+                initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: reduceMotion ? 0 : 0.45, delay: 0.14 }}
+                className="mt-8 max-w-xl text-lg leading-relaxed text-[#536059] sm:text-xl"
+              >
+                A terapia pode começar justamente no ponto em que está difícil nomear o que você sente. O primeiro encontro serve para entender a sua demanda e ver se esse trabalho faz sentido para você.
+              </motion.p>
+              <motion.div
+                initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: reduceMotion ? 0 : 0.45, delay: 0.2 }}
+                className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center"
+              >
+                <a
+                  href={contato.whatsappLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 bg-[#8d432f] px-6 font-bold text-white transition-colors duration-200 hover:bg-[#713323]"
+                >
+                  Falar comigo pelo WhatsApp
+                  <ArrowUpRight size={18} aria-hidden="true" />
+                </a>
+                <Link
+                  to="/como-funciona"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 px-5 font-bold text-[#17231e] underline decoration-[#8d432f]/40 underline-offset-4 transition-colors hover:text-[#8d432f]"
+                >
+                  Entenda como funciona
+                  <ArrowRight size={17} aria-hidden="true" />
+                </Link>
               </motion.div>
+            </div>
+          </div>
+
+          <div className="relative min-h-[72svh] overflow-hidden bg-[#0f2b35] lg:min-h-full">
+            <motion.img
+              src="/img/foto.webp"
+              width="843"
+              height="1264"
+              alt="Bruno Souza em seu espaço de trabalho, escrevendo em um tablet"
+              fetchPriority="high"
+              className="absolute inset-0 h-full w-full object-cover object-top"
+              initial={reduceMotion ? false : { opacity: 0, scale: 1.025 }}
+              animate={reduceMotion ? { opacity: 1 } : { opacity: 1, scale: [1.025, 1.05], y: [0, -8] }}
+              transition={
+                reduceMotion
+                  ? { duration: 0 }
+                  : {
+                      opacity: { duration: 0.55 },
+                      scale: { duration: 14, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" },
+                      y: { duration: 14, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" },
+                    }
+              }
+            />
+            <div className="absolute inset-x-0 bottom-0 bg-[#0b222a]/92 px-6 py-5 text-white sm:px-8">
+              <div className="flex items-end justify-between gap-5">
+                <div>
+                  <p className="text-lg" style={{ fontFamily: "var(--font-display)" }}>
+                    Bruno Souza
+                  </p>
+                  <p className="mt-1 text-xs tracking-wide text-white/70">Psicólogo · {contato.crp}</p>
+                </div>
+                <p className="max-w-[14rem] text-right text-xs leading-relaxed text-white/70">
+                  Presencial em Pelotas e online para todo o Brasil
+                </p>
+              </div>
             </div>
           </div>
         </section>
 
-        <WaveDivider from="var(--c-bg)" to="var(--c-surface)" />
+        <section className="bg-[#17231e] text-white" aria-label="Informações do atendimento">
+          <div className="mx-auto grid max-w-[1440px] divide-y divide-white/15 px-5 sm:px-8 md:grid-cols-3 md:divide-x md:divide-y-0 lg:px-12">
+            {["Registro profissional ativo", "TCC e Terapia do Esquema", "Atendimento presencial e online"].map((item) => (
+              <p key={item} className="flex min-h-24 items-center gap-3 py-5 text-sm font-semibold md:px-7 first:md:pl-0">
+                <Check size={17} className="shrink-0 text-[#d58b6f]" aria-hidden="true" />
+                {item}
+              </p>
+            ))}
+          </div>
+        </section>
 
-        {/* PARA QUEM — SEGMENTAÇÃO A1 */}
-        <section className="py-20 px-6 bg-[var(--c-surface)] relative overflow-hidden">
-          <FloatingBlobs />
-          <div className="max-w-4xl mx-auto relative z-10">
-            <motion.h2
-              variants={fadeUp}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-semibold text-[var(--c-text)] mb-4 text-center"
-              style={{ fontFamily: "var(--font-heading)" }}
-            >
-              Para quem é a terapia?
-            </motion.h2>
-            <motion.p
-              variants={fadeUp}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              className="text-[var(--c-muted)] text-center mb-14 max-w-xl mx-auto"
-            >
-              Cada fase da vida tem seus desafios. Atendo quem está passando por momentos difíceis, seja qual for o seu momento.
-            </motion.p>
-            <div className="grid md:grid-cols-3 gap-6">
-              {publicos.map((p, i) => (
-                <motion.div
-                  key={p.id}
-                  variants={fadeUp}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  custom={i}
-                  className="rounded-2xl border border-[var(--c-border)] p-6 bg-[var(--c-bg)] hover:border-[var(--c-accent)]/50 transition-colors"
-                >
-                  {p.icon === "Leaf" && <Leaf size={28} className="mb-4 text-[var(--c-accent)]" aria-hidden="true" />}
-                  {p.icon === "Sprout" && <Sprout size={28} className="mb-4 text-[var(--c-accent)]" aria-hidden="true" />}
-                  {p.icon === "Heart" && <Heart size={28} className="mb-4 text-[var(--c-accent)]" aria-hidden="true" />}
-                  <h3 className="text-lg font-semibold text-[var(--c-text)] mb-2" style={{ fontFamily: "var(--font-heading)" }}>
-                    {p.titulo}
-                  </h3>
-                  <p className="text-[var(--c-muted)] text-sm leading-relaxed">{p.descricao}</p>
-                </motion.div>
+        <section id="atendimento" className="scroll-mt-24 px-5 py-24 sm:px-8 sm:py-32 lg:px-12">
+          <div className="mx-auto grid max-w-[1280px] gap-16 lg:grid-cols-[0.82fr_1.18fr] lg:gap-24">
+            <Reveal>
+              <Eyebrow>Quando procurar terapia</Eyebrow>
+              <h2
+                className="max-w-lg text-4xl font-light leading-[1.02] tracking-[-0.035em] sm:text-6xl"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                Tem coisas que cansam antes mesmo de virar palavras.
+              </h2>
+              <p className="mt-7 max-w-md text-base leading-relaxed text-[#5f6963]">
+                Você não precisa saber explicar tudo antes de buscar ajuda. Reconhecer que algo não vai bem já é informação suficiente para começar uma conversa.
+              </p>
+            </Reveal>
+
+            <div>
+              <span id="ansiedade-pelotas" className="block scroll-mt-24" aria-hidden="true" />
+              <span id="esgotamento-burnout" className="block scroll-mt-24" aria-hidden="true" />
+              {dores.map((dor, index) => (
+                <Reveal key={dor.id} delay={index * 0.05}>
+                  <article className="grid gap-4 border-t border-[#17231e]/25 py-7 sm:grid-cols-[3rem_1fr] sm:gap-7 sm:py-9">
+                    <span className="text-xs font-bold tracking-[0.18em] text-[#8d432f]">0{index + 1}</span>
+                    <div>
+                      <h3 className="text-2xl font-normal leading-tight" style={{ fontFamily: "var(--font-display)" }}>
+                        {dor.titulo}
+                      </h3>
+                      <p className="mt-3 max-w-2xl leading-relaxed text-[#5f6963]">{dor.descricao}</p>
+                    </div>
+                  </article>
+                </Reveal>
               ))}
             </div>
           </div>
         </section>
 
-        <WaveDivider from="var(--c-surface)" to="var(--c-bg)" flip />
-
-        {/* SEO anchors */}
-        <span id="ansiedade-pelotas" className="block" style={{ scrollMarginTop: "80px" }} aria-hidden="true" />
-        <span id="esgotamento-burnout" className="block" aria-hidden="true" />
-
-        {/* COMO AJUDO — BENTO */}
-        <section id="ajudo" className="py-24 px-6 bg-[var(--c-bg)]">
-          <div className="max-w-5xl mx-auto">
-            <motion.h2
-              variants={fadeUp}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-semibold text-[var(--c-text)] mb-4 text-center"
-              style={{ fontFamily: "var(--font-heading)" }}
-            >
-              Você se reconhece em algum desses momentos?
-            </motion.h2>
-            <motion.p
-              variants={fadeUp}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              className="text-[var(--c-muted)] text-center mb-12 max-w-xl mx-auto"
-            >
-              Se sim, a terapia pode te ajudar a entender o que está acontecendo — e a encontrar um caminho diferente.
-            </motion.p>
-            <BentoGrid items={dores.map((d, i) => ({ ...d, large: i === 2 }))} />
+        <section className="border-y border-[#17231e]/15 bg-[#fcfbf7] px-5 py-24 sm:px-8 sm:py-32 lg:px-12">
+          <div className="mx-auto max-w-[1280px]">
+            <Reveal className="max-w-2xl">
+              <Eyebrow>Para quem é o atendimento</Eyebrow>
+              <h2 className="text-4xl font-light tracking-[-0.035em] sm:text-6xl" style={{ fontFamily: "var(--font-display)" }}>
+                O contexto muda. A escuta também precisa mudar.
+              </h2>
+            </Reveal>
+            <div className="mt-16 grid border-t border-[#17231e]/25 md:grid-cols-3 md:divide-x md:divide-[#17231e]/20">
+              {publicos.map((publico, index) => (
+                <Reveal key={publico.id} delay={index * 0.05} className="h-full">
+                  <article className="h-full border-b border-[#17231e]/20 py-8 md:border-b-0 md:px-8 first:md:pl-0 last:md:pr-0">
+                    <p className="mb-8 text-xs font-bold tracking-[0.18em] text-[#8d432f]">0{index + 1}</p>
+                    <h3 className="text-3xl font-normal" style={{ fontFamily: "var(--font-display)" }}>
+                      {publico.titulo}
+                    </h3>
+                    <p className="mt-5 leading-relaxed text-[#5f6963]">{publico.descricao}</p>
+                  </article>
+                </Reveal>
+              ))}
+            </div>
           </div>
         </section>
 
-        <WaveDivider from="var(--c-bg)" to="var(--c-surface)" />
+        <section id="processo" className="scroll-mt-24 bg-[#0e2b31] px-5 py-24 text-white sm:px-8 sm:py-32 lg:px-12">
+          <div className="mx-auto max-w-[1280px]">
+            <Reveal className="grid gap-7 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
+              <div>
+                <Eyebrow light>Como funciona</Eyebrow>
+                <h2 className="text-4xl font-light tracking-[-0.035em] sm:text-6xl" style={{ fontFamily: "var(--font-display)" }}>
+                  Um processo com direção, sem respostas prontas.
+                </h2>
+              </div>
+              <p className="max-w-xl text-base leading-relaxed text-white/70 lg:justify-self-end lg:text-lg">
+                A terapia tem estrutura, mas não segue uma fórmula. As decisões são construídas a partir da sua história, dos seus objetivos e do que aparece ao longo do processo.
+              </p>
+            </Reveal>
 
-        {/* PROCESSO */}
-        <section id="processo" className="py-24 px-6 bg-[var(--c-surface)]">
-          <div className="max-w-3xl mx-auto">
-            <motion.h2
-              variants={fadeUp}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-semibold text-[var(--c-text)] mb-4 text-center"
-              style={{ fontFamily: "var(--font-heading)" }}
-            >
-              Como é o processo terapêutico?
-            </motion.h2>
-            <motion.p
-              variants={fadeUp}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              className="text-[var(--c-muted)] text-center mb-16 max-w-xl mx-auto"
-            >
-              Cada processo é único. Existe uma estrutura que nos orienta ao longo do caminho.
-            </motion.p>
-            <div className="space-y-6">
-              {processo.map((step, i) => (
-                <motion.div
-                  key={step.numero}
-                  initial={{ opacity: 0, x: -32 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: "-10%" }}
-                  transition={{ duration: 0.6, delay: i * 0.15 }}
-                  className="rounded-2xl border border-[var(--c-border)] p-8 bg-[var(--c-bg)] flex gap-6 items-start"
-                >
-                  <span
-                    className="text-5xl font-light text-[var(--c-accent)] opacity-30 flex-shrink-0 leading-none"
-                    style={{ fontFamily: "var(--font-display)" }}
-                    aria-hidden="true"
-                  >
-                    {step.numero}
-                  </span>
-                  <div>
-                    <h3 className="text-xl font-semibold text-[var(--c-text)] mb-2" style={{ fontFamily: "var(--font-heading)" }}>
+            <div className="mt-16 grid border-t border-white/25 md:grid-cols-3 md:divide-x md:divide-white/20">
+              {processo.map((step, index) => (
+                <Reveal key={step.numero} delay={index * 0.06} className="h-full">
+                  <article className="h-full border-b border-white/20 py-9 md:border-b-0 md:px-8 first:md:pl-0 last:md:pr-0">
+                    <span className="text-xs font-bold tracking-[0.2em] text-[#d58b6f]">{step.numero}</span>
+                    <h3 className="mt-10 text-3xl font-light" style={{ fontFamily: "var(--font-display)" }}>
                       {step.titulo}
                     </h3>
-                    <p className="text-[var(--c-muted)] leading-relaxed">{step.descricao}</p>
-                  </div>
-                </motion.div>
+                    <p className="mt-5 leading-relaxed text-white/68">{step.descricao}</p>
+                  </article>
+                </Reveal>
               ))}
             </div>
           </div>
         </section>
 
-        <WaveDivider from="var(--c-surface)" to="var(--c-bg)" flip />
-
-        {/* ABORDAGENS */}
-        <section id="abordagens" className="py-24 px-6 bg-[var(--c-bg)]">
-          <div className="max-w-4xl mx-auto">
-            <motion.h2
-              variants={fadeUp}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-semibold text-[var(--c-text)] mb-4 text-center"
-              style={{ fontFamily: "var(--font-heading)" }}
-            >
-              Como eu trabalho
-            </motion.h2>
-            <motion.p
-              variants={fadeUp}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              className="text-[var(--c-muted)] text-center mb-12 max-w-xl mx-auto"
-            >
-              Utilizo abordagens com evidências científicas sólidas, adaptadas à sua história e ao seu momento.
-            </motion.p>
-            <div className="grid md:grid-cols-2 gap-8 md:gap-10 pb-2">
-              {abordagens.map((ab, i) => (
-                <ServiceDisplayCard key={ab.id} ab={ab} i={i} />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <WaveDivider from="var(--c-bg)" to="var(--c-surface)" />
-
-        {/* FAQ */}
-        <section id="faq" className="py-24 px-6 bg-[var(--c-surface)]">
-          <div className="max-w-2xl mx-auto">
-            <motion.h2
-              variants={fadeUp}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              className="text-3xl font-semibold text-[var(--c-text)] mb-4 text-center"
-              style={{ fontFamily: "var(--font-heading)" }}
-            >
-              Perguntas frequentes
-            </motion.h2>
-            <motion.p
-              variants={fadeUp}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              className="text-[var(--c-muted)] text-center mb-12"
-            >
-              Dúvidas comuns antes de começar, respondidas com clareza.
-            </motion.p>
-            <div className="space-y-2">
-              {faqs.map((faq, i) => (
-                <motion.div
-                  key={i}
-                  variants={fadeUp}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  custom={i}
-                  className="border border-[var(--c-border)] rounded-xl overflow-hidden"
-                >
-                  <button
-                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                    className="w-full text-left px-6 py-4 flex justify-between items-center hover:bg-[var(--c-bg)] transition-colors"
-                    aria-expanded={openFaq === i}
-                  >
-                    <span className="font-medium text-[var(--c-text)] text-sm">{faq.pergunta}</span>
-                    <motion.svg
-                      width="18" height="18" viewBox="0 0 18 18"
-                      fill="none" stroke="var(--c-accent)" strokeWidth="2"
-                      animate={{ rotate: openFaq === i ? 180 : 0 }}
-                      aria-hidden="true"
-                    >
-                      <path d="M4 7l5 5 5-5"/>
-                    </motion.svg>
-                  </button>
-                  <motion.div
-                    initial={false}
-                    animate={{ height: openFaq === i ? "auto" : 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="overflow-hidden"
-                  >
-                    <p className="px-6 py-4 text-[var(--c-muted)] text-sm leading-relaxed">{faq.resposta}</p>
-                  </motion.div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-
-        <WaveDivider from="var(--c-surface)" to="var(--c-bg)" flip />
-
-        {/* BLOG PREVIEW */}
-        <section className="py-24 px-6 bg-[var(--c-bg)]">
-          <div className="max-w-4xl mx-auto">
-            <motion.div
-              variants={stagger.container}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-            >
-              <motion.p variants={fadeUp} className="text-xs tracking-[0.3em] uppercase text-[var(--c-accent)] font-semibold mb-2">
-                Conteudo educativo
-              </motion.p>
-              <div className="flex items-end justify-between mb-12">
-                <motion.h2
-                  variants={fadeUp}
-                  className="text-3xl md:text-4xl font-semibold text-[var(--c-text)]"
-                  style={{ fontFamily: "var(--font-heading)" }}
-                >
-                  Do blog
-                </motion.h2>
-                <motion.div variants={fadeUp}>
-                  <Link
-                    to="/blog"
-                    className="inline-flex items-center gap-1.5 text-sm text-[var(--c-accent)] font-medium hover:underline"
-                  >
-                    Ver todos <ArrowRight size={15} />
-                  </Link>
-                </motion.div>
+        <section id="sobre" className="scroll-mt-24 px-5 py-24 sm:px-8 sm:py-32 lg:px-12">
+          <div className="mx-auto grid max-w-[1280px] gap-14 lg:grid-cols-[0.72fr_1.28fr] lg:gap-24">
+            <Reveal>
+              <Eyebrow>{sobre.titulo}</Eyebrow>
+              <div className="relative aspect-square max-w-md overflow-hidden border border-[#17231e]/20 bg-[#a8c3b4] p-10">
+                <img
+                  src="/img/lobo.svg"
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy"
+                  className="h-full w-full object-contain opacity-75 mix-blend-multiply"
+                />
+                <p className="absolute bottom-7 left-7 right-7 border-t border-[#17231e]/30 pt-4 text-xs font-bold uppercase tracking-[0.16em]">
+                  Clínica BS · Saúde &amp; Bem-estar
+                </p>
               </div>
-              <div className="grid md:grid-cols-3 gap-5">
-                {posts.slice(0, 3).map((post, i) => (
-                  <motion.article
-                    key={post.slug}
-                    variants={fadeUp}
-                    custom={i}
-                    className="group rounded-2xl border border-[var(--c-border)] bg-[var(--c-surface)] hover:border-[var(--c-accent)]/50 transition-colors"
-                  >
-                    <Link to={"/blog/" + post.slug} className="block p-6">
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="text-xs font-semibold tracking-widest uppercase text-[var(--c-accent)]">
-                          {post.categoria}
-                        </span>
-                        <span className="text-[var(--c-border)]">·</span>
-                        <span className="flex items-center gap-1 text-xs text-[var(--c-muted)]">
-                          <Clock size={12} aria-hidden="true" />
+            </Reveal>
+
+            <Reveal delay={0.05}>
+              <h2 className="text-4xl font-light tracking-[-0.035em] sm:text-6xl" style={{ fontFamily: "var(--font-display)" }}>
+                {sobre.subtitulo}
+              </h2>
+              <div className="mt-9 max-w-3xl space-y-5 text-lg leading-relaxed text-[#536059]">
+                <p>{sobre.bio}</p>
+                <p>{sobre.complemento}</p>
+              </div>
+              <ul className="mt-10 grid gap-3 border-t border-[#17231e]/20 pt-7 sm:grid-cols-2">
+                {sobre.formacao.map((item) => (
+                  <li key={item} className="flex gap-3 text-sm font-semibold text-[#344139]">
+                    <Check size={17} className="mt-0.5 shrink-0 text-[#8d432f]" aria-hidden="true" />
+                    {item}
+                  </li>
+                ))}
+                <li className="flex gap-3 text-sm font-semibold text-[#344139]">
+                  <Check size={17} className="mt-0.5 shrink-0 text-[#8d432f]" aria-hidden="true" />
+                  Registro profissional {contato.crp}
+                </li>
+              </ul>
+            </Reveal>
+          </div>
+        </section>
+
+        <section className="bg-[#c8d5cd] px-5 py-24 sm:px-8 sm:py-32 lg:px-12">
+          <div className="mx-auto max-w-[1280px]">
+            <Reveal className="max-w-3xl">
+              <Eyebrow>Abordagens clínicas</Eyebrow>
+              <h2 className="text-4xl font-light tracking-[-0.035em] sm:text-6xl" style={{ fontFamily: "var(--font-display)" }}>
+                Ciência ajuda a orientar. A história de cada pessoa define o caminho.
+              </h2>
+            </Reveal>
+            <div className="mt-16 grid gap-12 lg:grid-cols-2 lg:gap-20">
+              {abordagens.map((abordagem, index) => (
+                <Reveal key={abordagem.id} delay={index * 0.06}>
+                  <article className="border-t border-[#17231e]/35 pt-7">
+                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8d432f]">{abordagem.sigla}</p>
+                    <h3 className="mt-5 text-3xl font-normal leading-tight sm:text-4xl" style={{ fontFamily: "var(--font-display)" }}>
+                      {abordagem.nome}
+                    </h3>
+                    <p className="mt-6 leading-relaxed text-[#36453d]">{abordagem.descricao}</p>
+                    <p className="mt-4 text-sm leading-relaxed text-[#536059]">{abordagem.detalhe}</p>
+                  </article>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="conteudos" className="scroll-mt-24 px-5 py-24 sm:px-8 sm:py-32 lg:px-12">
+          <div className="mx-auto max-w-[1280px]">
+            <Reveal className="flex flex-col gap-7 border-b border-[#17231e]/25 pb-10 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <Eyebrow>Conteúdo útil</Eyebrow>
+                <h2 className="text-4xl font-light tracking-[-0.035em] sm:text-6xl" style={{ fontFamily: "var(--font-display)" }}>
+                  Para entender melhor o que você vive.
+                </h2>
+              </div>
+              <Link to="/blog" className="inline-flex min-h-11 shrink-0 items-center gap-2 font-bold text-[#8d432f]">
+                Ver todos os textos
+                <ArrowRight size={17} aria-hidden="true" />
+              </Link>
+            </Reveal>
+
+            <div className="grid md:grid-cols-3">
+              {posts.slice(0, 3).map((post, index) => (
+                <Reveal key={post.slug} delay={index * 0.05} className="h-full">
+                  <article className="group h-full border-b border-[#17231e]/20 py-8 md:border-r md:px-7 first:md:pl-0 last:md:border-r-0 last:md:pr-0">
+                    <Link to={`/blog/${post.slug}`} className="flex h-full min-h-60 flex-col">
+                      <div className="flex items-center gap-3 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[#8d432f]">
+                        <span>{post.categoria}</span>
+                        <span className="flex items-center gap-1.5 text-[#5f6963]">
+                          <Clock size={13} aria-hidden="true" />
                           {post.tempoLeitura}
                         </span>
                       </div>
-                      <h3
-                        className="text-base font-semibold text-[var(--c-text)] mb-2 group-hover:text-[var(--c-accent)] transition-colors leading-snug"
-                        style={{ fontFamily: "var(--font-heading)" }}
-                      >
+                      <h3 className="mt-9 text-2xl font-normal leading-tight transition-colors group-hover:text-[#8d432f]" style={{ fontFamily: "var(--font-display)" }}>
                         {post.titulo}
                       </h3>
-                      <p className="text-[var(--c-muted)] text-xs leading-relaxed line-clamp-3">
-                        {post.resumo}
-                      </p>
+                      <p className="mt-4 line-clamp-3 text-sm leading-relaxed text-[#5f6963]">{post.resumo}</p>
+                      <span className="mt-auto inline-flex items-center gap-2 pt-8 text-sm font-bold">
+                        Ler texto
+                        <ArrowUpRight size={15} aria-hidden="true" />
+                      </span>
                     </Link>
-                  </motion.article>
-                ))}
-              </div>
-            </motion.div>
+                  </article>
+                </Reveal>
+              ))}
+            </div>
           </div>
         </section>
-        <WaveDivider from="var(--c-bg)" to="var(--c-bg-dark)" />
 
-        {/* CTA FINAL */}
-        <section className="py-24 px-6 bg-[var(--c-bg-dark)] text-white text-center">
-          <motion.div
-            variants={stagger.container}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="max-w-2xl mx-auto"
-          >
-            <motion.p variants={fadeUp} className="text-xs tracking-[0.3em] uppercase text-[var(--c-warm)] mb-4">
-              {contato.modalidade}
-            </motion.p>
-            <motion.h2
-              variants={fadeUp}
-              className="text-3xl md:text-5xl font-light mb-6"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              Pronto para dar o primeiro passo?
-            </motion.h2>
-            <motion.p variants={fadeUp} className="text-white/80 mb-10 leading-relaxed">
-              Uma conversa inicial, sem compromisso. Vamos ver juntos se faz sentido.
-            </motion.p>
-            <motion.div variants={fadeUp}>
-              <AnimatedCTA href={contato.whatsappLink} label={hero.cta} sublabel={hero.ctaSub} sublabelClassName="text-white/50" />
-            </motion.div>
-          </motion.div>
+        <section className="border-y border-[#17231e]/15 bg-[#fcfbf7] px-5 py-24 sm:px-8 sm:py-32 lg:px-12">
+          <div className="mx-auto grid max-w-[1120px] gap-14 lg:grid-cols-[0.65fr_1.35fr] lg:gap-24">
+            <Reveal>
+              <Eyebrow>Antes de começar</Eyebrow>
+              <h2 className="text-4xl font-light tracking-[-0.035em] sm:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
+                Perguntas que costumam aparecer no primeiro contato.
+              </h2>
+            </Reveal>
+            <div>
+              {faqs.slice(0, 5).map((faq, index) => {
+                const isOpen = openFaq === index;
+                return (
+                  <div key={faq.pergunta} className="border-t border-[#17231e]/25 last:border-b">
+                    <button
+                      type="button"
+                      className="flex min-h-16 w-full items-center justify-between gap-5 py-4 text-left font-bold"
+                      aria-expanded={isOpen}
+                      aria-controls={`faq-${index}`}
+                      onClick={() => setOpenFaq(isOpen ? null : index)}
+                    >
+                      <span>{faq.pergunta}</span>
+                      <motion.span animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: reduceMotion ? 0 : 0.2 }}>
+                        <ChevronDown size={19} aria-hidden="true" />
+                      </motion.span>
+                    </button>
+                    <AnimatePresence initial={false}>
+                      {isOpen && (
+                        <motion.div
+                          id={`faq-${index}`}
+                          initial={reduceMotion ? false : { height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: reduceMotion ? 0 : 0.24 }}
+                          className="overflow-hidden"
+                        >
+                          <p className="max-w-2xl pb-6 pr-8 leading-relaxed text-[#5f6963]">{faq.resposta}</p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-[#8d432f] px-5 py-24 text-white sm:px-8 sm:py-32 lg:px-12">
+          <Reveal className="mx-auto grid max-w-[1280px] gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+            <div>
+              <Eyebrow light>Primeiro contato</Eyebrow>
+              <h2 className="max-w-4xl text-5xl font-light leading-[0.98] tracking-[-0.04em] sm:text-7xl" style={{ fontFamily: "var(--font-display)" }}>
+                Podemos começar por uma conversa simples.
+              </h2>
+            </div>
+            <div className="lg:justify-self-end">
+              <p className="mb-7 max-w-md leading-relaxed text-white/78">
+                Você me conta, do seu jeito, o que motivou a procura. Eu explico como trabalho e verificamos juntos se o atendimento faz sentido neste momento.
+              </p>
+              <a
+                href={contato.whatsappLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-12 items-center justify-center gap-2 bg-white px-6 font-bold text-[#713323] transition-colors hover:bg-[#f4f1e9]"
+              >
+                Enviar uma mensagem
+                <ArrowUpRight size={18} aria-hidden="true" />
+              </a>
+            </div>
+          </Reveal>
         </section>
       </main>
 
       <EthicalFooter />
-    </>
+    </div>
   );
 }

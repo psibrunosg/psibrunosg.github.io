@@ -14,13 +14,13 @@ export const manifesto = {
 export const sobre = {
   titulo: "Quem sou eu",
   subtitulo: "Bruno Souza, psicólogo clínico",
-  bio: "Sou formado em Psicologia pela Universidade Católica de Pelotas (UCPel) e especializado em Terapia Cognitivo-Comportamental e Terapia do Esquema. Atendo adultos e adolescentes, presencialmente em Pelotas/RS e online para todo o Brasil.",
+  bio: "Sou psicólogo formado pela Universidade Católica de Pelotas (UCPel). Atualmente curso pós-graduação em Terapia Cognitivo-Comportamental e Terapia do Esquema. Atendo adultos e adolescentes, presencialmente em Pelotas/RS e online para todo o Brasil.",
   complemento:
-    "Acredito em um processo terapêutico que respeita o ritmo de cada pessoa. Meu trabalho é criar um espaço seguro para que você possa entender o que está acontecendo e encontrar caminhos mais leves de seguir em frente.",
+    "Meu trabalho respeita o ritmo de cada pessoa, mas não é uma conversa sem direção. Organizamos a demanda, identificamos padrões e construímos recursos que possam ser usados também fora da sessão.",
   formacao: [
     "Graduação em Psicologia (UCPel)",
-    "Especialização em TCC",
-    "Formação em Terapia do Esquema",
+    "Pós-graduação em TCC em andamento",
+    "Pós-graduação em Terapia do Esquema em andamento",
   ],
 };
 
@@ -115,7 +115,7 @@ export const faqs = [
   {
     pergunta: "Como funciona a primeira consulta?",
     resposta:
-      "A primeira sessão é uma conversa inicial, sem compromisso e sem cobranças. Você fala um pouco sobre o que está vivendo e, juntos, verificamos se o processo terapêutico faz sentido para o seu momento.",
+      "A primeira sessão é uma conversa para entender o que motivou a procura, quais são as suas necessidades e o que você espera da terapia. Também explico como trabalho e, ao final, combinamos os próximos passos.",
   },
   {
     pergunta: "Com que frequência acontecem as sessões?",
