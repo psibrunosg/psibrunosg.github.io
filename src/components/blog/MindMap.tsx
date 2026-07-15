@@ -1,5 +1,5 @@
 import { useId, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import type { MindMapData, MindMapNo } from "./types";
 
@@ -183,13 +183,14 @@ export function MindMap({ data }: { data: MindMapData }) {
                     <ChevronDown size={14} className={`shrink-0 transition-transform ${aberto ? "rotate-180" : ""}`} aria-hidden="true" />
                   )}
                 </button>
-                <AnimatePresence initial={false}>
-                  {temFilhos && aberto && (
+                {/* entrance-only: exit via AnimatePresence já travou em outros
+                    componentes desta sessão (ver nota do layout radial acima).
+                    Fechamento imediato, sem animação de saída. */}
+                {temFilhos && aberto && (
                     <motion.div
                       id={`${idNo}-filhos`}
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
                       transition={transition}
                       className="overflow-hidden"
                     >
@@ -201,8 +202,7 @@ export function MindMap({ data }: { data: MindMapData }) {
                         ))}
                       </ul>
                     </motion.div>
-                  )}
-                </AnimatePresence>
+                )}
               </li>
             );
           })}

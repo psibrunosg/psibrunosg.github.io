@@ -1,5 +1,5 @@
 import { useId, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -27,13 +27,14 @@ export function Revelar({ data }: { data: RevelarData }) {
           aria-hidden="true"
         />
       </button>
-      <AnimatePresence initial={false}>
-        {aberto && (
+      {/* entrance-only: AnimatePresence com exit já travou sem desmontar em
+          outros componentes desta sessão (painel invisível mas clicável).
+          Fechamento imediato, sem animação de saída. */}
+      {aberto && (
           <motion.div
             id={`${id}-conteudo`}
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
             transition={reduzirMovimento ? { duration: 0.01 } : { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="overflow-hidden"
           >
@@ -41,8 +42,7 @@ export function Revelar({ data }: { data: RevelarData }) {
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{data.conteudo}</ReactMarkdown>
             </div>
           </motion.div>
-        )}
-      </AnimatePresence>
+      )}
     </div>
   );
 }
