@@ -690,12 +690,12 @@ export default function BrunoPainel() {
 
 
   if (loginLoading && !auth) {
-    return <div className="flex min-h-screen items-center justify-center" data-theme="lobo"><AppAurora /><p className="relative z-10 text-[var(--c-muted)]">Carregando...</p></div>;
+    return <div className="flex min-h-screen items-center justify-center"><AppAurora /><p className="relative z-10 text-[var(--c-muted)]">Carregando...</p></div>;
   }
 
   if (!auth) {
     return (
-      <div className="relative flex min-h-screen items-center justify-center px-6" data-theme="lobo">
+      <div className="relative flex min-h-screen items-center justify-center px-6">
         <AppAurora />
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="glass-card relative z-10 w-full max-w-sm rounded-3xl p-8 text-center">
           <motion.div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl"
@@ -808,7 +808,7 @@ export default function BrunoPainel() {
     "px-4 py-1.5 rounded-full text-xs font-semibold transition-all " + (tab === id ? "text-white shadow-[0_8px_20px_-8px_var(--c-accent)]" : "text-[var(--c-muted)] hover:text-[var(--c-text)]");
 
   return (
-    <div className="relative min-h-screen" data-theme="lobo">
+    <div className="relative min-h-screen">
       <AppAurora />
 
       <header className="fixed left-0 right-0 top-0 z-50 px-6 py-4 glass-panel">
