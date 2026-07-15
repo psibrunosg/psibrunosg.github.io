@@ -75,32 +75,59 @@ export default function Privacidade() {
 
             <Secao titulo="Quais dados coletamos">
               <p>
-                Desde julho de 2026, as respostas das escalas e questionários de autoavaliação
-                disponíveis na Área do Paciente são coletadas <strong>sem nome nem telefone</strong>.
-                Coletamos:
+                As escalas e questionários de autoavaliação disponíveis na Área do Paciente
+                coletam dados de identificação, necessários para o correto registro no prontuário
+                clínico e para a segurança do acompanhamento. Coletamos:
               </p>
               <ul className="list-disc space-y-1.5 pl-5">
-                <li>Data de nascimento, usada apenas para normatização estatística da escala respondida;</li>
-                <li>E-mail, de forma opcional, em escalas que envolvem risco (por exemplo, ideação suicida), para viabilizar contato caso necessário;</li>
-                <li>Código de acesso fornecido pelo seu psicólogo, usado para vincular respostas ao acompanhamento clínico sem exigir identificação direta;</li>
-                <li>Registros de sessões dos exercícios terapêuticos interativos, vinculados a esse mesmo código.</li>
+                <li>Nome completo;</li>
+                <li>CPF;</li>
+                <li>Data de nascimento;</li>
+                <li>E-mail;</li>
+                <li>Telefone;</li>
+                <li>Contato de emergência (nome e telefone);</li>
+                <li>
+                  Para pacientes menores de 18 anos: nome e telefone do responsável legal;
+                </li>
+                <li>Registros de sessões dos exercícios terapêuticos interativos, vinculados ao seu acompanhamento.</li>
               </ul>
             </Secao>
 
             <Secao titulo="Para que usamos esses dados">
               <p>
-                Os dados coletados são usados exclusivamente para fins de avaliação clínica pelo
-                psicólogo responsável, {contato.nome} ({contato.crp}), como parte do acompanhamento
-                terapêutico. Não são usados para fins de marketing, publicidade ou venda a terceiros.
+                Os dados coletados são usados exclusivamente para fins de registro em prontuário e
+                cuidado clínico, pelo psicólogo responsável, {contato.nome} ({contato.crp}), como
+                parte do acompanhamento terapêutico. Não são usados para fins de marketing,
+                publicidade ou venda a terceiros.
               </p>
             </Secao>
 
             <Secao titulo="Base legal">
               <p>
-                O tratamento desses dados se baseia no seu consentimento, manifestado ao preencher
-                as escalas e exercícios, e na hipótese de tutela da saúde, prevista no art. 11 da
-                Lei Geral de Proteção de Dados (LGPD, Lei 13.709/2018), conduzida por profissional
-                de saúde sujeito a sigilo profissional.
+                O tratamento desses dados se baseia no seu consentimento (art. 7º da Lei Geral de
+                Proteção de Dados — LGPD, Lei 13.709/2018) e na hipótese de tutela da saúde (art.
+                11 da LGPD), conduzido por profissional de saúde sujeito a sigilo profissional. A
+                finalidade do tratamento é exclusivamente o registro em prontuário e o cuidado
+                clínico do paciente.
+              </p>
+            </Secao>
+
+            <Secao titulo="Tempo de guarda">
+              <p>
+                Os dados e registros de prontuário são mantidos por, no mínimo, 5 (cinco) anos,
+                conforme normativa do Conselho Federal de Psicologia (CFP).
+              </p>
+            </Secao>
+
+            <Secao titulo="Quem tem acesso">
+              <p>
+                O acesso aos dados coletados é restrito ao psicólogo responsável pelo
+                acompanhamento clínico. Consulte também os{" "}
+                <Link to="/documentos" className="text-[var(--c-accent)] hover:underline">
+                  documentos e termos da clínica
+                </Link>
+                , incluindo o Termo de Consentimento Livre e Esclarecido e o Contrato Terapêutico,
+                que detalham as condições do tratamento de dados no atendimento.
               </p>
             </Secao>
 

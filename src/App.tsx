@@ -53,6 +53,11 @@ import Crise from "./pages/Crise";
 import Privacidade from "./pages/Privacidade";
 import ComoFunciona from "./pages/ComoFunciona";
 import FAQ from "./pages/FAQ";
+import Documentos from "./pages/Documentos";
+import TcleOnline from "./pages/documentos/TcleOnline";
+import TclePresencial from "./pages/documentos/TclePresencial";
+import Contrato from "./pages/documentos/Contrato";
+import Guia from "./pages/documentos/Guia";
 
 export default function App() {
   return (
@@ -114,6 +119,11 @@ export default function App() {
         <Route path="/privacidade" element={<Privacidade />} />
         <Route path="/como-funciona" element={<ComoFunciona />} />
         <Route path="/faq" element={<FAQ />} />
+        <Route path="/documentos" element={<Documentos />} />
+        <Route path="/documentos/tcle-online" element={<TcleOnline />} />
+        <Route path="/documentos/tcle-presencial" element={<TclePresencial />} />
+        <Route path="/documentos/contrato" element={<Contrato />} />
+        <Route path="/documentos/guia" element={<Guia />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

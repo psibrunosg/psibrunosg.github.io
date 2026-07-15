@@ -28,7 +28,57 @@ function isBDIItem(item: unknown): item is BDIItem {
 // ===== Merged config lookup =====
 const allConfigs: Record<string, AnyConfig> = { ...escalas, ...escalasGerais };
 
-type Rascunho = { nascimento: string; email: string; consentimento: boolean; respostas: (number | null)[]; atual: number; etapa: "form" | "dados" };
+type Rascunho = {
+  nascimento: string; email: string; consentimento: boolean;
+  nome: string; cpf: string; telefone: string;
+  contatoEmergenciaNome: string; contatoEmergenciaTelefone: string;
+  responsavelNome: string; responsavelTelefone: string;
+  respostas: (number | null)[]; atual: number; etapa: "form" | "dados";
+};
+
+function calcularIdade(nascimentoISO: string): number | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(nascimentoISO)) return null;
+  const nasc = new Date(nascimentoISO + "T00:00:00");
+  if (Number.isNaN(nasc.getTime())) return null;
+  const hoje = new Date();
+  let idade = hoje.getFullYear() - nasc.getFullYear();
+  const m = hoje.getMonth() - nasc.getMonth();
+  if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) idade--;
+  return idade;
+}
+
+function formatarCPF(valor: string): string {
+  const digits = valor.replace(/\D/g, "").slice(0, 11);
+  const p1 = digits.slice(0, 3), p2 = digits.slice(3, 6), p3 = digits.slice(6, 9), p4 = digits.slice(9, 11);
+  let out = p1;
+  if (p2) out += "." + p2;
+  if (p3) out += "." + p3;
+  if (p4) out += "-" + p4;
+  return out;
+}
+
+function cpfValido(cpfFormatado: string): boolean {
+  const digits = cpfFormatado.replace(/\D/g, "");
+  if (digits.length !== 11) return false;
+  if (/^(\d)\1{10}$/.test(digits)) return false;
+  const calcDigito = (base: string, pesoInicial: number) => {
+    let soma = 0;
+    for (let i = 0; i < base.length; i++) soma += Number(base[i]) * (pesoInicial - i);
+    const resto = (soma * 10) % 11;
+    return resto === 10 ? 0 : resto;
+  };
+  const d1 = calcDigito(digits.slice(0, 9), 10);
+  const d2 = calcDigito(digits.slice(0, 10), 11);
+  return d1 === Number(digits[9]) && d2 === Number(digits[10]);
+}
+
+function emailValido(valor: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valor.trim());
+}
+
+function telefoneValido(valor: string): boolean {
+  return valor.replace(/\D/g, "").length >= 10;
+}
 
 export default function Escala() {
   const { escalaId } = useParams<{ escalaId: string }>();
@@ -39,6 +89,14 @@ export default function Escala() {
   const [etapa, setEtapa] = useState<"codigo" | "intro" | "form" | "dados" | "enviando" | "erro" | "resultado">(requerCodigo ? "codigo" : "intro");
   const [nascimento, setNascimento] = useState("");
   const [email, setEmail] = useState("");
+  const [nome, setNome] = useState("");
+  const [cpf, setCpf] = useState("");
+  const [telefone, setTelefone] = useState("");
+  const [contatoEmergenciaNome, setContatoEmergenciaNome] = useState("");
+  const [contatoEmergenciaTelefone, setContatoEmergenciaTelefone] = useState("");
+  const [responsavelNome, setResponsavelNome] = useState("");
+  const [responsavelTelefone, setResponsavelTelefone] = useState("");
+  const [erroValidacao, setErroValidacao] = useState<Record<string, string>>({});
   const [codigoDigitado, setCodigoDigitado] = useState("");
   const [patientCode, setPatientCode] = useState("");
   const [erroCodigo, setErroCodigo] = useState("");
@@ -106,9 +164,13 @@ export default function Escala() {
     if (!storageKey || (etapa !== "form" && etapa !== "dados" && etapa !== "erro")) return;
     try {
       const etapaRascunho: "form" | "dados" = etapa === "form" ? "form" : "dados";
-      localStorage.setItem(storageKey, JSON.stringify({ nascimento, email, consentimento, respostas, atual, etapa: etapaRascunho }));
+      localStorage.setItem(storageKey, JSON.stringify({
+        nascimento, email, consentimento, nome, cpf, telefone,
+        contatoEmergenciaNome, contatoEmergenciaTelefone, responsavelNome, responsavelTelefone,
+        respostas, atual, etapa: etapaRascunho,
+      }));
     } catch { /* storage indisponível, ignora */ }
-  }, [storageKey, etapa, nascimento, email, consentimento, respostas, atual]);
+  }, [storageKey, etapa, nascimento, email, consentimento, nome, cpf, telefone, contatoEmergenciaNome, contatoEmergenciaTelefone, responsavelNome, responsavelTelefone, respostas, atual]);
 
   useEffect(() => {
     const answered = respostas[atual];
@@ -130,7 +192,18 @@ export default function Escala() {
 
   if (!config) return <Navigate to="/paciente" replace />;
 
-  const dadosValidos = nascimento.length > 0 && consentimento;
+  const idade = calcularIdade(nascimento);
+  const isMenor = idade !== null && idade < 18;
+  const dadosValidos =
+    nascimento.length > 0 && idade !== null && idade >= 0 &&
+    nome.trim().length > 0 &&
+    cpfValido(cpf) &&
+    emailValido(email) &&
+    telefoneValido(telefone) &&
+    contatoEmergenciaNome.trim().length > 0 &&
+    telefoneValido(contatoEmergenciaTelefone) &&
+    (!isMenor || (responsavelNome.trim().length > 0 && telefoneValido(responsavelTelefone))) &&
+    consentimento;
   const respondidas = respostas as number[];
   const sigla = config.sigla;
 
@@ -154,7 +227,23 @@ export default function Escala() {
     setErroEnvio("");
     setEtapa("enviando");
     try {
-      const { error } = await salvarResposta({ tipo: config!.id, nascimento, patient_code: patientCode || undefined, email: email.trim() || undefined, respostas: r, pontuacao, consentimento_lgpd: consentimento });
+      const { error } = await salvarResposta({
+        tipo: config!.id,
+        nome: nome.trim(),
+        cpf: cpf.replace(/\D/g, ""),
+        nascimento,
+        email: email.trim(),
+        telefone: telefone.trim(),
+        contato_emergencia_nome: contatoEmergenciaNome.trim(),
+        contato_emergencia_telefone: contatoEmergenciaTelefone.trim(),
+        responsavel_nome: isMenor ? responsavelNome.trim() : undefined,
+        responsavel_telefone: isMenor ? responsavelTelefone.trim() : undefined,
+        is_menor: isMenor,
+        patient_code: patientCode || undefined,
+        respostas: r,
+        pontuacao,
+        consentimento_lgpd: consentimento,
+      });
       if (error) throw error;
       if (storageKey) localStorage.removeItem(storageKey);
       setEtapa("resultado");
@@ -195,6 +284,9 @@ export default function Escala() {
   function retomarRascunho() {
     if (!rascunho) return;
     setNascimento(rascunho.nascimento); setEmail(rascunho.email ?? "");
+    setNome(rascunho.nome ?? ""); setCpf(rascunho.cpf ?? ""); setTelefone(rascunho.telefone ?? "");
+    setContatoEmergenciaNome(rascunho.contatoEmergenciaNome ?? ""); setContatoEmergenciaTelefone(rascunho.contatoEmergenciaTelefone ?? "");
+    setResponsavelNome(rascunho.responsavelNome ?? ""); setResponsavelTelefone(rascunho.responsavelTelefone ?? "");
     setConsentimento(rascunho.consentimento); setRespostas(rascunho.respostas); setAtual(rascunho.atual);
     setEtapa(rascunho.etapa === "dados" ? "dados" : "form");
     setRascunho(null);
@@ -278,31 +370,115 @@ export default function Escala() {
                     </div>
                   </div>
 
+                  <p className="mb-5 text-xs leading-relaxed text-[var(--c-muted)]">
+                    Todos os campos abaixo são obrigatórios e fazem parte do seu prontuário clínico, conforme o Termo de Consentimento (TCLE) da clínica.
+                  </p>
+
                   <div className="mb-6 space-y-4">
                     <div>
-                      <label htmlFor="escala-nascimento" className="mb-1.5 block text-sm font-medium text-[var(--c-text)]">Data de nascimento <span className="text-[var(--c-accent)]">*</span></label>
-                      <input id="escala-nascimento" type="date" value={nascimento} onChange={(e) => setNascimento(e.target.value)}
-                        className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors focus:border-[var(--c-accent)] focus:outline-none" />
+                      <label htmlFor="escala-nome" className="mb-1.5 block text-sm font-medium text-[var(--c-text)]">Nome completo <span className="text-[var(--c-accent)]">*</span></label>
+                      <input id="escala-nome" type="text" autoComplete="name" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Seu nome completo"
+                        className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors placeholder:text-[var(--c-muted)]/50 focus:border-[var(--c-accent)] focus:outline-none" />
+                      {erroValidacao.nome && <p className="mt-1.5 text-xs" style={{ color: "var(--c-danger)" }}>{erroValidacao.nome}</p>}
                     </div>
-                    {requerCodigo && (
-                      <div>
-                        <label htmlFor="escala-email" className="mb-1.5 block text-sm font-medium text-[var(--c-text)]">E-mail <span className="text-xs font-normal text-[var(--c-muted)]">(opcional)</span></label>
-                        <input id="escala-email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com"
-                          className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors placeholder:text-[var(--c-muted)]/50 focus:border-[var(--c-accent)] focus:outline-none" />
-                        <p className="mt-1.5 text-xs text-[var(--c-muted)]">Usado apenas para contato do seu psicólogo em caso de necessidade clínica.</p>
+
+                    <div>
+                      <label htmlFor="escala-cpf" className="mb-1.5 block text-sm font-medium text-[var(--c-text)]">CPF <span className="text-[var(--c-accent)]">*</span></label>
+                      <input id="escala-cpf" type="text" inputMode="numeric" autoComplete="off" value={cpf} onChange={(e) => setCpf(formatarCPF(e.target.value))} placeholder="000.000.000-00"
+                        className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors placeholder:text-[var(--c-muted)]/50 focus:border-[var(--c-accent)] focus:outline-none" />
+                      {erroValidacao.cpf && <p className="mt-1.5 text-xs" style={{ color: "var(--c-danger)" }}>{erroValidacao.cpf}</p>}
+                    </div>
+
+                    <div>
+                      <label htmlFor="escala-nascimento" className="mb-1.5 block text-sm font-medium text-[var(--c-text)]">Data de nascimento <span className="text-[var(--c-accent)]">*</span></label>
+                      <input id="escala-nascimento" type="date" autoComplete="bday" value={nascimento} onChange={(e) => setNascimento(e.target.value)}
+                        className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors focus:border-[var(--c-accent)] focus:outline-none" />
+                      {erroValidacao.nascimento && <p className="mt-1.5 text-xs" style={{ color: "var(--c-danger)" }}>{erroValidacao.nascimento}</p>}
+                    </div>
+
+                    <div>
+                      <label htmlFor="escala-email" className="mb-1.5 block text-sm font-medium text-[var(--c-text)]">E-mail <span className="text-[var(--c-accent)]">*</span></label>
+                      <input id="escala-email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com"
+                        className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors placeholder:text-[var(--c-muted)]/50 focus:border-[var(--c-accent)] focus:outline-none" />
+                      {erroValidacao.email && <p className="mt-1.5 text-xs" style={{ color: "var(--c-danger)" }}>{erroValidacao.email}</p>}
+                    </div>
+
+                    <div>
+                      <label htmlFor="escala-telefone" className="mb-1.5 block text-sm font-medium text-[var(--c-text)]">Telefone <span className="text-[var(--c-accent)]">*</span></label>
+                      <input id="escala-telefone" type="tel" autoComplete="tel" value={telefone} onChange={(e) => setTelefone(e.target.value)} placeholder="(00) 00000-0000"
+                        className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors placeholder:text-[var(--c-muted)]/50 focus:border-[var(--c-accent)] focus:outline-none" />
+                      {erroValidacao.telefone && <p className="mt-1.5 text-xs" style={{ color: "var(--c-danger)" }}>{erroValidacao.telefone}</p>}
+                    </div>
+
+                    <div className="rounded-xl border border-[var(--c-border)] p-4">
+                      <p className="mb-3 text-xs font-bold uppercase tracking-wider text-[var(--c-accent)]">Contato de emergência</p>
+                      <div className="space-y-3">
+                        <div>
+                          <label htmlFor="escala-emergencia-nome" className="mb-1.5 block text-sm font-medium text-[var(--c-text)]">Nome <span className="text-[var(--c-accent)]">*</span></label>
+                          <input id="escala-emergencia-nome" type="text" value={contatoEmergenciaNome} onChange={(e) => setContatoEmergenciaNome(e.target.value)} placeholder="Nome do contato"
+                            className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors placeholder:text-[var(--c-muted)]/50 focus:border-[var(--c-accent)] focus:outline-none" />
+                          {erroValidacao.contatoEmergenciaNome && <p className="mt-1.5 text-xs" style={{ color: "var(--c-danger)" }}>{erroValidacao.contatoEmergenciaNome}</p>}
+                        </div>
+                        <div>
+                          <label htmlFor="escala-emergencia-telefone" className="mb-1.5 block text-sm font-medium text-[var(--c-text)]">Telefone <span className="text-[var(--c-accent)]">*</span></label>
+                          <input id="escala-emergencia-telefone" type="tel" value={contatoEmergenciaTelefone} onChange={(e) => setContatoEmergenciaTelefone(e.target.value)} placeholder="(00) 00000-0000"
+                            className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors placeholder:text-[var(--c-muted)]/50 focus:border-[var(--c-accent)] focus:outline-none" />
+                          {erroValidacao.contatoEmergenciaTelefone && <p className="mt-1.5 text-xs" style={{ color: "var(--c-danger)" }}>{erroValidacao.contatoEmergenciaTelefone}</p>}
+                        </div>
+                      </div>
+                    </div>
+
+                    {isMenor && (
+                      <div className="rounded-xl border p-4" style={{ borderColor: "var(--c-accent)", background: "color-mix(in oklab, var(--c-accent) 8%, transparent)" }}>
+                        <p className="mb-1 text-xs font-bold uppercase tracking-wider text-[var(--c-accent)]">Responsável legal</p>
+                        <p className="mb-3 text-xs text-[var(--c-muted)]">Identificamos que o paciente é menor de idade. Informe os dados do responsável legal.</p>
+                        <div className="space-y-3">
+                          <div>
+                            <label htmlFor="escala-responsavel-nome" className="mb-1.5 block text-sm font-medium text-[var(--c-text)]">Nome do responsável <span className="text-[var(--c-accent)]">*</span></label>
+                            <input id="escala-responsavel-nome" type="text" value={responsavelNome} onChange={(e) => setResponsavelNome(e.target.value)} placeholder="Nome completo do responsável"
+                              className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors placeholder:text-[var(--c-muted)]/50 focus:border-[var(--c-accent)] focus:outline-none" />
+                            {erroValidacao.responsavelNome && <p className="mt-1.5 text-xs" style={{ color: "var(--c-danger)" }}>{erroValidacao.responsavelNome}</p>}
+                          </div>
+                          <div>
+                            <label htmlFor="escala-responsavel-telefone" className="mb-1.5 block text-sm font-medium text-[var(--c-text)]">Telefone do responsável <span className="text-[var(--c-accent)]">*</span></label>
+                            <input id="escala-responsavel-telefone" type="tel" value={responsavelTelefone} onChange={(e) => setResponsavelTelefone(e.target.value)} placeholder="(00) 00000-0000"
+                              className="w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors placeholder:text-[var(--c-muted)]/50 focus:border-[var(--c-accent)] focus:outline-none" />
+                            {erroValidacao.responsavelTelefone && <p className="mt-1.5 text-xs" style={{ color: "var(--c-danger)" }}>{erroValidacao.responsavelTelefone}</p>}
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
 
-                  <label className="mb-5 flex items-start gap-3 cursor-pointer rounded-xl border border-[var(--c-border)] p-4 transition-colors hover:border-[var(--c-accent)]/50">
-                    <input type="checkbox" checked={consentimento} onChange={(e) => setConsentimento(e.target.checked)}
+                  <label htmlFor="escala-consentimento" className="mb-5 flex items-start gap-3 cursor-pointer rounded-xl border border-[var(--c-border)] p-4 transition-colors hover:border-[var(--c-accent)]/50">
+                    <input id="escala-consentimento" type="checkbox" checked={consentimento} onChange={(e) => setConsentimento(e.target.checked)}
                       className="mt-0.5 accent-[var(--c-accent)]" />
                     <span className="text-xs leading-relaxed text-[var(--c-muted)]">
-                      Autorizo a coleta e o armazenamento dos meus dados pessoais e respostas para fins exclusivos de acompanhamento psicologico, conforme a <strong className="text-[var(--c-text)]">LGPD (Lei 13.709/2018)</strong>. Esses dados serao acessiveis apenas ao psicologo responsavel.
+                      Li e concordo com o{" "}
+                      <a href="/documentos" target="_blank" rel="noopener noreferrer" className="font-semibold text-[var(--c-accent)] underline">Termo de Consentimento (TCLE)</a>
+                      {" "}e autorizo a coleta e o armazenamento dos meus dados pessoais e respostas para fins exclusivos de acompanhamento psicológico, conforme a <strong className="text-[var(--c-text)]">LGPD (Lei 13.709/2018)</strong>. Esses dados serão acessíveis apenas ao psicólogo responsável.
                     </span>
                   </label>
 
-                  <motion.button whileHover={{ scale: dadosValidos ? 1.02 : 1 }} whileTap={{ scale: 0.98 }} onClick={enviarRespostas} disabled={!dadosValidos}
+                  <motion.button
+                    whileHover={{ scale: dadosValidos ? 1.02 : 1 }} whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      const erros: Record<string, string> = {};
+                      if (nome.trim().length === 0) erros.nome = "Informe seu nome completo.";
+                      if (!cpfValido(cpf)) erros.cpf = "CPF inválido. Verifique os 11 dígitos.";
+                      if (idade === null || idade < 0) erros.nascimento = "Informe uma data de nascimento válida.";
+                      if (!emailValido(email)) erros.email = "Informe um e-mail válido.";
+                      if (!telefoneValido(telefone)) erros.telefone = "Informe um telefone válido (com DDD).";
+                      if (contatoEmergenciaNome.trim().length === 0) erros.contatoEmergenciaNome = "Informe o nome do contato de emergência.";
+                      if (!telefoneValido(contatoEmergenciaTelefone)) erros.contatoEmergenciaTelefone = "Informe um telefone válido (com DDD).";
+                      if (isMenor) {
+                        if (responsavelNome.trim().length === 0) erros.responsavelNome = "Informe o nome do responsável legal.";
+                        if (!telefoneValido(responsavelTelefone)) erros.responsavelTelefone = "Informe um telefone válido (com DDD).";
+                      }
+                      setErroValidacao(erros);
+                      if (Object.keys(erros).length === 0 && consentimento) enviarRespostas();
+                    }}
+                    disabled={!dadosValidos}
                     className="flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 font-medium text-white transition-opacity disabled:opacity-40"
                     style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))", boxShadow: "0 12px 30px -10px var(--c-accent)" }}>
                     Enviar respostas <Check size={16} />

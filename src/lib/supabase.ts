@@ -8,13 +8,21 @@ export const supabase = url && key ? createClient(url, key) : null;
 export interface QuestionnaireResponse {
   id?: number;
   tipo: string;
-  // Decisão clínica (09/07/2026): não coletar mais identificação direta
-  // (nome/telefone) nas escalas — identificação passa a ser via patient_code.
-  // Mantidos opcionais apenas para não quebrar dados/telas históricas.
-  nome?: string;
-  telefone?: string;
-  email?: string;
-  nascimento?: string;
+  // Decisão clínica (12/07/2026): reversão da anonimização de 09/07/2026 —
+  // o paciente volta a se identificar (nome, CPF, nascimento, e-mail,
+  // telefone, contato de emergência) para responder qualquer escala,
+  // com consentimento explícito (TCLE). Quando menor de idade, os dados
+  // do responsável legal também são obrigatórios.
+  nome: string;
+  cpf: string;
+  nascimento: string;
+  email: string;
+  telefone: string;
+  contato_emergencia_nome: string;
+  contato_emergencia_telefone: string;
+  responsavel_nome?: string;
+  responsavel_telefone?: string;
+  is_menor?: boolean;
   patient_code?: string;
   situacao_clinica?: string;
   classificacao_profissional?: string;
