@@ -194,16 +194,6 @@ export default function Escala() {
 
   const idade = calcularIdade(nascimento);
   const isMenor = idade !== null && idade < 18;
-  const dadosValidos =
-    nascimento.length > 0 && idade !== null && idade >= 0 &&
-    nome.trim().length > 0 &&
-    cpfValido(cpf) &&
-    emailValido(email) &&
-    telefoneValido(telefone) &&
-    contatoEmergenciaNome.trim().length > 0 &&
-    telefoneValido(contatoEmergenciaTelefone) &&
-    (!isMenor || (responsavelNome.trim().length > 0 && telefoneValido(responsavelTelefone))) &&
-    consentimento;
   const respondidas = respostas as number[];
   const sigla = config.sigla;
 
@@ -459,9 +449,10 @@ export default function Escala() {
                       {" "}e autorizo a coleta e o armazenamento dos meus dados pessoais e respostas para fins exclusivos de acompanhamento psicológico, conforme a <strong className="text-[var(--c-text)]">LGPD (Lei 13.709/2018)</strong>. Esses dados serão acessíveis apenas ao psicólogo responsável.
                     </span>
                   </label>
+                  {erroValidacao.consentimento && <p className="mb-3 -mt-3 text-xs" style={{ color: "var(--c-danger)" }}>{erroValidacao.consentimento}</p>}
 
                   <motion.button
-                    whileHover={{ scale: dadosValidos ? 1.02 : 1 }} whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                     onClick={() => {
                       const erros: Record<string, string> = {};
                       if (nome.trim().length === 0) erros.nome = "Informe seu nome completo.";
@@ -475,11 +466,11 @@ export default function Escala() {
                         if (responsavelNome.trim().length === 0) erros.responsavelNome = "Informe o nome do responsável legal.";
                         if (!telefoneValido(responsavelTelefone)) erros.responsavelTelefone = "Informe um telefone válido (com DDD).";
                       }
+                      if (!consentimento) erros.consentimento = "É necessário concordar com o Termo de Consentimento (TCLE) para continuar.";
                       setErroValidacao(erros);
-                      if (Object.keys(erros).length === 0 && consentimento) enviarRespostas();
+                      if (Object.keys(erros).length === 0) enviarRespostas();
                     }}
-                    disabled={!dadosValidos}
-                    className="flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 font-medium text-white transition-opacity disabled:opacity-40"
+                    className="flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 font-medium text-white transition-opacity"
                     style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))", boxShadow: "0 12px 30px -10px var(--c-accent)" }}>
                     Enviar respostas <Check size={16} />
                   </motion.button>
