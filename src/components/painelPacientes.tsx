@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Plus, Copy, Check, Unlock, Eye, EyeOff, Link2, Send, Trash2, Pencil, X } from "lucide-react";
+import { Plus, Copy, Check, Unlock, Eye, EyeOff, Link2, Send, Trash2, Pencil, X, MessageCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { fadeUp } from "@/lib/motion";
 import { ESCALAS_RESTRITAS } from "@/content/escalas-restritas";
@@ -61,6 +61,18 @@ function mensagemPaciente(escalaId: string, codigo: string, expiresAt?: string |
   const link = linkDireto(escalaId, codigo);
   const validade = formatarValidade(expiresAt);
   return `Olá! Segue o link para responder o questionário ${labelDaEscala(escalaId)}: ${link}${validade ? `\nVálido até ${validade}.` : ""}`;
+}
+
+// Feature 6: mensagem genérica de acesso (sem escala específica) — usada pelo botão WhatsApp do card.
+function mensagemAcessoGenerica(codigo: string): string {
+  return `Olá! Segue seu código de acesso: ${codigo}\nAcesse ${SITE_URL}/paciente e informe esse código para responder seu questionário.`;
+}
+
+// ponytail: nenhum telefone é salvo junto ao código, então o link wa.me abre sem
+// destinatário (o terapeuta escolhe o contato na hora). Se um telefone por código
+// passar a ser armazenado, dá pra montar https://wa.me/<numero>?text=... direto.
+function abrirWhatsApp(texto: string) {
+  window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank");
 }
 
 export function PainelPacientes() {
@@ -264,9 +276,9 @@ export function PainelPacientes() {
 
   return (
     <motion.div variants={fadeUp}>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-1 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>
-          Pacientes
+          Códigos de acesso
         </h2>
         <button
           onClick={() => setShowNomes(!showNomes)}
@@ -276,6 +288,7 @@ export function PainelPacientes() {
           {showNomes ? "Ocultar nomes" : "Mostrar nomes"}
         </button>
       </div>
+      <p className="mb-6 text-[10px] text-[var(--c-muted)]">Geração e gestão dos códigos de acesso dos pacientes — não é a visão clínica de respostas.</p>
 
       {/* Novo paciente */}
       <motion.div variants={fadeUp} className="glass-card rounded-2xl p-6 mb-6">
@@ -369,8 +382,23 @@ export function PainelPacientes() {
                   <button
                     onClick={() => copiarCodigo(p.codigo)}
                     className="flex-shrink-0 p-2 rounded-lg text-[var(--c-muted)] hover:text-[var(--c-accent)] transition-colors"
+                    title="Copiar código"
                   >
                     {copiado === p.codigo ? <Check size={16} /> : <Copy size={16} />}
+                  </button>
+                  <button
+                    onClick={() => abrirWhatsApp(mensagemAcessoGenerica(p.codigo))}
+                    className="flex-shrink-0 p-2 rounded-lg text-[var(--c-muted)] hover:text-[#25D366] transition-colors"
+                    title="Enviar por WhatsApp"
+                  >
+                    <MessageCircle size={16} />
+                  </button>
+                  <button
+                    onClick={() => copiarTexto(`msg-generica-${p.codigo}`, mensagemAcessoGenerica(p.codigo))}
+                    className="flex-shrink-0 p-2 rounded-lg text-[var(--c-muted)] hover:text-[var(--c-accent)] transition-colors"
+                    title="Copiar mensagem"
+                  >
+                    {copiado === `msg-generica-${p.codigo}` ? <Check size={16} /> : <Send size={16} />}
                   </button>
                   <button
                     onClick={() => handleExcluirCodigo(p.codigo, p.nome)}
