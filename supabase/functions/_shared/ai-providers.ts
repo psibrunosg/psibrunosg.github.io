@@ -13,6 +13,11 @@ export const PROVIDERS: Record<string, { baseUrl: string; secret: string; defaul
 };
 export const ANTHROPIC_DEFAULT_MODEL = "claude-opus-4-8";
 
+// Sem timeout, um provedor lento/sobrecarregado trava a function até o
+// runtime matar a invocação por esgotar o orçamento de execução (erro
+// genérico e demorado). Falhar rápido com mensagem clara é bem melhor.
+const TIMEOUT_MS = 25000;
+
 export interface ChamadaIA {
   ok: true;
   conteudo: string;
@@ -21,6 +26,16 @@ export interface ChamadaIAErro {
   ok: false;
   status: number;
   erro: string;
+}
+
+async function fetchComTimeout(url: string, init: RequestInit, timeoutMs = TIMEOUT_MS): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 /** Chama o provedor de IA configurado e retorna o texto bruto da resposta. */
@@ -37,17 +52,23 @@ export async function chamarProvedor(
     if (!apiKey) return { ok: false, status: 500, erro: "Secret ANTHROPIC_API_KEY não configurada" };
     const model = modelInformado?.trim() || ANTHROPIC_DEFAULT_MODEL;
 
-    const resp = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      body: JSON.stringify({
-        model,
-        max_tokens: maxTokens,
-        temperature,
-        system: systemPrompt,
-        messages: [{ role: "user", content: userMsg }],
-      }),
-    });
+    let resp: Response;
+    try {
+      resp = await fetchComTimeout("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+        body: JSON.stringify({
+          model,
+          max_tokens: maxTokens,
+          temperature,
+          system: systemPrompt,
+          messages: [{ role: "user", content: userMsg }],
+        }),
+      });
+    } catch (e) {
+      console.error("ai-providers: timeout/erro de rede anthropic", e);
+      return { ok: false, status: 504, erro: "Provedor (anthropic) demorou demais para responder — tente novamente ou troque de provedor." };
+    }
 
     if (!resp.ok) {
       const errText = await resp.text();
@@ -66,20 +87,26 @@ export async function chamarProvedor(
 
   const model = modelInformado?.trim() || Deno.env.get(`${providerKey.toUpperCase()}_MODEL`) || cfg.defaultModel;
 
-  const resp = await fetch(`${cfg.baseUrl}/chat/completions`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userMsg },
-      ],
-      temperature,
-      max_tokens: maxTokens,
-      stream: false,
-    }),
-  });
+  let resp: Response;
+  try {
+    resp = await fetchComTimeout(`${cfg.baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userMsg },
+        ],
+        temperature,
+        max_tokens: maxTokens,
+        stream: false,
+      }),
+    });
+  } catch (e) {
+    console.error("ai-providers: timeout/erro de rede", providerKey, e);
+    return { ok: false, status: 504, erro: `Provedor (${providerKey}) demorou demais para responder — tente novamente ou troque de provedor/modelo.` };
+  }
 
   if (!resp.ok) {
     const errText = await resp.text();
