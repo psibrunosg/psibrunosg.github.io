@@ -94,6 +94,51 @@ describe("interpretarResposta — PHQ-9 / GAD-7 (config em escalasGerais)", () =
   });
 });
 
+// T2 — tipo órfão não produz classificação clínica
+describe("interpretarFaixaSolta — allowlist de tipos conhecidos", () => {
+  it("tipo completamente desconhecido não produz classificacao nem total/max/pct", () => {
+    const r = interpretarResposta("escala-inventada-xyz", [], 42);
+    expect(r.familia).toBe("dominio");
+    expect(r.classificacao).toBeUndefined();
+    expect(r.total).toBeUndefined();
+    expect(r.max).toBeUndefined();
+    expect(r.pct).toBeUndefined();
+    expect(r.resumo).toBe("Score: 42");
+  });
+
+  it("tipo de schema órfão (ysq removido hipoteticamente) também não classifica", () => {
+    const r = interpretarResposta("ysq-legado", [], 4.8);
+    expect(r.classificacao).toBeUndefined();
+    expect(r.familia).toBe("dominio");
+  });
+
+  it("tipo faixa reconhecido (phq9) produz classificacao — não trata pontuacao como órfão", () => {
+    const respostas = [3, 3, 3, 2, 2, 2, 2, 2, 1]; // soma=20
+    const r = interpretarResposta("phq9", respostas, 20);
+    expect(r.familia).toBe("faixa");
+    expect(r.classificacao).toBe("Grave");
+    expect(r.total).toBe(20);
+    expect(r.max).toBe(27);
+  });
+});
+
+// T3 — consistência de max: maxDeGeral prefere pontuacaoMaxima
+describe("maxDeGeral — fonte canônica", () => {
+  it("interpretarGeral usa pontuacaoMaxima quando definido (who5 = 5*5 = 25)", () => {
+    const respostas = [5, 5, 5, 5, 5]; // score perfeito
+    const r = interpretarResposta("who5", respostas, 25);
+    expect(r.max).toBe(25);
+    expect(r.total).toBe(25);
+    expect(r.pct).toBe(100);
+  });
+
+  it("pct nunca ultrapassa 100 mesmo com total > max", () => {
+    const respostasExageradas = [3, 3, 3, 3, 3, 3, 3, 3, 3]; // soma=27
+    const r = interpretarResposta("phq9", respostasExageradas, 27);
+    expect(r.pct).toBeLessThanOrEqual(100);
+  });
+});
+
 describe("correlacoesFactuais", () => {
   // Constrói uma interpretação mínima por classificação (testa a regra, não o recálculo).
   const mk = (tipo: string, classificacao: string): RespostaInterpretada =>

@@ -30,6 +30,38 @@ describe("computeGeralScore", () => {
     expect(r.dominios[0].media).toBe(1);
   });
 
+  // T1 — guard de inversão sem régua explícita
+  it("lança erro em dev quando item invertido sem opcoes nem escalaMin/escalaMax", () => {
+    const cfg = {
+      tipo: "likert",
+      dominios: [{ id: "d1", nome: "D1", itens: [1, 2], invertidos: [2] }],
+    } as unknown as EscalaGeralConfig;
+    expect(() => computeGeralScore(cfg, [1, 3])).toThrow(/invertido/i);
+  });
+
+  it("item invertido com escala 1–5 via escalaMin/escalaMax inverte corretamente", () => {
+    const cfg = {
+      tipo: "likert",
+      escalaMin: 1, escalaMax: 5,
+      dominios: [{ id: "d1", nome: "D1", itens: [1, 2], invertidos: [2] }],
+    } as unknown as EscalaGeralConfig;
+    // item1=1 (normal); item2=3 invertido numa escala 1-5 -> 5+1-3=3; soma=4
+    const r = computeGeralScore(cfg, [1, 3]);
+    expect(r.total).toBe(4);
+    expect(r.dominios[0].soma).toBe(4);
+  });
+
+  it("item invertido com escala 0–4 via escalaMin/escalaMax não lança erro", () => {
+    const cfg = {
+      tipo: "likert",
+      escalaMin: 0, escalaMax: 4,
+      dominios: [{ id: "d1", nome: "D1", itens: [1, 2], invertidos: [2] }],
+    } as unknown as EscalaGeralConfig;
+    // item1=1 (normal); item2=3 invertido -> 4+0-3=1; soma=2
+    const r = computeGeralScore(cfg, [1, 3]);
+    expect(r.total).toBe(2);
+  });
+
   it("binary com chaveCorrecao (BHS-like)", () => {
     const cfg = { tipo: "binary", chaveCorrecao: { 1: "C", 2: "E", 3: "C" } } as unknown as EscalaGeralConfig;
     // resp [1,0,1] -> C,E,C todos acertam -> 3

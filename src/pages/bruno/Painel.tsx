@@ -1332,14 +1332,14 @@ export default function BrunoPainel() {
                           <th className="px-4 py-3 font-medium text-[var(--c-muted)]">Tipo</th>
                           <th className="cursor-pointer select-none px-4 py-3 font-medium text-[var(--c-muted)]" onClick={() => alternarSort("paciente")}>Paciente {sortKey === "paciente" ? (sortDir === "asc" ? "↑" : "↓") : ""}</th>
                           <th className="px-4 py-3 font-medium text-[var(--c-muted)]">Nasc.</th>
-                          <th className="cursor-pointer select-none px-4 py-3 font-medium text-[var(--c-muted)]" onClick={() => alternarSort("score")}>Score {sortKey === "score" ? (sortDir === "asc" ? "↑" : "↓") : ""}</th>
-                          <th className="px-4 py-3 font-medium text-[var(--c-muted)]">Nivel</th>
+                          <th className="cursor-pointer select-none px-4 py-3 font-medium text-[var(--c-muted)]" onClick={() => alternarSort("score")}>Score / Nível {sortKey === "score" ? (sortDir === "asc" ? "↑" : "↓") : ""}</th>
                           <th className="cursor-pointer select-none px-4 py-3 font-medium text-[var(--c-muted)]" onClick={() => alternarSort("data")}>Data {sortKey === "data" ? (sortDir === "asc" ? "↑" : "↓") : ""}</th>
                         </tr>
                       </thead>
                       <tbody>
                         {filtradas.map((r) => {
                           const cor = r.tipo === "phq9" ? "#B05D3A" : r.tipo === "gad7" ? "#4A6B47" : "var(--c-accent)";
+                          const interp = interpretarResposta(r.tipo, r.respostas, r.pontuacao);
                           return (
                             <tr key={r.id} className="border-b border-[var(--c-border)]/60 transition-colors hover:bg-[var(--c-surface)]/40 cursor-pointer" onClick={() => abrirDashboard(r)}>
                               <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={selecionados.has(r.id)} onChange={() => toggle(r.id)} /></td>
@@ -1348,8 +1348,7 @@ export default function BrunoPainel() {
                               </td>
                               <td className="px-4 py-3 font-medium text-[var(--c-text)]">{nomeSeguro(r)}</td>
                               <td className="px-4 py-3 text-xs text-[var(--c-muted)]">{r.nascimento ?? "-"}</td>
-                              <td className="px-4 py-3 font-semibold text-[var(--c-text)]">{r.pontuacao}</td>
-                              <td className="px-4 py-3 text-xs text-[var(--c-muted)]">{interpretarResposta(r.tipo, r.respostas, r.pontuacao).resumo}</td>
+                              <td className="px-4 py-3 text-xs text-[var(--c-muted)]">{interp.resumo}</td>
                               <td className="px-4 py-3 text-xs text-[var(--c-muted)]">{new Date(r.criado_em).toLocaleDateString("pt-BR")}</td>
                             </tr>
                           );
@@ -1417,7 +1416,7 @@ export default function BrunoPainel() {
                                 <span className="rounded px-1.5 py-0.5 text-[9px] font-bold uppercase" style={{ background: hcor + "1A", color: hcor }}>{h.tipo}</span>
                                 <span className="text-[var(--c-muted)]">{new Date(h.criado_em).toLocaleDateString("pt-BR")}</span>
                               </div>
-                              <span className="font-medium text-[var(--c-text)]">{h.pontuacao}</span>
+                              <span className="font-medium text-[var(--c-text)]">{interpretarResposta(h.tipo, h.respostas, h.pontuacao).resumo}</span>
                             </div>
                           );
                         })}
