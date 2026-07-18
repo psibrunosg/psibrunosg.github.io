@@ -102,13 +102,13 @@ export default function DeOndeVemPadroes() {
               De onde vêm seus padrões
             </motion.h1>
             <motion.p variants={fadeUp} className="leading-relaxed text-[var(--c-muted)]">
-              Muita coisa que sentimos hoje começou como uma necessidade de criança que nem sempre foi atendida — e que, sem
+              Muita coisa que sentimos hoje começou como uma necessidade de criança que nem sempre foi atendida, e que, sem
               a gente perceber, virou um jeito de se proteger. Aqui a gente puxa esses fios com calma: de onde nasceram,
               como te alcançam hoje, e como cuidar da necessidade que ficou.
             </motion.p>
           </motion.div>
 
-          {/* Código do paciente — personalização opcional e mediada pelo psicólogo */}
+          {/* Código do paciente: personalização opcional e mediada pelo psicólogo */}
           {supabase && (
             <motion.div variants={fadeUp} initial="hidden" animate="visible" className="glass-card mb-8 rounded-2xl p-5">
               <div className="mb-3 flex items-center gap-2">
@@ -140,7 +140,7 @@ export default function DeOndeVemPadroes() {
               {erro && <p className="mt-2 text-xs text-[var(--c-danger,#dc2626)]">{erro}</p>}
               {perso && !perso.liberado && (
                 <p className="mt-2 text-xs text-[var(--c-muted)]">
-                  Ainda não há uma jornada personalizada liberada para este código — mas você pode explorar tudo abaixo.
+                  Ainda não há uma jornada personalizada liberada para este código, mas você pode explorar tudo abaixo.
                 </p>
               )}
               {perso?.liberado && perso.semYsq && (

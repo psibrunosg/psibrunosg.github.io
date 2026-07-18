@@ -6,7 +6,7 @@ import { necessidades } from "@/content/psicoed/narrativas-esquemas";
 // Renderiza uma narrativa de esquema desdobrada: história da criança (espinha),
 // as "linhas" conectando necessidade → esquema → modo → gatilho (profundidade),
 // e o beat de cuidar da necessidade (agência). `escore` só é passado quando o
-// terapeuta liberou revelar_escore — caso contrário nunca aparece.
+// terapeuta liberou revelar_escore. Caso contrário nunca aparece.
 export function NarrativaEsquemaView({ n, escore }: { n: NarrativaEsquema; escore?: number }) {
   const reduced = useReducedMotion();
   const necessidade = necessidades[n.dominioId];
@@ -47,7 +47,14 @@ export function NarrativaEsquemaView({ n, escore }: { n: NarrativaEsquema; escor
         </div>
       </motion.div>
 
-      {/* Espinha B — história da criança */}
+      {/* Vídeo whiteboard (piloto: só alguns esquemas têm por enquanto) */}
+      {n.videoUrl && (
+        <motion.div variants={revelar} className="mt-5 overflow-hidden rounded-xl border" style={{ borderColor: n.cor + "33" }}>
+          <video src={n.videoUrl} controls playsInline preload="metadata" className="aspect-square w-full bg-black" />
+        </motion.div>
+      )}
+
+      {/* Espinha B: história da criança */}
       <motion.div variants={revelar} className="mt-5 space-y-3 text-sm leading-relaxed text-[var(--c-text)]">
         <p>{n.crianca.abertura}</p>
         <p className="text-[var(--c-muted)]">{n.crianca.faltou}</p>
@@ -58,7 +65,7 @@ export function NarrativaEsquemaView({ n, escore }: { n: NarrativaEsquema; escor
         <ArrowDown size={16} />
       </motion.div>
 
-      {/* Profundidade A — as linhas conectando origem e presente */}
+      {/* Profundidade A: as linhas conectando origem e presente */}
       <motion.div variants={revelar}>
         <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: n.cor }}>
           Como isso te alcança hoje
@@ -88,7 +95,7 @@ export function NarrativaEsquemaView({ n, escore }: { n: NarrativaEsquema; escor
         </div>
       </motion.div>
 
-      {/* Beat C — cuidar da necessidade */}
+      {/* Beat C: cuidar da necessidade */}
       <motion.div
         variants={revelar}
         className="mt-6 rounded-xl border p-4"
@@ -107,7 +114,7 @@ export function NarrativaEsquemaView({ n, escore }: { n: NarrativaEsquema; escor
 
       <motion.p variants={revelar} className="mt-4 flex items-center gap-1.5 text-[11px] italic text-[var(--c-muted)]">
         <Sparkles size={12} />
-        Isto é um mapa de compreensão, não um diagnóstico — o aprofundamento acontece na terapia.
+        Isto é um mapa de compreensão, não um diagnóstico. O aprofundamento acontece na terapia.
       </motion.p>
     </motion.div>
   );
