@@ -1,0 +1,20 @@
+{
+  "name": "psicoed-videos",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Render pipeline (Remotion) para vídeos whiteboard das narrativas de esquema. Projeto isolado do build do site (Vite) — gera mp4 que é commitado em public/videos/.",
+  "scripts": {
+    "dev": "remotion studio src/index.ts",
+    "render:piloto": "remotion render src/index.ts PrivacaoEmocional out/privacao-emocional.mp4"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.360",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "remotion": "^4.0.360"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "typescript": "~5.9.3"
+  }
+}

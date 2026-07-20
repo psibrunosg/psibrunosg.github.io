@@ -9,7 +9,7 @@ import { escalas, type EscalaConfig } from "@/content/escalas";
 import { escalasGerais, type EscalaGeralConfig } from "@/content/escalas-gerais";
 import {
   computeSchemaAvg, computeThreshold, computeGeralScore,
-  classificarResposta, type SchemaResult, type DominioResult,
+  classificarResposta, faixasPorTipo, type SchemaResult, type DominioResult,
 } from "@/lib/scoring";
 
 /** Limiar de ativação de esquema/modo (média > 3.5), consistente com a tela do paciente. */
@@ -60,6 +60,9 @@ export interface RespostaInterpretada {
 const MAIOR_MELHOR = new Set(["who5", "rosenberg", "scs", "ebep"]);
 // Máximos para escalas de faixa que não estão em escalasGerais (PHQ-9 / GAD-7 vêm de páginas próprias).
 const MAX_FALLBACK: Record<string, number> = { phq9: 27, gad7: 21, bai: 63, bdi: 63, bhs: 20, asrs: 72 };
+// Allowlist explícita de tipos que devem receber classificação clínica por faixa.
+// Tipos fora desta lista são "órfãos" e retornam resultado neutro sem classificação.
+const KNOWN_FAIXA_TIPOS = new Set([...Object.keys(faixasPorTipo), ...Object.keys(MAX_FALLBACK)]);
 
 function ehModoSaudavel(dominioNome: string): boolean {
   return /saud[aá]vel/i.test(dominioNome);
@@ -120,7 +123,15 @@ function interpretarThreshold(config: EscalaConfig, respostas: number[]): Respos
 }
 
 function maxDeGeral(config: EscalaGeralConfig, total: number): number {
-  if (config.pontuacaoMaxima) return config.pontuacaoMaxima;
+  if (config.pontuacaoMaxima) {
+    if (config.opcoes && config.opcoes.length && Array.isArray(config.itens) && config.itens.length > 0) {
+      const computed = Math.max(...config.opcoes.map((o) => o.valor)) * config.itens.length;
+      if (computed !== config.pontuacaoMaxima && typeof process !== "undefined" && process.env?.NODE_ENV !== "production") {
+        console.warn(`[interpret] ${config.id}: pontuacaoMaxima=${config.pontuacaoMaxima} ≠ opcoes*itens=${computed} — verifique o config.`);
+      }
+    }
+    return config.pontuacaoMaxima;
+  }
   if (config.opcoes && config.opcoes.length) {
     return Math.max(...config.opcoes.map((o) => o.valor)) * (Array.isArray(config.itens) ? config.itens.length : 0);
   }
@@ -132,7 +143,11 @@ function interpretarGeral(config: EscalaGeralConfig, respostas: number[]): Respo
   const max = maxDeGeral(config, total);
   const classif = classificarResposta(config.id, total);
   const familia: Familia = classif ? "faixa" : "dominio";
-  const pct = max > 0 ? Math.min(100, (total / max) * 100) : 0;
+  const rawPct = max > 0 ? (total / max) * 100 : 0;
+  if (rawPct > 100 && typeof process !== "undefined" && process.env?.NODE_ENV !== "production") {
+    console.warn(`[interpret] ${config.id}: total=${total} > max=${max} (${rawPct.toFixed(1)}%) — pontuacaoMaxima pode estar incorreto.`);
+  }
+  const pct = Math.min(100, rawPct);
   const maiorMelhor = MAIOR_MELHOR.has(config.id);
   const resumo = classif
     ? `${classif.classificacao} · ${total}/${max}`
@@ -147,7 +162,16 @@ function interpretarGeral(config: EscalaGeralConfig, respostas: number[]): Respo
 }
 
 // Faixa "solta" (PHQ-9 / GAD-7 e qualquer tipo sem config geral): usa pontuação salva.
+// Tipos fora da allowlist KNOWN_FAIXA_TIPOS retornam resultado neutro sem classificação clínica.
 function interpretarFaixaSolta(tipo: string, respostas: number[], pontuacao: number): RespostaInterpretada {
+  if (!KNOWN_FAIXA_TIPOS.has(tipo)) {
+    // Tipo órfão: pontuacao pode ser pico de esquema, contagem ou outra coisa.
+    // Nunca produzir classificação clínica com dado de semântica desconhecida.
+    return {
+      tipo, sigla: tipo.toUpperCase(), nomeEscala: tipo.toUpperCase(), familia: "dominio",
+      respostas, resumo: `Score: ${pontuacao}`,
+    };
+  }
   const classif = classificarResposta(tipo, pontuacao);
   const max = MAX_FALLBACK[tipo] ?? pontuacao;
   const pct = max > 0 ? Math.min(100, (pontuacao / max) * 100) : 0;

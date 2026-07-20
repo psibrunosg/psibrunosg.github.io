@@ -80,6 +80,15 @@ export function computeGeralScore(config: EscalaGeralConfig, respostas: number[]
         let val = respostas[idx - 1] ?? 0;
         const isInverted = invertidos.includes(idx) || globalInvertidos.includes(idx);
         if (isInverted) {
+          if (!config.opcoes && config.escalaMin === undefined && config.escalaMax === undefined) {
+            // Dev guard: escala com invertidos mas sem régua explícita produz resultado errado em silêncio.
+            // Defina opcoes OU escalaMin+escalaMax no config para corrigir.
+            if (typeof process !== "undefined" && process.env?.NODE_ENV !== "production") {
+              throw new Error(
+                `[scoring] computeGeralScore: item ${idx} invertido em "${config.id ?? "?"}" sem opcoes nem escalaMin/escalaMax — define uma das duas para evitar fallback silencioso 0–4.`
+              );
+            }
+          }
           const maxVal = config.opcoes ? Math.max(...config.opcoes.map((o) => o.valor)) : (config.escalaMax ?? 4);
           const minVal = config.opcoes ? Math.min(...config.opcoes.map((o) => o.valor)) : (config.escalaMin ?? 0);
           val = maxVal + minVal - val;

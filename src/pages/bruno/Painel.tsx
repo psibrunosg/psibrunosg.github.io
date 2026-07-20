@@ -497,6 +497,102 @@ function PainelCorrelacoes({ correls }: { correls: Correlacao[] }) {
   );
 }
 
+// Controle da psicoeducação personalizada por paciente (território "De onde vêm
+// seus padrões"). Decisão clínica: nada liberado por padrão; revelar escore
+// nomeado ao paciente nasce desligado. Resolve/cria o paciente_id (mesma lógica
+// da Conceituação) e faz upsert em paciente_psicoed.
+function ControlePsicoedPaciente({ patientCode, nome, nascimento }: { patientCode?: string; nome?: string | null; nascimento?: string }) {
+  const [pacienteId, setPacienteId] = useState<number | null>(null);
+  const [liberado, setLiberado] = useState(false);
+  const [revelar, setRevelar] = useState(false);
+  const [carregando, setCarregando] = useState(true);
+  const [salvando, setSalvando] = useState(false);
+
+  useEffect(() => {
+    if (!supabase) { setCarregando(false); return; }
+    let cancel = false;
+    (async () => {
+      // Resolve o paciente na tabela âncora (cria se não existir).
+      let id: number | null = null;
+      if (patientCode) {
+        const { data } = await supabase!.from("pacientes").select("id").eq("patient_code", patientCode).maybeSingle();
+        id = data?.id ?? null;
+        if (id == null) {
+          const { data: novo } = await supabase!.from("pacientes").insert({ patient_code: patientCode, nome_paciente: nome ?? null }).select("id").single();
+          id = novo?.id ?? null;
+        }
+      } else if (nome && nome.trim()) {
+        const { data } = await supabase!.from("pacientes").select("id").is("patient_code", null).ilike("nome_paciente", nome.trim()).eq("nascimento", nascimento ?? "").maybeSingle();
+        id = data?.id ?? null;
+        if (id == null) {
+          const { data: novo } = await supabase!.from("pacientes").insert({ nome_paciente: nome.trim(), nascimento: nascimento ?? null }).select("id").single();
+          id = novo?.id ?? null;
+        }
+      }
+      if (cancel) return;
+      setPacienteId(id);
+      if (id != null) {
+        const { data } = await supabase!.from("paciente_psicoed").select("liberado, revelar_escore").eq("paciente_id", id).maybeSingle();
+        if (!cancel && data) { setLiberado(!!data.liberado); setRevelar(!!data.revelar_escore); }
+      }
+      if (!cancel) setCarregando(false);
+    })();
+    return () => { cancel = true; };
+  }, [patientCode, nome, nascimento]);
+
+  async function salvar(next: { liberado?: boolean; revelar?: boolean }) {
+    if (!supabase || pacienteId == null) return;
+    const novoLiberado = next.liberado ?? liberado;
+    const novoRevelar = next.revelar ?? revelar;
+    setSalvando(true);
+    setLiberado(novoLiberado);
+    setRevelar(novoRevelar);
+    await supabase.from("paciente_psicoed").upsert(
+      { paciente_id: pacienteId, liberado: novoLiberado, revelar_escore: novoRevelar, atualizado_em: new Date().toISOString() },
+      { onConflict: "paciente_id" }
+    );
+    setSalvando(false);
+  }
+
+  if (!supabase) return null;
+
+  const Switch = ({ on, onToggle, disabled }: { on: boolean; onToggle: () => void; disabled?: boolean }) => (
+    <button onClick={onToggle} disabled={disabled}
+      className="relative h-6 w-11 flex-shrink-0 rounded-full transition-colors disabled:opacity-50"
+      style={{ background: on ? "var(--c-accent)" : "var(--c-border)" }} aria-pressed={on}>
+      <span className="absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all" style={{ left: on ? "22px" : "2px" }} />
+    </button>
+  );
+
+  return (
+    <motion.div variants={fadeUp} className="glass-card mb-6 rounded-2xl p-5">
+      <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-[var(--c-accent)]">Psicoeducação personalizada</p>
+      {carregando ? (
+        <p className="text-xs text-[var(--c-muted)]">Carregando...</p>
+      ) : pacienteId == null ? (
+        <p className="text-xs text-[var(--c-muted)]">Paciente sem código/identificação estável — não é possível personalizar.</p>
+      ) : (
+        <div className="space-y-4">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-[var(--c-text)]">Liberar território "De onde vêm seus padrões"</p>
+              <p className="mt-0.5 text-xs text-[var(--c-muted)]">Ao ligar, o paciente (com o código dele) vê a jornada ajustada aos esquemas ativos no YSQ dele.</p>
+            </div>
+            <Switch on={liberado} disabled={salvando} onToggle={() => salvar({ liberado: !liberado })} />
+          </div>
+          <div className={`flex items-start justify-between gap-4 border-t border-[var(--c-border)] pt-4 ${liberado ? "" : "opacity-50"}`}>
+            <div>
+              <p className="text-sm font-medium text-[var(--c-text)]">Revelar o escore/nome do esquema</p>
+              <p className="mt-0.5 text-xs text-[var(--c-muted)]">Desligado: o paciente vê a narrativa sem o escore cru. Ligue só quando fizer sentido clínico para este paciente.</p>
+            </div>
+            <Switch on={revelar} disabled={salvando || !liberado} onToggle={() => salvar({ revelar: !revelar })} />
+          </div>
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
 function PerfilPaciente({ respostas, onVoltar, onAbrirResposta, onExcluir, sintese, consideracoes }: { respostas: Resposta[]; onVoltar: () => void; onAbrirResposta: (r: Resposta) => void; onExcluir: () => void; sintese?: string; consideracoes?: string }) {
   const [confirmNome, setConfirmNome] = useState("");
   const [confirmando, setConfirmando] = useState(false);
@@ -563,6 +659,8 @@ function PerfilPaciente({ respostas, onVoltar, onAbrirResposta, onExcluir, sinte
       )}
 
       <PainelCorrelacoes correls={correls} />
+
+      <ControlePsicoedPaciente patientCode={primeiro?.patient_code} nome={primeiro?.nome} nascimento={nascimento} />
 
       <motion.div variants={fadeUp} className="mb-4 grid gap-4 md:grid-cols-2">
         {latestPorTipo.map((r) => {
@@ -1332,14 +1430,14 @@ export default function BrunoPainel() {
                           <th className="px-4 py-3 font-medium text-[var(--c-muted)]">Tipo</th>
                           <th className="cursor-pointer select-none px-4 py-3 font-medium text-[var(--c-muted)]" onClick={() => alternarSort("paciente")}>Paciente {sortKey === "paciente" ? (sortDir === "asc" ? "↑" : "↓") : ""}</th>
                           <th className="px-4 py-3 font-medium text-[var(--c-muted)]">Nasc.</th>
-                          <th className="cursor-pointer select-none px-4 py-3 font-medium text-[var(--c-muted)]" onClick={() => alternarSort("score")}>Score {sortKey === "score" ? (sortDir === "asc" ? "↑" : "↓") : ""}</th>
-                          <th className="px-4 py-3 font-medium text-[var(--c-muted)]">Nivel</th>
+                          <th className="cursor-pointer select-none px-4 py-3 font-medium text-[var(--c-muted)]" onClick={() => alternarSort("score")}>Score / Nível {sortKey === "score" ? (sortDir === "asc" ? "↑" : "↓") : ""}</th>
                           <th className="cursor-pointer select-none px-4 py-3 font-medium text-[var(--c-muted)]" onClick={() => alternarSort("data")}>Data {sortKey === "data" ? (sortDir === "asc" ? "↑" : "↓") : ""}</th>
                         </tr>
                       </thead>
                       <tbody>
                         {filtradas.map((r) => {
                           const cor = r.tipo === "phq9" ? "#B05D3A" : r.tipo === "gad7" ? "#4A6B47" : "var(--c-accent)";
+                          const interp = interpretarResposta(r.tipo, r.respostas, r.pontuacao);
                           return (
                             <tr key={r.id} className="border-b border-[var(--c-border)]/60 transition-colors hover:bg-[var(--c-surface)]/40 cursor-pointer" onClick={() => abrirDashboard(r)}>
                               <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={selecionados.has(r.id)} onChange={() => toggle(r.id)} /></td>
@@ -1348,8 +1446,7 @@ export default function BrunoPainel() {
                               </td>
                               <td className="px-4 py-3 font-medium text-[var(--c-text)]">{nomeSeguro(r)}</td>
                               <td className="px-4 py-3 text-xs text-[var(--c-muted)]">{r.nascimento ?? "-"}</td>
-                              <td className="px-4 py-3 font-semibold text-[var(--c-text)]">{r.pontuacao}</td>
-                              <td className="px-4 py-3 text-xs text-[var(--c-muted)]">{interpretarResposta(r.tipo, r.respostas, r.pontuacao).resumo}</td>
+                              <td className="px-4 py-3 text-xs text-[var(--c-muted)]">{interp.resumo}</td>
                               <td className="px-4 py-3 text-xs text-[var(--c-muted)]">{new Date(r.criado_em).toLocaleDateString("pt-BR")}</td>
                             </tr>
                           );
@@ -1417,7 +1514,7 @@ export default function BrunoPainel() {
                                 <span className="rounded px-1.5 py-0.5 text-[9px] font-bold uppercase" style={{ background: hcor + "1A", color: hcor }}>{h.tipo}</span>
                                 <span className="text-[var(--c-muted)]">{new Date(h.criado_em).toLocaleDateString("pt-BR")}</span>
                               </div>
-                              <span className="font-medium text-[var(--c-text)]">{h.pontuacao}</span>
+                              <span className="font-medium text-[var(--c-text)]">{interpretarResposta(h.tipo, h.respostas, h.pontuacao).resumo}</span>
                             </div>
                           );
                         })}
