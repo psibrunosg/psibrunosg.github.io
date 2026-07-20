@@ -10,6 +10,9 @@ export const PROVIDERS: Record<string, { baseUrl: string; secret: string; defaul
   groq: { baseUrl: "https://api.groq.com/openai/v1", secret: "GROQ_API_KEY", defaultModel: "llama-3.3-70b-versatile" },
   openrouter: { baseUrl: "https://openrouter.ai/api/v1", secret: "OPENROUTER_API_KEY", defaultModel: "meta-llama/llama-3.3-70b-instruct" },
   deepseek: { baseUrl: "https://api.deepseek.com/v1", secret: "DEEPSEEK_API_KEY", defaultModel: "deepseek-chat" },
+  // Google expõe um endpoint compatível com /chat/completions da OpenAI —
+  // mesmo caminho genérico dos demais, sem adapter próprio como o Anthropic.
+  gemini: { baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai", secret: "GEMINI_API_KEY", defaultModel: "gemini-2.5-flash" },
 };
 export const ANTHROPIC_DEFAULT_MODEL = "claude-opus-4-8";
 

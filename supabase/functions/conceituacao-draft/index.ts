@@ -1,8 +1,8 @@
 // Deploy:
 //   supabase functions deploy conceituacao-draft
 // Secrets (set only the provider(s) you'll use):
-//   supabase secrets set NVIDIA_API_KEY=... GROQ_API_KEY=... OPENAI_API_KEY=... OPENROUTER_API_KEY=... DEEPSEEK_API_KEY=... ANTHROPIC_API_KEY=...
-// Optional: NVIDIA_MODEL / GROQ_MODEL / OPENAI_MODEL / OPENROUTER_MODEL / DEEPSEEK_MODEL to override the default model per provider.
+//   supabase secrets set NVIDIA_API_KEY=... GROQ_API_KEY=... OPENAI_API_KEY=... OPENROUTER_API_KEY=... DEEPSEEK_API_KEY=... ANTHROPIC_API_KEY=... GEMINI_API_KEY=...
+// Optional: NVIDIA_MODEL / GROQ_MODEL / OPENAI_MODEL / OPENROUTER_MODEL / DEEPSEEK_MODEL / GEMINI_MODEL to override the default model per provider.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { chamarProvedor, extrairJSON } from "../_shared/ai-providers.ts";
 

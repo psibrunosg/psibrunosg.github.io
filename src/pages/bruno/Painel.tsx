@@ -1669,6 +1669,7 @@ export default function BrunoPainel() {
                           <option value="openrouter">OpenRouter</option>
                           <option value="deepseek">DeepSeek</option>
                           <option value="anthropic">Anthropic (Claude)</option>
+                          <option value="gemini">Google Gemini</option>
                         </select>
                       </div>
                     </div>

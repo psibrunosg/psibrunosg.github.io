@@ -35,6 +35,7 @@ const PROVEDORES = [
   { id: "openrouter", label: "OpenRouter" },
   { id: "deepseek", label: "DeepSeek" },
   { id: "anthropic", label: "Anthropic (Claude)" },
+  { id: "gemini", label: "Google Gemini" },
 ];
 
 // ponytail: modelos fixos (sem API de listagem) — cobre as opções mais comuns de cada
@@ -64,6 +65,10 @@ const MODELOS_POR_PROVEDOR: Record<string, { id: string; label: string }[]> = {
     { id: "claude-opus-4-8", label: "Claude Opus 4.8" },
     { id: "claude-sonnet-5", label: "Claude Sonnet 5" },
     { id: "claude-haiku-4-5-20251001", label: "Claude Haiku 4.5" },
+  ],
+  gemini: [
+    { id: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
+    { id: "gemini-2.5-pro", label: "Gemini 2.5 Pro" },
   ],
 };
 
