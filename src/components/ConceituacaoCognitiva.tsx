@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowDown, Sparkles, Loader2, Download, Info } from "lucide-react";
 import jsPDF from "jspdf";
-import { supabase } from "@/lib/supabase";
+import { supabase, mensagemErroEdgeFunction } from "@/lib/supabase";
 import { interpretarResposta } from "@/lib/interpret";
 import { ferramentas } from "@/content/ferramentas-terapeuta";
 import { fadeUp } from "@/lib/motion";
@@ -36,6 +36,36 @@ const PROVEDORES = [
   { id: "anthropic", label: "Anthropic (Claude)" },
 ];
 
+// ponytail: modelos fixos (sem API de listagem) — cobre as opções mais comuns de cada
+// provedor; o 1º de cada lista é o default usado pela edge function conceituacao-draft.
+const MODELOS_POR_PROVEDOR: Record<string, { id: string; label: string }[]> = {
+  nvidia: [
+    { id: "meta/llama-3.3-70b-instruct", label: "Llama 3.3 70B" },
+    { id: "meta/llama-3.1-405b-instruct", label: "Llama 3.1 405B" },
+  ],
+  openai: [
+    { id: "gpt-4o-mini", label: "GPT-4o mini" },
+    { id: "gpt-4o", label: "GPT-4o" },
+  ],
+  groq: [
+    { id: "llama-3.3-70b-versatile", label: "Llama 3.3 70B Versatile" },
+    { id: "llama-3.1-8b-instant", label: "Llama 3.1 8B Instant" },
+  ],
+  openrouter: [
+    { id: "meta-llama/llama-3.3-70b-instruct", label: "Llama 3.3 70B" },
+    { id: "openai/gpt-4o-mini", label: "GPT-4o mini" },
+  ],
+  deepseek: [
+    { id: "deepseek-chat", label: "DeepSeek Chat" },
+    { id: "deepseek-reasoner", label: "DeepSeek Reasoner" },
+  ],
+  anthropic: [
+    { id: "claude-opus-4-8", label: "Claude Opus 4.8" },
+    { id: "claude-sonnet-5", label: "Claude Sonnet 5" },
+    { id: "claude-haiku-4-5-20251001", label: "Claude Haiku 4.5" },
+  ],
+};
+
 const box = "rounded-2xl border border-[var(--c-border)] bg-[var(--c-surface)]/60 p-4";
 const labelCls = "mb-1 block text-[11px] font-medium text-[var(--c-accent)]";
 const inputCls = "w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-sm text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none";
@@ -62,7 +92,11 @@ export function ConceituacaoCognitiva({ respostas }: { respostas: Resposta[] }) 
   const [pacienteChave, setPacienteChave] = useState("");
   const [contexto, setContexto] = useState("");
   const [provider, setProvider] = useState(() => localStorage.getItem("conceituacao_provider") || "nvidia");
-  const [model, setModel] = useState(() => localStorage.getItem("conceituacao_model") || "");
+  const [model, setModel] = useState(() => {
+    const salvo = localStorage.getItem("conceituacao_model");
+    const opcoes = MODELOS_POR_PROVEDOR[localStorage.getItem("conceituacao_provider") || "nvidia"];
+    return salvo && opcoes?.some((o) => o.id === salvo) ? salvo : opcoes[0].id;
+  });
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [aiUsado, setAiUsado] = useState(false);
@@ -78,6 +112,10 @@ export function ConceituacaoCognitiva({ respostas }: { respostas: Resposta[] }) 
   function escolherProvider(p: string) {
     setProvider(p);
     localStorage.setItem("conceituacao_provider", p);
+    // modelo vem junto do provedor — evita o usuário ter que descobrir o id do modelo
+    const modeloPadrao = MODELOS_POR_PROVEDOR[p][0].id;
+    setModel(modeloPadrao);
+    localStorage.setItem("conceituacao_model", modeloPadrao);
   }
   function escolherModel(m: string) {
     setModel(m);
@@ -108,7 +146,7 @@ export function ConceituacaoCognitiva({ respostas }: { respostas: Resposta[] }) 
       });
       setAiUsado(true);
     } catch (e) {
-      setErro(e instanceof Error ? e.message : "Erro ao gerar rascunho.");
+      setErro(await mensagemErroEdgeFunction(e, "Erro ao gerar rascunho."));
     } finally {
       setLoading(false);
     }
@@ -149,11 +187,29 @@ export function ConceituacaoCognitiva({ respostas }: { respostas: Resposta[] }) 
         </button>
       </div>
 
-      {/* IA: seleção de paciente, contexto, provedor */}
+      {/* IA: fluxo guiado em 3 passos — provedor+modelo, paciente, contexto */}
       <div className="glass-card mb-6 rounded-2xl p-5">
-        <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-[var(--c-accent)]">Sugerir rascunho com IA</p>
-        <div className="grid gap-3 md:grid-cols-2">
-          <div>
+        <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--c-accent)]">Sugerir rascunho com IA</p>
+        <p className="mb-4 mt-1 text-[11px] text-[var(--c-muted)]">Siga os 3 passos abaixo e clique em gerar. Nada é enviado até você clicar no botão.</p>
+
+        <div className="mb-4 flex gap-3">
+          <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[var(--c-accent)] text-[10px] font-bold text-white">1</span>
+          <div className="flex-1">
+            <label className={labelCls}>Provedor de IA</label>
+            <select value={provider} onChange={(e) => escolherProvider(e.target.value)} className={inputCls}>
+              {PROVEDORES.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+            </select>
+            <label className={`${labelCls} mt-2`}>Modelo</label>
+            <select value={model} onChange={(e) => escolherModel(e.target.value)} className={inputCls}>
+              {MODELOS_POR_PROVEDOR[provider].map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+            </select>
+            <p className="mt-1 text-[10px] text-[var(--c-muted)]">O modelo muda automaticamente para o padrão do provedor escolhido — ajuste se quiser outro.</p>
+          </div>
+        </div>
+
+        <div className="mb-4 flex gap-3">
+          <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[var(--c-accent)] text-[10px] font-bold text-white">2</span>
+          <div className="flex-1">
             <label className={labelCls}>Paciente (opcional — usa escalas de-identificadas)</label>
             <select value={pacienteChave} onChange={(e) => setPacienteChave(e.target.value)} className={inputCls}>
               <option value="">Nenhum / genérico</option>
@@ -162,33 +218,26 @@ export function ConceituacaoCognitiva({ respostas }: { respostas: Resposta[] }) 
               ))}
             </select>
           </div>
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <label className={labelCls}>Provedor</label>
-              <select value={provider} onChange={(e) => escolherProvider(e.target.value)} className={inputCls}>
-                {PROVEDORES.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
-              </select>
-            </div>
-            <div className="flex-1">
-              <label className={labelCls}>Modelo (opcional)</label>
-              <input value={model} onChange={(e) => escolherModel(e.target.value)} placeholder="padrão do provedor" className={inputCls} />
-            </div>
+        </div>
+
+        <div className="mb-4 flex gap-3">
+          <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[var(--c-accent)] text-[10px] font-bold text-white">3</span>
+          <div className="flex-1">
+            <label className={labelCls}>Contexto clínico (opcional)</label>
+            <textarea value={contexto} onChange={(e) => setContexto(e.target.value)} rows={2}
+              placeholder="Observações livres — NÃO inclua nome, CPF, telefone ou outros dados identificáveis"
+              className={`${inputCls} resize-y`} />
+            <p className="mt-1 text-[10px] text-[var(--c-muted)]">Você é responsável por não digitar dados que identifiquem o paciente aqui.</p>
           </div>
         </div>
-        <div className="mt-3">
-          <label className={labelCls}>Contexto clínico (opcional)</label>
-          <textarea value={contexto} onChange={(e) => setContexto(e.target.value)} rows={2}
-            placeholder="Observações livres — NÃO inclua nome, CPF, telefone ou outros dados identificáveis"
-            className={`${inputCls} resize-y`} />
-          <p className="mt-1 text-[10px] text-[var(--c-muted)]">Você é responsável por não digitar dados que identifiquem o paciente aqui.</p>
-        </div>
+
         <button onClick={sugerirRascunho} disabled={loading}
-          className="mt-3 flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+          className="ml-8 flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
           style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
           {loading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-          {loading ? "Gerando..." : "Sugerir rascunho (IA)"}
+          {loading ? "Gerando..." : "Gerar rascunho com IA"}
         </button>
-        {erro && <p className="mt-2 text-xs text-[var(--c-danger,#dc2626)]">{erro}</p>}
+        {erro && <p className="ml-8 mt-2 text-xs text-[var(--c-danger,#dc2626)]">{erro}</p>}
       </div>
 
       {aiUsado && (

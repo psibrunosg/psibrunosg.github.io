@@ -1,9 +1,24 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, FunctionsHttpError } from "@supabase/supabase-js";
 
 const url = import.meta.env.VITE_SUPABASE_URL ?? "";
 const key = import.meta.env.VITE_SUPABASE_ANON_KEY ?? "";
 
 export const supabase = url && key ? createClient(url, key) : null;
+
+// supabase-js lança FunctionsHttpError com mensagem genérica ("Edge Function returned
+// a non-2xx status code") — o corpo JSON real do erro fica em `error.context` (a Response),
+// só acessível via .json(). Sem isso o usuário nunca vê a causa (secret faltando, etc).
+export async function mensagemErroEdgeFunction(e: unknown, fallback: string): Promise<string> {
+  if (e instanceof FunctionsHttpError) {
+    try {
+      const body = await e.context.json();
+      if (body?.error) return body.error;
+    } catch {
+      // corpo não era JSON — cai no fallback abaixo
+    }
+  }
+  return e instanceof Error ? e.message : fallback;
+}
 
 export interface QuestionnaireResponse {
   id?: number;

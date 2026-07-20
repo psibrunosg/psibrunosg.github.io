@@ -7,7 +7,7 @@ import jsPDF from "jspdf";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import JSZip from "jszip";
-import { supabase, listarPostsBlog, salvarPostBlog, atualizarPostBlog, deletarPostBlog, type BlogPostDB } from "@/lib/supabase";
+import { supabase, listarPostsBlog, salvarPostBlog, atualizarPostBlog, deletarPostBlog, mensagemErroEdgeFunction, type BlogPostDB } from "@/lib/supabase";
 import { gerarPDF } from "@/lib/pdf-generator";
 import { processarTeste, gerarParecerPDF, type DadosPaciente, type ResultadoTeste } from "@/lib/parecer-generator";
 import {
@@ -899,7 +899,7 @@ export default function BrunoPainel() {
         setParecerIaAplicado((prev) => new Set(prev).add(campo));
       }
     } catch (e) {
-      setParecerIaErro(e instanceof Error ? e.message : "Erro ao melhorar texto.");
+      setParecerIaErro(await mensagemErroEdgeFunction(e, "Erro ao melhorar texto."));
     } finally {
       setParecerIaLoading(null);
     }
