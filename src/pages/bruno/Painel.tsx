@@ -22,6 +22,10 @@ import { posts as staticPosts, type BlogPost } from "@/content/posts-loader";
 import { fadeUp, stagger } from "@/lib/motion";
 import { AppAurora } from "@/components/ui/AppAurora";
 import { ConceituacaoCognitiva } from "@/components/ConceituacaoCognitiva";
+import { ConceituacaoEsquema } from "@/components/ConceituacaoEsquema";
+import { ConceituacaoFuncional } from "@/components/ConceituacaoFuncional";
+import { ConceituacaoACT } from "@/components/ConceituacaoACT";
+import { ConceituacaoProcessos } from "@/components/ConceituacaoProcessos";
 import { detectarRiscos, type RespostaRegistro } from "@/lib/scoring";
 
 // Decisão clínica (09/07/2026): respostas_questionarios não grava mais nome/telefone
@@ -1708,10 +1712,14 @@ export default function BrunoPainel() {
 
             {tab === "ferramentas" && (
               <>
-                {ferramentaAberta?.id === "conceituacao-cognitiva" ? (
+                {ferramentaAberta && ["conceituacao-cognitiva", "conceituacao-esquema", "conceituacao-funcional", "conceituacao-act", "conceituacao-processos"].includes(ferramentaAberta.id) ? (
                   <div>
                     <button onClick={() => { setFerramentaAberta(null); setFerramentaDados({}); }} className="mb-4 rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]"><X size={15} /></button>
-                    <ConceituacaoCognitiva respostas={respostas} />
+                    {ferramentaAberta.id === "conceituacao-cognitiva" && <ConceituacaoCognitiva respostas={respostas} />}
+                    {ferramentaAberta.id === "conceituacao-esquema" && <ConceituacaoEsquema respostas={respostas} />}
+                    {ferramentaAberta.id === "conceituacao-funcional" && <ConceituacaoFuncional respostas={respostas} />}
+                    {ferramentaAberta.id === "conceituacao-act" && <ConceituacaoACT respostas={respostas} />}
+                    {ferramentaAberta.id === "conceituacao-processos" && <ConceituacaoProcessos respostas={respostas} />}
                   </div>
                 ) : ferramentaAberta ? (
                   <motion.div variants={fadeUp}>
