@@ -40,47 +40,7 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
 
-const LABELS = [
-  "Dados relevantes da história",
-  "Crença Central",
-  "Crenças Intermediárias (pressupostos, regras, atitudes)",
-  "Estratégias Compensatórias",
-  "Situação 1",
-  "Pensamento Automático (Sit. 1)",
-  "Significado do PA (Sit. 1)",
-  "Resposta Emocional (Sit. 1)",
-  "Resposta Física (Sit. 1)",
-  "Comportamento (Sit. 1)",
-  "Situação 2",
-  "Pensamento Automático (Sit. 2)",
-  "Significado do PA (Sit. 2)",
-  "Resposta Emocional (Sit. 2)",
-  "Resposta Física (Sit. 2)",
-  "Comportamento (Sit. 2)",
-];
-
-const SYSTEM_PROMPT_TURNO = `Você conduz uma entrevista socrática para ajudar um psicólogo clínico a
-preencher o Diagrama de Conceituação Cognitiva (modelo de Judith Beck), em português do Brasil.
-Faça UMA pergunta objetiva de cada vez, focada no que ainda falta preencher — nunca repita pergunta
-sobre campo já respondido. Use tom profissional e colaborativo, como um par clínico pensando junto,
-nunca prescritivo. Nunca afirme diagnóstico com certeza — use linguagem de hipótese quando inferir
-algo. Com base no que o terapeuta acabou de responder, você pode atualizar um ou mais campos do
-diagrama. Responda SOMENTE em JSON estrito, sem texto fora do JSON, no formato:
-{"resposta": "sua próxima pergunta ou comentário", "campos": {"Rótulo do campo": "valor inferido"}}
-"campos" só deve conter campos que você tem confiança para preencher/atualizar agora — pode ser
-um objeto vazio {} se ainda não há nada novo a registrar.`;
-
-const SYSTEM_PROMPT_ENCERRAR = `Você é um assistente de psicologia clínica que mantém um perfil
-evolutivo e duradouro de um paciente, em português do Brasil, a partir de conversas de conceituação
-cognitiva. Diferente do diagrama de trabalho de uma sessão (que tem "Situação 1"/"Situação 2"
-pontuais), este perfil guarda o que é ESTÁVEL ao longo do tempo: crença central, crenças
-intermediárias, estratégias compensatórias, e um registro de temas/situações que se REPETEM entre
-sessões (não a última situação pontual). Nunca afirme diagnóstico com certeza. Responda SOMENTE em
-JSON estrito no formato:
-{"crencaCentral": "...", "crencasIntermediarias": "...", "estrategiasCompensatorias": "...",
- "situacoesNovas": ["tema ou padrão recorrente novo observado nesta sessão", "..."]}
-"situacoesNovas" deve conter só temas GENUINAMENTE novos em relação ao perfil já existente — se
-nada de novo surgiu, retorne uma lista vazia []. Nunca repita um tema já registrado no perfil atual.`;
+import { FERRAMENTAS } from "../_shared/ferramentas-conceituacao.ts";
 
 interface Mensagem { papel: "terapeuta" | "ia"; conteudo: string; }
 
@@ -94,14 +54,15 @@ async function buscarPaciente(pacienteId: number | null) {
   return data ?? null;
 }
 
-async function buscarPerfil(pacienteId: number | null) {
+async function buscarPerfil(pacienteId: number | null, ferramentaId: string): Promise<Record<string, unknown> | null> {
   if (pacienteId == null) return null;
   const { data } = await supabase
     .from("paciente_perfil")
-    .select("crenca_central, crencas_intermediarias, estrategias_compensatorias, situacoes_recorrentes")
+    .select("dados")
     .eq("paciente_id", pacienteId)
+    .eq("ferramenta_id", ferramentaId)
     .maybeSingle();
-  return data ?? null;
+  return (data?.dados as Record<string, unknown>) ?? null;
 }
 
 async function buscarAnexosRecentes(pacienteId: number | null, limite = 3) {
@@ -115,15 +76,19 @@ async function buscarAnexosRecentes(pacienteId: number | null, limite = 3) {
   return data ?? [];
 }
 
-function formatarPerfil(perfil: Awaited<ReturnType<typeof buscarPerfil>>): string {
-  if (!perfil) return "Nenhum perfil de longo prazo registrado ainda para este paciente.";
-  const situacoes = Array.isArray(perfil.situacoes_recorrentes) ? perfil.situacoes_recorrentes : [];
-  return [
-    perfil.crenca_central ? `Crença central conhecida: ${perfil.crenca_central}` : "",
-    perfil.crencas_intermediarias ? `Crenças intermediárias conhecidas: ${perfil.crencas_intermediarias}` : "",
-    perfil.estrategias_compensatorias ? `Estratégias compensatórias conhecidas: ${perfil.estrategias_compensatorias}` : "",
-    situacoes.length > 0 ? `Temas/situações recorrentes já observados: ${situacoes.map((s: { texto?: string }) => s?.texto ?? String(s)).join("; ")}` : "",
-  ].filter(Boolean).join("\n") || "Nenhum perfil de longo prazo registrado ainda para este paciente.";
+// Genérico: cada ferramenta define seus próprios nomes de campo (via promptEncerrar),
+// então o formatador não precisa conhecê-los — só evita expor situacoes_recorrentes
+// como uma linha bruta de JSON (essa é formatada à parte, abaixo).
+function formatarPerfil(dados: Record<string, unknown> | null): string {
+  if (!dados || Object.keys(dados).length === 0) return "Nenhum perfil de longo prazo registrado ainda para este paciente.";
+  const situacoes = Array.isArray(dados.situacoes_recorrentes) ? dados.situacoes_recorrentes : [];
+  const linhas = Object.entries(dados)
+    .filter(([chave, valor]) => chave !== "situacoes_recorrentes" && valor != null && String(valor).trim() !== "")
+    .map(([chave, valor]) => `${chave}: ${valor}`);
+  if (situacoes.length > 0) {
+    linhas.push(`Temas/situações recorrentes já observados: ${situacoes.map((s: { texto?: string }) => s?.texto ?? String(s)).join("; ")}`);
+  }
+  return linhas.length > 0 ? linhas.join("\n") : "Nenhum perfil de longo prazo registrado ainda para este paciente.";
 }
 
 async function acaoTurno(body: Record<string, unknown>) {
@@ -134,11 +99,14 @@ async function acaoTurno(body: Record<string, unknown>) {
   const camposAtuais: Record<string, string> = typeof body.camposAtuais === "object" && body.camposAtuais ? body.camposAtuais as Record<string, string> : {};
   const providerKey = typeof body.provider === "string" ? body.provider : "nvidia";
   const model = typeof body.model === "string" && body.model.trim() ? body.model.trim() : undefined;
+  const tipo = typeof body.tipo === "string" ? body.tipo : "conceituacao-cognitiva";
+  const config = FERRAMENTAS[tipo];
+  if (!config) return { status: 400, body: { error: `Ferramenta desconhecida: ${tipo}` } };
 
   if (!mensagem.trim()) return { status: 400, body: { error: "Mensagem vazia" } };
 
   const paciente = await buscarPaciente(pacienteId);
-  const perfil = paciente ? await buscarPerfil(pacienteId) : null;
+  const perfil = paciente ? await buscarPerfil(pacienteId, tipo) : null;
   const anexos = paciente ? await buscarAnexosRecentes(pacienteId) : [];
 
   const mensagemRedigida = paciente ? redigirNome(mensagem, paciente.nome_paciente, paciente.nascimento) : mensagem;
@@ -149,7 +117,7 @@ async function acaoTurno(body: Record<string, unknown>) {
 
   const userMsg = [
     `Campos do diagrama já preenchidos:\n${JSON.stringify(camposAtuais)}`,
-    `Rótulos disponíveis (use exatamente estas chaves em "campos"):\n${JSON.stringify(LABELS)}`,
+    `Rótulos disponíveis (use exatamente estas chaves em "campos"):\n${JSON.stringify(config.labels)}`,
     `Perfil de longo prazo deste paciente:\n${formatarPerfil(perfil)}`,
     anexos.length > 0
       ? `Trechos de referência anexados (prontuário/documentos):\n${anexos.map((a) => `[${a.tipo}] ${a.conteudo_redigido}`).join("\n---\n")}`
@@ -160,7 +128,7 @@ async function acaoTurno(body: Record<string, unknown>) {
     `Nova mensagem do terapeuta:\n${mensagemRedigida}`,
   ].filter(Boolean).join("\n\n");
 
-  const chamada = await chamarProvedor(providerKey, model, SYSTEM_PROMPT_TURNO, userMsg);
+  const chamada = await chamarProvedor(providerKey, model, config.promptTurno, userMsg);
   if (!chamada.ok) return { status: chamada.status, body: { error: chamada.erro } };
 
   const parsed = extrairJSON(chamada.conteudo);
@@ -183,6 +151,9 @@ async function acaoEncerrar(body: Record<string, unknown>) {
   const sessaoId = typeof body.sessaoId === "string" ? body.sessaoId : "";
   const providerKey = typeof body.provider === "string" ? body.provider : "nvidia";
   const model = typeof body.model === "string" && body.model.trim() ? body.model.trim() : undefined;
+  const tipo = typeof body.tipo === "string" ? body.tipo : "conceituacao-cognitiva";
+  const config = FERRAMENTAS[tipo];
+  if (!config) return { status: 400, body: { error: `Ferramenta desconhecida: ${tipo}` } };
 
   if (pacienteId == null || !sessaoId) return { status: 400, body: { error: "pacienteId e sessaoId são obrigatórios para encerrar sessão" } };
 
@@ -195,21 +166,25 @@ async function acaoEncerrar(body: Record<string, unknown>) {
 
   if (!mensagens || mensagens.length === 0) return { status: 400, body: { error: "Nenhuma mensagem encontrada nessa sessão" } };
 
-  const perfilAtual = await buscarPerfil(pacienteId);
+  const dadosAtuais = (await buscarPerfil(pacienteId, tipo)) ?? {};
 
   const userMsg = [
-    `Perfil atual do paciente:\n${formatarPerfil(perfilAtual)}`,
+    `Perfil atual do paciente:\n${formatarPerfil(dadosAtuais)}`,
     `Transcrição completa da sessão de hoje:\n${mensagens.map((m: Mensagem) => `${m.papel === "terapeuta" ? "Terapeuta" : "Assistente"}: ${m.conteudo}`).join("\n")}`,
   ].join("\n\n");
 
-  const chamada = await chamarProvedor(providerKey, model, SYSTEM_PROMPT_ENCERRAR, userMsg);
+  const chamada = await chamarProvedor(providerKey, model, config.promptEncerrar, userMsg);
   if (!chamada.ok) return { status: chamada.status, body: { error: chamada.erro } };
 
   const parsed = extrairJSON(chamada.conteudo);
   if (!parsed) return { status: 500, body: { error: "IA não retornou um perfil válido" } };
 
-  const situacoesExistentes = Array.isArray(perfilAtual?.situacoes_recorrentes) ? perfilAtual!.situacoes_recorrentes : [];
-  const situacoesNovas = Array.isArray(parsed.situacoesNovas) ? parsed.situacoesNovas : [];
+  // Delta controlado no código (não pela IA): só situacoesNovas é aceito como
+  // adição, com timestamp gerado no servidor — mesma confiabilidade que o
+  // Beck já tinha antes de generalizar pra múltiplas ferramentas.
+  const { situacoesNovas: situacoesNovasRaw, ...escalares } = parsed;
+  const situacoesExistentes = Array.isArray(dadosAtuais.situacoes_recorrentes) ? dadosAtuais.situacoes_recorrentes : [];
+  const situacoesNovas = Array.isArray(situacoesNovasRaw) ? situacoesNovasRaw : [];
   const situacoesAtualizadas = [
     ...situacoesExistentes,
     ...situacoesNovas
@@ -217,22 +192,18 @@ async function acaoEncerrar(body: Record<string, unknown>) {
       .map((texto: string) => ({ texto, criado_em: new Date().toISOString() })),
   ];
 
-  const perfilNovo = {
-    paciente_id: pacienteId,
-    crenca_central: typeof parsed.crencaCentral === "string" ? parsed.crencaCentral : perfilAtual?.crenca_central ?? null,
-    crencas_intermediarias: typeof parsed.crencasIntermediarias === "string" ? parsed.crencasIntermediarias : perfilAtual?.crencas_intermediarias ?? null,
-    estrategias_compensatorias: typeof parsed.estrategiasCompensatorias === "string" ? parsed.estrategiasCompensatorias : perfilAtual?.estrategias_compensatorias ?? null,
-    situacoes_recorrentes: situacoesAtualizadas,
-    atualizado_em: new Date().toISOString(),
-  };
+  const dadosNovos = { ...dadosAtuais, ...escalares, situacoes_recorrentes: situacoesAtualizadas };
 
-  const { error: upsertError } = await supabase.from("paciente_perfil").upsert(perfilNovo, { onConflict: "paciente_id" });
+  const { error: upsertError } = await supabase.from("paciente_perfil").upsert(
+    { paciente_id: pacienteId, ferramenta_id: tipo, dados: dadosNovos, atualizado_em: new Date().toISOString() },
+    { onConflict: "paciente_id,ferramenta_id" }
+  );
   if (upsertError) {
     console.error("conceituacao-chat: erro ao salvar perfil", upsertError);
     return { status: 500, body: { error: "Falha ao salvar perfil atualizado" } };
   }
 
-  return { status: 200, body: { perfil: perfilNovo } };
+  return { status: 200, body: { perfil: dadosNovos } };
 }
 
 async function acaoAnexo(body: Record<string, unknown>) {
