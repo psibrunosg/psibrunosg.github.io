@@ -16,7 +16,7 @@ set dados = jsonb_strip_nulls(jsonb_build_object(
   'estrategias_compensatorias', estrategias_compensatorias,
   'situacoes_recorrentes', coalesce(situacoes_recorrentes, '[]'::jsonb)
 ))
-where dados = '{}'::jsonb;
+where dados = '{}'::jsonb and ferramenta_id = 'conceituacao-cognitiva';
 
 -- Chave composta: 1 perfil por (paciente, ferramenta) em vez de 1 por paciente.
 alter table public.paciente_perfil drop constraint if exists paciente_perfil_pkey;
