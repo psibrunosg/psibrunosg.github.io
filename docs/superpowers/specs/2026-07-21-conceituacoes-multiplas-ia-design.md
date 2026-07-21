@@ -84,11 +84,22 @@ genéricos.
 
 `buscarPerfil`/`formatarPerfil`/o upsert em `acaoEncerrar` (hoje leem/gravam
 colunas fixas — `crenca_central` etc) passam a ler/gravar o `dados jsonb`
-genérico filtrado por `(paciente_id, ferramenta_id)`. O merge deixa de ter
-lógica hardcoded (hoje só `situacoes_recorrentes` é tratada como lista que
-cresce) — o prompt de encerrar já recebe o perfil atual em texto e devolve o
-JSON completo atualizado; grava-se o que a IA devolveu, sem merge manual por
-campo.
+genérico filtrado por `(paciente_id, ferramenta_id)`, mas o merge continua
+com a mesma confiabilidade de hoje (código controla o delta, não a IA):
+
+- `formatarPerfil(dados)` vira 100% genérico — itera `Object.entries(dados)`
+  (exceto `situacoes_recorrentes`, tratado à parte) e formata `chave: valor`;
+  cada `promptEncerrar` de ferramenta já descreve o que cada chave significa,
+  então o texto sai legível sem o código saber os nomes de antemão.
+- Cada `promptEncerrar` pede à IA os campos escalares estáveis daquela
+  ferramenta (nomes definidos no próprio prompt) **+ `situacoesNovas`**
+  (mesma chave universal em todas as 5 ferramentas — só os temas
+  GENUINAMENTE novos desta sessão, nunca a lista inteira de novo).
+- O upsert faz `{ ...dadosAtuais, ...escalaresRecebidos, situacoes_recorrentes:
+  [...existentes, ...situacoesNovas.map(texto => ({texto, criado_em: now()}))] }`
+  — o array só cresce por delta controlado no código (timestamp gerado no
+  servidor), exatamente como o Beck já funciona hoje; generaliza sem perder
+  confiabilidade.
 
 `paciente_anexos` e `paciente_mensagens` **não** ganham `ferramenta_id`:
 anexos (PDF/prontuário) fazem sentido como contexto compartilhado entre
