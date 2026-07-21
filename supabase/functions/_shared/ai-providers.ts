@@ -12,7 +12,8 @@ export const PROVIDERS: Record<string, { baseUrl: string; secret: string; defaul
   deepseek: { baseUrl: "https://api.deepseek.com/v1", secret: "DEEPSEEK_API_KEY", defaultModel: "deepseek-chat" },
   // Google expõe um endpoint compatível com /chat/completions da OpenAI —
   // mesmo caminho genérico dos demais, sem adapter próprio como o Anthropic.
-  gemini: { baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai", secret: "GEMINI_API_KEY", defaultModel: "gemini-2.5-flash" },
+  // gemini-2.5-* está em rota de aposentadoria (geração atual é 3.x) — default atualizado 2026-07.
+  gemini: { baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai", secret: "GEMINI_API_KEY", defaultModel: "gemini-3.6-flash" },
 };
 export const ANTHROPIC_DEFAULT_MODEL = "claude-opus-4-8";
 
