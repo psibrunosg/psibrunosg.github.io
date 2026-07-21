@@ -2,6 +2,15 @@ import { Sparkles, Loader2, Info, Send, Paperclip, LogOut } from "lucide-react";
 import { PROVEDORES, MODELOS_POR_PROVEDOR, nomeSeguro, type UseConceituacaoIAResult } from "@/hooks/useConceituacaoIA";
 import { box, labelCls, inputCls } from "./CampoDiagrama";
 
+// Restaura os rótulos amigáveis que o Beck já tinha antes da generalização —
+// as outras ferramentas nunca tiveram rótulos amigáveis pra preservar, então
+// usam a chave crua como fallback (comportamento genérico, sem regressão).
+const LABELS_PERFIL_CONHECIDOS: Record<string, string> = {
+  crenca_central: "Crença central",
+  crencas_intermediarias: "Crenças intermediárias",
+  estrategias_compensatorias: "Estratégias compensatórias",
+};
+
 // Chrome de IA compartilhado por todas as ferramentas de conceituação: seleção
 // de paciente/provedor/modelo, contexto + rascunho automático, chat guiado,
 // e anexos de referência. Cada ferramenta só desenha seu próprio diagrama por
@@ -64,7 +73,7 @@ export function PainelIAConceituacao({ ia }: { ia: UseConceituacaoIAResult }) {
           <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-[var(--c-accent)]">Perfil de longo prazo deste paciente</p>
           <div className="space-y-1.5 text-xs text-[var(--c-text)]">
             {Object.entries(ia.perfil).filter(([chave, valor]) => chave !== "situacoes_recorrentes" && valor).map(([chave, valor]) => (
-              <p key={chave}><span className="font-semibold">{chave}:</span> {String(valor)}</p>
+              <p key={chave}><span className="font-semibold">{LABELS_PERFIL_CONHECIDOS[chave] ?? chave}:</span> {String(valor)}</p>
             ))}
             {Array.isArray(ia.perfil.situacoes_recorrentes) && ia.perfil.situacoes_recorrentes.length > 0 && (
               <p><span className="font-semibold">Temas recorrentes:</span> {(ia.perfil.situacoes_recorrentes as { texto?: string }[]).map((s) => s?.texto ?? String(s)).join("; ")}</p>
