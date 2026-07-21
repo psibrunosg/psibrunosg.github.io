@@ -12,14 +12,9 @@ const corsHeaders = {
 };
 const jsonHeaders = { ...corsHeaders, "Content-Type": "application/json" };
 
-interface Escala { sigla: string; resumo: string; }
+import { FERRAMENTAS } from "../_shared/ferramentas-conceituacao.ts";
 
-const SYSTEM_PROMPT = `Você é um assistente de psicologia clínica que redige RASCUNHOS de Conceituação
-Cognitiva de Caso (modelo de Judith Beck), em português do Brasil, com tom profissional.
-Nunca afirme diagnóstico com certeza — use linguagem de hipótese ("hipótese:", "sugere",
-"pode indicar"). Deixe explícito que o rascunho deve ser revisado e editado pelo psicólogo
-responsável antes de qualquer uso clínico. Responda SOMENTE em JSON estrito, sem texto fora
-do JSON, com uma chave para cada rótulo de campo fornecido pelo usuário.`;
+interface Escala { sigla: string; resumo: string; }
 
 // Feature 5b: modo "parecer" — revisor de texto clínico (síntese/considerações de laudo),
 // NÃO um gerador de rascunho. Só melhora clareza/formalidade/coesão em pt-BR, sem inventar
@@ -30,27 +25,6 @@ deve reescrevê-lo melhorando clareza, formalidade e coesão, mantendo o registr
 psicologia clínica. NUNCA invente fatos, diagnósticos, escores ou informações que não estejam no
 texto original — apenas reformule o que já foi escrito. Não adicione saudações, cabeçalhos nem
 comentários. Responda SOMENTE com o texto revisado, sem aspas, sem markdown, sem JSON.`;
-
-// ponytail: labels fixos do diagrama de Beck; se novas ferramentas de IA forem
-// adicionadas, passar a lista de labels no body em vez de hardcodar aqui.
-const LABELS_CONCEITUACAO_COGNITIVA = [
-  "Dados relevantes da história",
-  "Crença Central",
-  "Crenças Intermediárias (pressupostos, regras, atitudes)",
-  "Estratégias Compensatórias",
-  "Situação 1",
-  "Pensamento Automático (Sit. 1)",
-  "Significado do PA (Sit. 1)",
-  "Resposta Emocional (Sit. 1)",
-  "Resposta Física (Sit. 1)",
-  "Comportamento (Sit. 1)",
-  "Situação 2",
-  "Pensamento Automático (Sit. 2)",
-  "Significado do PA (Sit. 2)",
-  "Resposta Emocional (Sit. 2)",
-  "Resposta Física (Sit. 2)",
-  "Comportamento (Sit. 2)",
-];
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -71,9 +45,12 @@ serve(async (req) => {
     const model: string | undefined = typeof body?.model === "string" && body.model.trim() ? body.model.trim() : undefined;
 
     const isParecer = modo === "parecer";
-    const systemPrompt = isParecer ? SYSTEM_PROMPT_PARECER : SYSTEM_PROMPT;
-
-    const labels = LABELS_CONCEITUACAO_COGNITIVA;
+    const config = FERRAMENTAS[tipo];
+    if (!isParecer && !config) {
+      return new Response(JSON.stringify({ error: `Ferramenta desconhecida: ${tipo}` }), { status: 400, headers: jsonHeaders });
+    }
+    const systemPrompt = isParecer ? SYSTEM_PROMPT_PARECER : config.promptDraft;
+    const labels = isParecer ? [] : config.labels;
     const userMsg = isParecer
       ? `Revise o texto a seguir:\n\n${textoParecer}`
       : [
