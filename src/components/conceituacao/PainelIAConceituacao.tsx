@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Sparkles, Loader2, Info, Send, Paperclip, LogOut, Settings } from "lucide-react";
+import { Sparkles, Loader2, Info, Send, Paperclip, LogOut, Settings, Save } from "lucide-react";
 import { PROVEDORES, MODELOS_POR_PROVEDOR, nomeSeguro, type UseConceituacaoIAResult } from "@/hooks/useConceituacaoIA";
 import { box, labelCls, inputCls } from "./CampoDiagrama";
 
@@ -92,6 +92,25 @@ export function PainelIAConceituacao({ ia }: { ia: UseConceituacaoIAResult }) {
           {ia.loading ? "Gerando..." : "Sugerir rascunho (IA)"}
         </button>
         {ia.erro && <p className="mt-2 text-xs text-[var(--c-danger,#dc2626)]">{ia.erro}</p>}
+      </div>
+
+      <div className="glass-card mb-6 rounded-2xl p-5">
+        <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-[var(--c-accent)]">Gravar no histórico</p>
+        <div className="flex flex-wrap items-end gap-2">
+          <div className="min-w-[200px] flex-1">
+            <label className={labelCls}>Rótulo (opcional — ajuda a identificar depois, principalmente sem paciente vinculado)</label>
+            <input value={ia.rotulo} onChange={(e) => ia.setRotulo(e.target.value)} placeholder="ex: sessão inicial, revisão 3 meses depois" className={inputCls} />
+          </div>
+          <button onClick={ia.salvarDiagrama} disabled={ia.salvando}
+            className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+            style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
+            {ia.salvando ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+            {ia.salvando ? "Gravando..." : "Gravar"}
+          </button>
+        </div>
+        <p className="mt-1 text-[10px] text-[var(--c-muted)]">Cada clique cria um registro novo no histórico — não sobrescreve gravações anteriores.</p>
+        {ia.salvoOk && <p className="mt-2 text-xs text-[var(--c-accent)]">Diagrama gravado no histórico.</p>}
+        {ia.salvoErro && <p className="mt-2 text-xs text-[var(--c-danger,#dc2626)]">{ia.salvoErro}</p>}
       </div>
 
       {!ia.pacienteChave && (

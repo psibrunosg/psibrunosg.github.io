@@ -123,6 +123,12 @@ export interface UseConceituacaoIAResult {
   salvarAnexo: (tipo: "pdf" | "texto", conteudo: string, nomeArquivo?: string) => Promise<void>;
   handleUploadPDF: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
   exportarPDF: () => void;
+  rotulo: string;
+  setRotulo: (v: string) => void;
+  salvando: boolean;
+  salvoOk: boolean;
+  salvoErro: string | null;
+  salvarDiagrama: () => Promise<void>;
 }
 
 export function useConceituacaoIA(toolId: string, respostas: Resposta[], ferramenta: FerramentaTerapeuta): UseConceituacaoIAResult {
@@ -159,6 +165,11 @@ export function useConceituacaoIA(toolId: string, respostas: Resposta[], ferrame
   const [anexoErro, setAnexoErro] = useState<string | null>(null);
   const [anexoOk, setAnexoOk] = useState(false);
   const [anexoTruncado, setAnexoTruncado] = useState(false);
+
+  const [rotulo, setRotulo] = useState("");
+  const [salvando, setSalvando] = useState(false);
+  const [salvoOk, setSalvoOk] = useState(false);
+  const [salvoErro, setSalvoErro] = useState<string | null>(null);
 
   const set = (label: string, v: string) => setDados((d) => ({ ...d, [label]: v }));
 
@@ -387,6 +398,30 @@ export function useConceituacaoIA(toolId: string, respostas: Resposta[], ferrame
     doc.save(`${toolId}_${new Date().toISOString().slice(0, 10)}.pdf`);
   }
 
+  // Histórico: cada clique cria uma linha nova (não sobrescreve) — permite
+  // comparar conceituações ao longo do tempo. Funciona sem paciente vinculado
+  // (modo genérico); nesse caso o rótulo é a única forma de identificar depois.
+  async function salvarDiagrama() {
+    if (!supabase) { setSalvoErro("Supabase não configurado — não é possível gravar."); return; }
+    setSalvando(true);
+    setSalvoErro(null);
+    setSalvoOk(false);
+    try {
+      const { error } = await supabase.from("conceituacoes_registros").insert({
+        paciente_id: pacienteId,
+        ferramenta_id: toolId,
+        dados,
+        rotulo: rotulo.trim() || null,
+      });
+      if (error) { setSalvoErro(error.message); return; }
+      setSalvoOk(true);
+    } catch (e) {
+      setSalvoErro(e instanceof Error ? e.message : "Erro ao gravar diagrama.");
+    } finally {
+      setSalvando(false);
+    }
+  }
+
   return {
     dados, set, pacienteChave, setPacienteChave, grupos, pacienteId, perfil,
     contexto, setContexto, provider, model, escolherProvider, escolherModel,
@@ -395,5 +430,6 @@ export function useConceituacaoIA(toolId: string, respostas: Resposta[], ferrame
     mensagens, inputChat, setInputChat, chatLoading, chatErro, enviarMensagemChat, encerrarSessao, encerrarLoading,
     anexoTexto, setAnexoTexto, anexoLoading, anexoErro, anexoOk, anexoTruncado, salvarAnexo, handleUploadPDF,
     exportarPDF,
+    rotulo, setRotulo, salvando, salvoOk, salvoErro, salvarDiagrama,
   };
 }
