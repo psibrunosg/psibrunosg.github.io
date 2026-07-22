@@ -1,11 +1,12 @@
 import jsPDF from "jspdf";
 import {
-  classificarPorFaixa, classificarG36, classificarNeoT, calcularTScoreNeoFFI,
+  classificarPorFaixa, classificarG36, classificarNeoT, calcularTScoreNeoPI,
   classificarAtencao, teadiSP, tealtSP,
   phq9Faixas, gad7Faixas, baiFaixas, bdiFaixas, bhsFaixas, asrsFaixas,
   neoDominioNomes, neoFacetasNomes, neoFacetasPorDominio,
-  type NeoFFIDominio, type NeoSexo, type G36Escolaridade, type TesteId,
+  type NeoFFIDominio, type NeoSexo, type NeoPISexo, type G36Escolaridade, type TesteId,
 } from "@/content/normative-tables";
+import { classificarNeoPITDominio, classificarNeoFFITDominio } from "@/content/neo-tabelas-t";
 import {
   templatesPorTeste, templatesNeoDominio, templatesNeoFaceta, templatesNeoFFIDominio,
 } from "@/content/parecer-templates";
@@ -32,17 +33,18 @@ export interface ResultadoTeste {
 function gerarTextoInterpretativo(testeId: string, classificacao: string, dados: Record<string, string | number>): string {
   if (testeId === "neo-pi") {
     const partes: string[] = [];
+    const sexo = (dados.sexo as NeoPISexo) || "geral";
     const dominios: NeoFFIDominio[] = ["N", "E", "O", "A", "C"];
     for (const dom of dominios) {
-      const tScore = Number(dados[dom] ?? 0);
-      if (!tScore) continue;
-      const cl = classificarNeoT(tScore);
+      const bruto = Number(dados[dom] ?? 0);
+      if (!bruto) continue;
+      const cl = classificarNeoPITDominio(dom, bruto, sexo).classificacao;
       const tpl = templatesNeoDominio[dom]?.[cl];
       if (tpl) partes.push(tpl);
       for (const fac of neoFacetasPorDominio[dom]) {
-        const ft = Number(dados[fac] ?? 0);
-        if (!ft) continue;
-        const fcl = classificarNeoT(ft);
+        const fb = Number(dados[fac] ?? 0);
+        if (!fb) continue;
+        const fcl = classificarNeoT(calcularTScoreNeoPI(fac, fb, sexo));
         const ftpl = templatesNeoFaceta[fac]?.[fcl];
         if (ftpl) partes.push(`  ${fac} (${neoFacetasNomes[fac]}): ${ftpl}`);
       }
@@ -57,8 +59,8 @@ function gerarTextoInterpretativo(testeId: string, classificacao: string, dados:
     for (const dom of dominios) {
       const bruto = Number(dados[dom] ?? 0);
       if (!bruto) continue;
-      const t = calcularTScoreNeoFFI(dom, bruto, sexo);
-      const cl = classificarNeoT(t);
+      const sexoT = sexo === "combinado" ? "geral" : sexo;
+      const cl = classificarNeoFFITDominio(dom, bruto, sexoT).classificacao;
       const tpl = templatesNeoFFIDominio[dom]?.[cl];
       if (tpl) partes.push(tpl);
     }
@@ -152,26 +154,28 @@ export function processarTeste(t: ResultadoTeste): ResultadoTeste {
       const linhas = dominios.map((dom) => {
         const bruto = Number(d[dom] ?? 0);
         if (!bruto) return null;
-        const tVal = calcularTScoreNeoFFI(dom, bruto, sexo);
-        const cl = classificarNeoT(tVal);
+        const sexoT = sexo === "combinado" ? "geral" : sexo;
+        const { t: tVal, classificacao: cl } = classificarNeoFFITDominio(dom, bruto, sexoT);
         return `${neoDominioNomes[dom]}: bruto=${bruto}, T=${tVal} (${cl})`;
       }).filter(Boolean);
       resultado = { classificacao: "Ver detalhes", detalhes: linhas.join("\n") };
       break;
     }
     case "neo-pi": {
+      const sexo = (d.sexo as NeoPISexo) || "geral";
       const dominios: NeoFFIDominio[] = ["N", "E", "O", "A", "C"];
       const linhas: string[] = [];
       for (const dom of dominios) {
-        const tScore = Number(d[dom] ?? 0);
-        if (!tScore) continue;
-        const cl = classificarNeoT(tScore);
-        linhas.push(`${neoDominioNomes[dom]} (${dom}): T=${tScore} — ${cl}`);
+        const bruto = Number(d[dom] ?? 0);
+        if (!bruto) continue;
+        const { t: tScore, classificacao: cl } = classificarNeoPITDominio(dom, bruto, sexo);
+        linhas.push(`${neoDominioNomes[dom]} (${dom}): bruto=${bruto}, T=${tScore} — ${cl}`);
         for (const fac of neoFacetasPorDominio[dom]) {
-          const ft = Number(d[fac] ?? 0);
-          if (!ft) continue;
+          const fb = Number(d[fac] ?? 0);
+          if (!fb) continue;
+          const ft = calcularTScoreNeoPI(fac, fb, sexo);
           const fcl = classificarNeoT(ft);
-          linhas.push(`  ${fac} ${neoFacetasNomes[fac]}: T=${ft} — ${fcl}`);
+          linhas.push(`  ${fac} ${neoFacetasNomes[fac]}: bruto=${fb}, T=${ft} — ${fcl}`);
         }
       }
       resultado = { classificacao: "Ver detalhes", detalhes: linhas.join("\n") || "Preencha os escores T." };
