@@ -3,6 +3,7 @@ import jsPDF from "jspdf";
 import { supabase, mensagemErroEdgeFunction } from "@/lib/supabase";
 import { interpretarResposta } from "@/lib/interpret";
 import { extrairTextoPDF } from "@/lib/pdfExtract";
+import { NINE_ROUTER_URL_PADRAO, gerarRascunho9Router, turno9Router, encerrar9Router } from "@/lib/nineRouter";
 import type { FerramentaTerapeuta } from "@/content/ferramentas-terapeuta";
 import type { RespostaRegistro } from "@/lib/scoring";
 
@@ -25,6 +26,7 @@ export const PROVEDORES = [
   { id: "deepseek", label: "DeepSeek" },
   { id: "anthropic", label: "Anthropic (Claude)" },
   { id: "gemini", label: "Google Gemini" },
+  { id: "9router", label: "9Router (local)" },
 ];
 
 export const MODELOS_POR_PROVEDOR: Record<string, { id: string; label: string }[]> = {
@@ -96,6 +98,10 @@ export interface UseConceituacaoIAResult {
   model: string;
   escolherProvider: (p: string) => void;
   escolherModel: (m: string) => void;
+  nineRouterUrl: string;
+  setNineRouterUrl: (v: string) => void;
+  nineRouterKey: string;
+  setNineRouterKey: (v: string) => void;
   loading: boolean;
   erro: string | null;
   aiUsado: boolean;
@@ -131,8 +137,11 @@ export function useConceituacaoIA(toolId: string, respostas: Resposta[], ferrame
   const [model, setModel] = useState(() => {
     const salvo = localStorage.getItem("conceituacao_model");
     const opcoes = MODELOS_POR_PROVEDOR[localStorage.getItem("conceituacao_provider") || "nvidia"];
-    return salvo && opcoes?.some((o) => o.id === salvo) ? salvo : opcoes[0].id;
+    if (!opcoes) return salvo ?? ""; // 9router: modelo é texto livre, sem lista fixa
+    return salvo && opcoes.some((o) => o.id === salvo) ? salvo : opcoes[0].id;
   });
+  const [nineRouterUrl, setNineRouterUrlState] = useState(() => localStorage.getItem("conceituacao_9router_url") || NINE_ROUTER_URL_PADRAO);
+  const [nineRouterKey, setNineRouterKeyState] = useState(() => localStorage.getItem("conceituacao_9router_key") || "");
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [aiUsado, setAiUsado] = useState(false);
@@ -162,13 +171,21 @@ export function useConceituacaoIA(toolId: string, respostas: Resposta[], ferrame
   function escolherProvider(p: string) {
     setProvider(p);
     localStorage.setItem("conceituacao_provider", p);
-    const modeloPadrao = MODELOS_POR_PROVEDOR[p][0].id;
+    const modeloPadrao = MODELOS_POR_PROVEDOR[p]?.[0]?.id ?? "";
     setModel(modeloPadrao);
     localStorage.setItem("conceituacao_model", modeloPadrao);
   }
   function escolherModel(m: string) {
     setModel(m);
     localStorage.setItem("conceituacao_model", m);
+  }
+  function setNineRouterUrl(v: string) {
+    setNineRouterUrlState(v);
+    localStorage.setItem("conceituacao_9router_url", v);
+  }
+  function setNineRouterKey(v: string) {
+    setNineRouterKeyState(v);
+    localStorage.setItem("conceituacao_9router_key", v);
   }
 
   useEffect(() => {
@@ -198,6 +215,14 @@ export function useConceituacaoIA(toolId: string, respostas: Resposta[], ferrame
     if (!supabase || pacienteId == null || mensagens.length === 0) return;
     setEncerrarLoading(true);
     try {
+      if (provider === "9router") {
+        const r = await encerrar9Router({ baseUrl: nineRouterUrl, apiKey: nineRouterKey, model, tipo: toolId, pacienteId, sessaoId });
+        if (r.error) { setChatErro(r.error); return; }
+        if (r.perfil) setPerfil(r.perfil);
+        setMensagens([]);
+        setSessaoId(crypto.randomUUID());
+        return;
+      }
       const { data, error } = await supabase.functions.invoke("conceituacao-chat", {
         body: { acao: "encerrar", tipo: toolId, pacienteId, sessaoId, provider, model: model || undefined },
       });
@@ -230,6 +255,19 @@ export function useConceituacaoIA(toolId: string, respostas: Resposta[], ferrame
     setMensagens((m) => [...m, { papel: "terapeuta", conteudo: texto }]);
     setInputChat("");
     try {
+      if (provider === "9router") {
+        const r = await turno9Router({
+          baseUrl: nineRouterUrl, apiKey: nineRouterKey, model, tipo: toolId,
+          pacienteId, sessaoId, mensagem: texto, historico, camposAtuais: dados,
+        });
+        if (r.error) { setChatErro(r.error); return; }
+        setMensagens((m) => [...m, { papel: "ia", conteudo: r.resposta ?? "" }]);
+        if (r.campos && Object.keys(r.campos).length > 0) {
+          setDados((d) => ({ ...d, ...r.campos }));
+          setAiUsado(true);
+        }
+        return;
+      }
       const { data, error } = await supabase.functions.invoke("conceituacao-chat", {
         body: {
           acao: "turno", tipo: toolId, pacienteId, sessaoId, mensagem: texto, historico,
@@ -302,12 +340,19 @@ export function useConceituacaoIA(toolId: string, respostas: Resposta[], ferrame
         const interp = interpretarResposta(r.tipo, r.respostas, r.pontuacao);
         return { sigla: interp.sigla, resumo: interp.resumo };
       });
-      const { data, error } = await supabase.functions.invoke("conceituacao-draft", {
-        body: { tipo: toolId, escalas: escalasPayload, contexto, provider, model: model || undefined },
-      });
-      if (error) throw error;
-      if (data?.error) { setErro(data.error); return; }
-      const draft: Record<string, string> = data?.draft ?? {};
+      let draft: Record<string, string>;
+      if (provider === "9router") {
+        const r = await gerarRascunho9Router({ baseUrl: nineRouterUrl, apiKey: nineRouterKey, model, tipo: toolId, escalas: escalasPayload, contexto });
+        if (r.error) { setErro(r.error); return; }
+        draft = r.draft ?? {};
+      } else {
+        const { data, error } = await supabase.functions.invoke("conceituacao-draft", {
+          body: { tipo: toolId, escalas: escalasPayload, contexto, provider, model: model || undefined },
+        });
+        if (error) throw error;
+        if (data?.error) { setErro(data.error); return; }
+        draft = data?.draft ?? {};
+      }
       setDados((d) => {
         const novo = { ...d };
         for (const label of L) if (!novo[label]?.trim() && draft[label]) novo[label] = draft[label];
@@ -345,6 +390,7 @@ export function useConceituacaoIA(toolId: string, respostas: Resposta[], ferrame
   return {
     dados, set, pacienteChave, setPacienteChave, grupos, pacienteId, perfil,
     contexto, setContexto, provider, model, escolherProvider, escolherModel,
+    nineRouterUrl, setNineRouterUrl, nineRouterKey, setNineRouterKey,
     loading, erro, aiUsado, sugerirRascunho,
     mensagens, inputChat, setInputChat, chatLoading, chatErro, enviarMensagemChat, encerrarSessao, encerrarLoading,
     anexoTexto, setAnexoTexto, anexoLoading, anexoErro, anexoOk, anexoTruncado, salvarAnexo, handleUploadPDF,

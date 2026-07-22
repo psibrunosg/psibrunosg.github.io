@@ -1,4 +1,5 @@
-import { Sparkles, Loader2, Info, Send, Paperclip, LogOut } from "lucide-react";
+import { useState } from "react";
+import { Sparkles, Loader2, Info, Send, Paperclip, LogOut, Settings } from "lucide-react";
 import { PROVEDORES, MODELOS_POR_PROVEDOR, nomeSeguro, type UseConceituacaoIAResult } from "@/hooks/useConceituacaoIA";
 import { box, labelCls, inputCls } from "./CampoDiagrama";
 
@@ -16,6 +17,10 @@ const LABELS_PERFIL_CONHECIDOS: Record<string, string> = {
 // e anexos de referência. Cada ferramenta só desenha seu próprio diagrama por
 // fora deste bloco — ver ConceituacaoCognitiva.tsx / ConceituacaoEsquema.tsx etc.
 export function PainelIAConceituacao({ ia }: { ia: UseConceituacaoIAResult }) {
+  const [mostrarConfig9Router, setMostrarConfig9Router] = useState(false);
+  const e9router = ia.provider === "9router";
+  const modelosProvider = MODELOS_POR_PROVEDOR[ia.provider];
+
   return (
     <>
       <div className="glass-card mb-6 rounded-2xl p-5">
@@ -33,18 +38,46 @@ export function PainelIAConceituacao({ ia }: { ia: UseConceituacaoIAResult }) {
           <div className="flex gap-2">
             <div className="flex-1">
               <label className={labelCls}>Provedor</label>
-              <select value={ia.provider} onChange={(e) => ia.escolherProvider(e.target.value)} className={inputCls}>
-                {PROVEDORES.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
-              </select>
+              <div className="flex gap-1">
+                <select value={ia.provider} onChange={(e) => ia.escolherProvider(e.target.value)} className={inputCls}>
+                  {PROVEDORES.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+                </select>
+                {e9router && (
+                  <button type="button" onClick={() => setMostrarConfig9Router((v) => !v)}
+                    title="Configurar 9Router" aria-label="Configurar 9Router"
+                    className="flex flex-shrink-0 items-center justify-center rounded-xl border border-[var(--c-border)] px-2 text-[var(--c-muted)] transition-colors hover:border-[var(--c-accent)] hover:text-[var(--c-accent)]">
+                    <Settings size={14} />
+                  </button>
+                )}
+              </div>
             </div>
             <div className="flex-1">
               <label className={labelCls}>Modelo</label>
-              <select value={ia.model} onChange={(e) => ia.escolherModel(e.target.value)} className={inputCls}>
-                {MODELOS_POR_PROVEDOR[ia.provider].map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
-              </select>
+              {modelosProvider ? (
+                <select value={ia.model} onChange={(e) => ia.escolherModel(e.target.value)} className={inputCls}>
+                  {modelosProvider.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+                </select>
+              ) : (
+                <input value={ia.model} onChange={(e) => ia.escolherModel(e.target.value)} placeholder="modelo configurado no seu 9Router" className={inputCls} />
+              )}
             </div>
           </div>
         </div>
+        {e9router && mostrarConfig9Router && (
+          <div className="mt-3 grid gap-3 rounded-xl border border-[var(--c-border)] p-3 md:grid-cols-2">
+            <div>
+              <label className={labelCls}>URL do 9Router</label>
+              <input value={ia.nineRouterUrl} onChange={(e) => ia.setNineRouterUrl(e.target.value)} placeholder="http://localhost:20128/v1" className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>API key (opcional)</label>
+              <input type="password" value={ia.nineRouterKey} onChange={(e) => ia.setNineRouterKey(e.target.value)} placeholder="deixe vazio se seu 9Router não exigir" className={inputCls} />
+            </div>
+            <p className="text-[10px] text-[var(--c-muted)] md:col-span-2">
+              9Router local: a IA é chamada direto pelo seu navegador (a nuvem não alcança seu localhost). URL e chave ficam salvas só neste navegador.
+            </p>
+          </div>
+        )}
         <div className="mt-3">
           <label className={labelCls}>Contexto clínico (opcional)</label>
           <textarea value={ia.contexto} onChange={(e) => ia.setContexto(e.target.value)} rows={2}
