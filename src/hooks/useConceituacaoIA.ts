@@ -29,11 +29,11 @@ export const PROVEDORES = [
   { id: "9router", label: "9Router (local)" },
 ];
 
+// nvidia fica de fora deste mapa de propósito: o catálogo NIM (build.nvidia.com)
+// tem 100+ modelos e cravar mais alguns aqui arrisca repetir o mesmo bug do
+// Gemini (id errado -> 404 silencioso). Sem entrada aqui, a UI já cai no
+// campo de texto livre (mesmo padrão do 9Router) — cola qualquer id do catálogo.
 export const MODELOS_POR_PROVEDOR: Record<string, { id: string; label: string }[]> = {
-  nvidia: [
-    { id: "meta/llama-3.3-70b-instruct", label: "Llama 3.3 70B" },
-    { id: "meta/llama-3.1-405b-instruct", label: "Llama 3.1 405B" },
-  ],
   openai: [
     { id: "gpt-4o-mini", label: "GPT-4o mini" },
     { id: "gpt-4o", label: "GPT-4o" },

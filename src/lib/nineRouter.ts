@@ -17,17 +17,38 @@ export const NINE_ROUTER_URL_PADRAO = "http://localhost:20128/v1";
 
 interface Paciente { id: number; nome_paciente: string | null; nascimento: string | null; }
 
+// Parser balanceado (conta chaves de verdade, ignora as dentro de strings) —
+// espelha o fix em supabase/functions/_shared/ai-providers.ts: "primeiro { até
+// último }" quebrava sempre que o modelo escrevia prosa com chaves soltas
+// fora do JSON, produzindo o bug de "{}" aparecendo cru no chat.
 function extrairJSON(texto: string): Record<string, unknown> | null {
   const semCercas = texto.replace(/```json/gi, "").replace(/```/g, "").trim();
   const inicio = semCercas.indexOf("{");
-  const fim = semCercas.lastIndexOf("}");
-  if (inicio === -1 || fim === -1 || fim <= inicio) return null;
-  try {
-    const obj = JSON.parse(semCercas.slice(inicio, fim + 1));
-    return typeof obj === "object" && obj !== null ? obj : null;
-  } catch {
-    return null;
+  if (inicio === -1) return null;
+
+  let profundidade = 0;
+  let dentroString = false;
+  let escapando = false;
+  for (let i = inicio; i < semCercas.length; i++) {
+    const c = semCercas[i];
+    if (escapando) { escapando = false; continue; }
+    if (c === "\\") { escapando = true; continue; }
+    if (c === '"') { dentroString = !dentroString; continue; }
+    if (dentroString) continue;
+    if (c === "{") profundidade++;
+    else if (c === "}") {
+      profundidade--;
+      if (profundidade === 0) {
+        try {
+          const obj = JSON.parse(semCercas.slice(inicio, i + 1));
+          return typeof obj === "object" && obj !== null ? obj : null;
+        } catch {
+          return null;
+        }
+      }
+    }
   }
+  return null;
 }
 
 async function chamar9Router(
@@ -39,7 +60,7 @@ async function chamar9Router(
 ): Promise<{ ok: true; conteudo: string } | { ok: false; erro: string }> {
   const url = `${baseUrl.replace(/\/+$/, "")}/chat/completions`;
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 25000);
+  const timer = setTimeout(() => controller.abort(), 45000);
   let resp: Response;
   try {
     resp = await fetch(url, {
@@ -57,6 +78,7 @@ async function chamar9Router(
         temperature: 0.4,
         max_tokens: 1200,
         stream: false,
+        response_format: { type: "json_object" },
       }),
       signal: controller.signal,
     });

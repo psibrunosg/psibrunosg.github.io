@@ -62,7 +62,7 @@ serve(async (req) => {
           `Preencha um objeto JSON com exatamente estas chaves (rótulos do diagrama):\n${JSON.stringify(labels)}`,
         ].filter(Boolean).join("\n\n");
 
-    const chamada = await chamarProvedor(providerKey, model, systemPrompt, userMsg);
+    const chamada = await chamarProvedor(providerKey, model, systemPrompt, userMsg, 0.4, 1200, !isParecer);
     if (!chamada.ok) {
       return new Response(JSON.stringify({ error: chamada.erro }), { status: chamada.status, headers: jsonHeaders });
     }

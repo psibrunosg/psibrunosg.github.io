@@ -20,7 +20,17 @@ export const ANTHROPIC_DEFAULT_MODEL = "claude-opus-4-8";
 // Sem timeout, um provedor lento/sobrecarregado trava a function até o
 // runtime matar a invocação por esgotar o orçamento de execução (erro
 // genérico e demorado). Falhar rápido com mensagem clara é bem melhor.
-const TIMEOUT_MS = 25000;
+// 45s (era 25s) — modelos maiores/mais lentos estavam batendo no limite e
+// aparecendo como "travou" pro terapeuta quando na verdade só demorou.
+const TIMEOUT_MS = 45000;
+
+// response_format: json_object é suportado de forma confiável por estes
+// provedores (OpenAI e OpenAI-compat que documentam o campo) — força o
+// modelo a devolver JSON válido em vez de confiar só no prompt, reduzindo
+// muito os casos de texto solto/chaves soltas que quebravam o parser.
+// NVIDIA NIM fica de fora: suporte varia por modelo hospedado, arriscado
+// mandar sem confirmação por modelo.
+const SUPORTA_JSON_MODE = new Set(["openai", "groq", "openrouter", "deepseek", "gemini"]);
 
 export interface ChamadaIA {
   ok: true;
@@ -49,7 +59,8 @@ export async function chamarProvedor(
   systemPrompt: string,
   userMsg: string,
   temperature = 0.4,
-  maxTokens = 1200
+  maxTokens = 1200,
+  esperarJSON = true
 ): Promise<ChamadaIA | ChamadaIAErro> {
   if (providerKey === "anthropic") {
     const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
@@ -105,6 +116,7 @@ export async function chamarProvedor(
         temperature,
         max_tokens: maxTokens,
         stream: false,
+        ...(esperarJSON && SUPORTA_JSON_MODE.has(providerKey) ? { response_format: { type: "json_object" } } : {}),
       }),
     });
   } catch (e) {
@@ -121,16 +133,42 @@ export async function chamarProvedor(
   return { ok: true, conteudo: data?.choices?.[0]?.message?.content ?? "" };
 }
 
-/** Extrai o primeiro objeto JSON de um texto (removendo cercas ```json se houver). */
+/**
+ * Extrai o primeiro objeto JSON BALANCEADO de um texto (removendo cercas
+ * ```json se houver). Antes pegava do primeiro "{" até o ÚLTIMO "}" — quebrava
+ * sempre que o modelo escrevia prosa antes/depois do JSON contendo chaves
+ * soltas (ex: "Vou te ajudar {a pensar nisso}..."), produzindo JSON inválido
+ * e caindo no texto cru (o bug de "{}" aparecendo no chat pro terapeuta).
+ * Agora conta chaves de verdade, ignorando as que estão dentro de strings,
+ * e para no primeiro objeto top-level balanceado — muito mais tolerante a
+ * texto extra que o modelo insista em adicionar fora do JSON.
+ */
 export function extrairJSON(texto: string): Record<string, unknown> | null {
   const semCercas = texto.replace(/```json/gi, "").replace(/```/g, "").trim();
   const inicio = semCercas.indexOf("{");
-  const fim = semCercas.lastIndexOf("}");
-  if (inicio === -1 || fim === -1 || fim <= inicio) return null;
-  try {
-    const obj = JSON.parse(semCercas.slice(inicio, fim + 1));
-    return typeof obj === "object" && obj !== null ? obj : null;
-  } catch {
-    return null;
+  if (inicio === -1) return null;
+
+  let profundidade = 0;
+  let dentroString = false;
+  let escapando = false;
+  for (let i = inicio; i < semCercas.length; i++) {
+    const c = semCercas[i];
+    if (escapando) { escapando = false; continue; }
+    if (c === "\\") { escapando = true; continue; }
+    if (c === '"') { dentroString = !dentroString; continue; }
+    if (dentroString) continue;
+    if (c === "{") profundidade++;
+    else if (c === "}") {
+      profundidade--;
+      if (profundidade === 0) {
+        try {
+          const obj = JSON.parse(semCercas.slice(inicio, i + 1));
+          return typeof obj === "object" && obj !== null ? obj : null;
+        } catch {
+          return null;
+        }
+      }
+    }
   }
+  return null;
 }

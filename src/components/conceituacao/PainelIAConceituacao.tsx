@@ -58,7 +58,9 @@ export function PainelIAConceituacao({ ia }: { ia: UseConceituacaoIAResult }) {
                   {modelosProvider.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
                 </select>
               ) : (
-                <input value={ia.model} onChange={(e) => ia.escolherModel(e.target.value)} placeholder="modelo configurado no seu 9Router" className={inputCls} />
+                <input value={ia.model} onChange={(e) => ia.escolherModel(e.target.value)}
+                  placeholder={e9router ? "modelo configurado no seu 9Router" : "ex: meta/llama-3.3-70b-instruct"}
+                  className={inputCls} />
               )}
             </div>
           </div>
