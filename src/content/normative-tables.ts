@@ -198,7 +198,7 @@ export function classificarG36(acertos: number, escolaridade: G36Escolaridade): 
 // Médias e DP da amostra brasileira (N=1331)
 // ============================================================
 export const neoFFIRNormas = {
-  combinado: { N: { m: 25.00, dp: 6.92 }, E: { m: 30.00, dp: 5.61 }, O: { m: 32.41, dp: 5.71 }, A: { m: 32.39, dp: 5.20 }, C: { m: 32.26, dp: 6.54 } },
+  combinado: { N: { m: 25.40, dp: 6.92 }, E: { m: 30.00, dp: 5.61 }, O: { m: 32.41, dp: 5.74 }, A: { m: 32.39, dp: 5.20 }, C: { m: 32.26, dp: 6.54 } },
   masculino: { N: { m: 23.09, dp: 6.72 }, E: { m: 29.34, dp: 5.67 }, O: { m: 32.29, dp: 5.91 }, A: { m: 31.80, dp: 5.32 }, C: { m: 31.51, dp: 6.88 } },
   feminino:  { N: { m: 26.55, dp: 6.73 }, E: { m: 30.33, dp: 5.56 }, O: { m: 32.47, dp: 5.65 }, A: { m: 32.68, dp: 5.12 }, C: { m: 32.63, dp: 6.33 } },
 } as const;
@@ -250,6 +250,53 @@ export const neoFacetasPorDominio: Record<NeoFFIDominio, string[]> = {
   A: ["A1", "A2", "A3", "A4", "A5", "A6"],
   C: ["C1", "C2", "C3", "C4", "C5", "C6"],
 };
+
+// ============================================================
+// NEO PI-R — Médias e DP da Forma S (Anexo 1, p.107)
+// 5 domínios + 30 facetas × {Geral, Homens, Mulheres}.
+// Fonte: manual NEO PI-R (Costa & McCrae), amostra brasileira.
+// Uso: T PARAMÉTRICO (fórmula linear) para as 35 escalas.
+// OBS: as tabelas Anexo 8-18 fornecem T NORMALIZADO (lookup por
+// escore bruto) — método oficial do manual, mais fiel que a
+// fórmula linear. Serão adicionadas como tabelas de lookup.
+// VERIFICAR contra o manual físico antes de uso clínico.
+// ============================================================
+export interface NeoNorma { m: number; dp: number; }
+export type NeoPISexo = "geral" | "masculino" | "feminino";
+
+export const neoPIRNormas: Record<NeoPISexo, Record<string, NeoNorma>> = {
+  geral: {
+    N: { m: 95.26, dp: 22.50 }, E: { m: 112.91, dp: 19.52 }, O: { m: 116.33, dp: 17.75 }, A: { m: 118.27, dp: 16.28 }, C: { m: 118.89, dp: 20.52 },
+    N1: { m: 18.05, dp: 4.61 }, N2: { m: 14.66, dp: 4.74 }, N3: { m: 15.24, dp: 5.42 }, N4: { m: 17.47, dp: 4.63 }, N5: { m: 16.11, dp: 5.14 }, N6: { m: 13.69, dp: 4.94 },
+    E1: { m: 22.59, dp: 4.42 }, E2: { m: 17.59, dp: 5.36 }, E3: { m: 15.19, dp: 4.56 }, E4: { m: 17.23, dp: 4.39 }, E5: { m: 19.31, dp: 4.58 }, E6: { m: 20.98, dp: 4.93 },
+    O1: { m: 19.39, dp: 5.04 }, O2: { m: 20.19, dp: 4.89 }, O3: { m: 20.41, dp: 4.15 }, O4: { m: 15.42, dp: 3.80 }, O5: { m: 19.87, dp: 5.30 }, O6: { m: 21.02, dp: 3.85 },
+    A1: { m: 18.13, dp: 4.79 }, A2: { m: 19.04, dp: 4.50 }, A3: { m: 22.99, dp: 3.79 }, A4: { m: 18.04, dp: 4.28 }, A5: { m: 18.45, dp: 3.97 }, A6: { m: 21.63, dp: 3.67 },
+    C1: { m: 21.25, dp: 3.59 }, C2: { m: 18.46, dp: 5.17 }, C3: { m: 23.02, dp: 4.26 }, C4: { m: 19.68, dp: 4.23 }, C5: { m: 18.56, dp: 5.09 }, C6: { m: 17.88, dp: 5.19 },
+  },
+  masculino: {
+    N: { m: 88.28, dp: 21.48 }, E: { m: 110.73, dp: 18.11 }, O: { m: 115.49, dp: 18.26 }, A: { m: 115.36, dp: 17.56 }, C: { m: 117.97, dp: 20.70 },
+    N1: { m: 16.59, dp: 4.28 }, N2: { m: 13.39, dp: 4.51 }, N3: { m: 14.43, dp: 5.26 }, N4: { m: 16.43, dp: 4.71 }, N5: { m: 15.55, dp: 4.91 }, N6: { m: 11.86, dp: 4.65 },
+    E1: { m: 21.79, dp: 4.56 }, E2: { m: 16.46, dp: 5.15 }, E3: { m: 15.56, dp: 4.29 }, E4: { m: 17.02, dp: 4.11 }, E5: { m: 19.37, dp: 4.20 }, E6: { m: 20.50, dp: 4.85 },
+    O1: { m: 19.39, dp: 5.09 }, O2: { m: 19.11, dp: 5.27 }, O3: { m: 19.70, dp: 4.11 }, O4: { m: 15.21, dp: 3.61 }, O5: { m: 20.99, dp: 5.54 }, O6: { m: 21.06, dp: 3.87 },
+    A1: { m: 17.89, dp: 4.83 }, A2: { m: 18.24, dp: 4.51 }, A3: { m: 22.06, dp: 3.91 }, A4: { m: 17.96, dp: 4.15 }, A5: { m: 18.01, dp: 4.24 }, A6: { m: 21.19, dp: 3.97 },
+    C1: { m: 21.12, dp: 3.72 }, C2: { m: 18.13, dp: 4.92 }, C3: { m: 22.45, dp: 4.39 }, C4: { m: 19.68, dp: 4.38 }, C5: { m: 18.22, dp: 4.98 }, C6: { m: 18.33, dp: 4.90 },
+  },
+  feminino: {
+    N: { m: 98.69, dp: 22.23 }, E: { m: 113.97, dp: 20.10 }, O: { m: 116.74, dp: 17.51 }, A: { m: 119.72, dp: 15.44 }, C: { m: 119.32, dp: 20.44 },
+    N1: { m: 18.77, dp: 4.59 }, N2: { m: 15.29, dp: 4.73 }, N3: { m: 15.63, dp: 5.46 }, N4: { m: 17.97, dp: 4.50 }, N5: { m: 16.40, dp: 5.23 }, N6: { m: 14.59, dp: 4.84 },
+    E1: { m: 22.97, dp: 4.30 }, E2: { m: 18.14, dp: 5.37 }, E3: { m: 15.00, dp: 4.68 }, E4: { m: 17.34, dp: 4.51 }, E5: { m: 19.28, dp: 4.76 }, E6: { m: 21.20, dp: 4.95 },
+    O1: { m: 19.38, dp: 5.01 }, O2: { m: 20.71, dp: 4.61 }, O3: { m: 20.75, dp: 4.14 }, O4: { m: 15.52, dp: 3.89 }, O5: { m: 19.32, dp: 5.10 }, O6: { m: 21.00, dp: 3.85 },
+    A1: { m: 18.25, dp: 4.77 }, A2: { m: 19.43, dp: 4.45 }, A3: { m: 23.44, dp: 3.65 }, A4: { m: 18.08, dp: 4.34 }, A5: { m: 18.67, dp: 3.81 }, A6: { m: 21.84, dp: 3.50 },
+    C1: { m: 21.31, dp: 3.53 }, C2: { m: 18.61, dp: 5.27 }, C3: { m: 23.30, dp: 4.17 }, C4: { m: 19.67, dp: 4.16 }, C5: { m: 18.74, dp: 5.14 }, C6: { m: 17.65, dp: 5.32 },
+  },
+};
+
+/** T paramétrico (fórmula linear) para qualquer escala NEO PI-R. Para T oficial, usar tabela de lookup normalizada (Anexo 8-18) quando disponível. */
+export function calcularTScoreNeoPI(escala: string, bruto: number, sexo: NeoPISexo = "geral"): number {
+  const norma = neoPIRNormas[sexo][escala];
+  if (!norma) throw new Error(`Escala NEO PI-R desconhecida: ${escala}`);
+  return Math.round(50 + 10 * ((bruto - norma.m) / norma.dp));
+}
 
 // ============================================================
 // TEADI (Atenção Dividida) — Normas SP (N=715)
