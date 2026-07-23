@@ -168,9 +168,9 @@ export const neoPercentilPPsPorDominio: Partial<Record<NeoFFIDominio, readonly n
 
 /**
  * Percentis das facetas. PARCIAL — só entra bloco lido e validado.
- * Feito: Anexo 3 (facetas de Neuroticismo) — MASCULINO, validado nos 6
- * pelo teste P50 ≈ média do Anexo 1.
- * Pendente: Anexo 3 Mulheres/Geral e Anexos 4-7 (E, O, A, C).
+ * Feito: Anexo 3 (facetas de Neuroticismo) — Masculino, Feminino e Geral,
+ * validados nos 6 pelo teste de contiguidade + P50 ≈ média do Anexo 1.
+ * Pendente: Anexos 4-7 (facetas de E, O, A, C).
  */
 export const neoPercentilFacetas: Partial<Record<NeoPISexo, Record<string, number[]>>> = {
   masculino: {
@@ -181,6 +181,29 @@ export const neoPercentilFacetas: Partial<Record<NeoPISexo, Record<string, numbe
     N4: [0, 9, 11, 12, 13, 13, 14, 15, 16, 17, 17, 18, 19, 19, 20, 21, 23, 23, 24, 27],
     N5: [0, 8, 9, 10, 11, 12, 14, 14, 15, 16, 17, 17, 17, 18, 19, 20, 21, 22, 24, 28],
     N6: [0, 4, 6, 7, 8, 9, 10, 10, 11, 12, 13, 13, 14, 15, 15, 17, 18, 19, 20, 24],
+  },
+  // Feminino: contiguidade fecha nas 6 facetas, sem gap nem sobreposição.
+  feminino: {
+    // PP:  1   5  10  15  20  25  30  40  45  50  55  60  65  70  75  80  85  90  95  99
+    N1: [0, 11, 13, 14, 15, 16, 16, 17, 18, 19, 20, 20, 21, 21, 22, 23, 24, 25, 26, 29],
+    N2: [0, 8, 9, 10, 11, 12, 13, 14, 14, 15, 16, 16, 17, 18, 19, 19, 20, 21, 24, 26],
+    N3: [0, 8, 9, 10, 11, 12, 13, 14, 15, 15, 16, 17, 17, 18, 19, 21, 22, 23, 25, 30],
+    N4: [0, 11, 12, 13, 14, 15, 16, 17, 17, 18, 18, 19, 20, 20, 21, 22, 23, 24, 26, 28],
+    N5: [0, 8, 10, 11, 12, 13, 13, 15, 16, 16, 17, 18, 19, 19, 20, 21, 22, 23, 25, 29],
+    N6: [0, 7, 9, 10, 10, 11, 12, 13, 14, 14, 15, 16, 16, 17, 18, 19, 20, 21, 23, 27],
+  },
+  // Geral: contiguidade fecha em N1, N2, N3, N5 e N6.
+  // ⚠️ N4: o manual imprime P1 = 0-8 e P5 = 10-11 — o bruto 9 não aparece
+  // em faixa nenhuma. Mantido como impresso (P5 começa em 10, então 9 cai
+  // no P1); CONFERIR no livro físico se P1 é 0-9 ou se P5 é 9-11.
+  geral: {
+    // PP:  1   5  10  15  20  25  30  40  45  50  55  60  65  70  75  80  85  90  95  99
+    N1: [0, 10, 12, 13, 14, 15, 16, 17, 17, 18, 19, 19, 20, 20, 21, 22, 23, 24, 25, 29],
+    N2: [0, 7, 9, 10, 11, 11, 12, 13, 14, 14, 15, 16, 16, 17, 18, 19, 20, 21, 23, 26],
+    N3: [0, 7, 9, 10, 10, 11, 12, 14, 14, 15, 16, 16, 17, 18, 19, 20, 21, 23, 25, 29],
+    N4: [0, 10, 12, 13, 13, 14, 15, 16, 17, 17, 18, 19, 19, 20, 21, 21, 22, 24, 25, 28],
+    N5: [0, 8, 9, 11, 12, 12, 13, 15, 15, 16, 16, 17, 18, 19, 20, 21, 22, 23, 25, 28],
+    N6: [0, 6, 8, 9, 10, 10, 11, 12, 13, 14, 14, 15, 15, 16, 17, 18, 19, 20, 22, 26],
   },
 };
 
