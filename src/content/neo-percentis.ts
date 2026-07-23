@@ -234,13 +234,14 @@ export const neoPercentilFacetas: Partial<Record<NeoPISexo, Record<string, numbe
     O4: [0, 9, 11, 11, 12, 13, 13, 14, 14, 15, 15, 16, 16, 17, 17, 18, 19, 20, 21, 24],
     O5: [0, 12, 14, 15, 16, 17, 19, 19, 20, 20, 21, 23, 23, 24, 24, 25, 27, 28, 30, 32],
     O6: [0, 15, 16, 17, 18, 18, 19, 19, 20, 21, 21, 22, 23, 23, 24, 25, 25, 26, 27, 30],
-    // Anexo 6 (eixo A, 21 níveis). Contiguidade fecha nas 5 facetas gravadas.
-    // A3 NÃO entra: a foto dá P65 = 24 e P75 = 24 (faixa duplicada é
-    // impossível), e não dá pra saber qual das duas linhas é a vazia —
-    // a escolha muda o percentil do bruto 24 de 65 para 75. Pendente de recrop.
+    // Anexo 6 (eixo A, 21 níveis). Contiguidade fecha nas 6 facetas.
+    // Em A3 a foto sugeria P65 = P75 = 24; o Bruno conferiu no manual e
+    // ditou P60 vazio, P65 = 24, P70 vazio, o que deixa P75 vazio como
+    // única leitura contígua (24 → 25 em P80).
     // PP:  1   5  10  15  20  25  30  35  40  45  50  55  60  65  70  75  80  85  90  95  99
     A1: [0, 9, 11, 13, 14, 15, 16, 16, 17, 18, 18, 19, 19, 20, 21, 21, 22, 23, 24, 25, 28],
     A2: [0, 10, 12, 13, 14, 15, 16, 17, 17, 18, 19, 19, 20, 20, 21, 21, 22, 23, 24, 25, 28],
+    A3: [0, 15, 17, 18, 19, 20, 20, 21, 21, 22, 22, 23, 23, 24, 24, 24, 25, 26, 27, 28, 30],
     A4: [0, 10, 13, 14, 15, 15, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 23, 24, 27],
     A5: [0, 10, 12, 14, 15, 16, 16, 17, 17, 18, 18, 18, 19, 20, 20, 21, 21, 22, 23, 24, 27],
     A6: [0, 15, 16, 17, 18, 18, 19, 20, 20, 21, 21, 22, 22, 23, 23, 24, 24, 25, 26, 27, 30],
@@ -337,10 +338,15 @@ export const neoPercentilFacetas: Partial<Record<NeoPISexo, Record<string, numbe
     // PP:  1   5  10  15  20  25  30  35  40  45  50  55  60  65  70  75  80  85  90  95  99
     A1: [0, 10, 12, 13, 14, 15, 16, 17, 17, 18, 18, 19, 20, 20, 21, 22, 22, 23, 24, 25, 28],
     A2: [0, 11, 13, 15, 16, 16, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 23, 23, 24, 26, 28],
-    A3: [0, 16, 18, 19, 20, 21, 21, 22, 22, 23, 23, 24, 24, 24, 25, 26, 26, 27, 28, 29, 30],
+    // A3 e A6 revistas com o recrop: a leitura antiga tinha A3 P60 = P65 = 24
+    // e A6 P5 = 16-17 / P10 = P15 = 18. As duas versões fechavam contiguidade
+    // sozinhas, então o teste forte não desempatava; o Bruno conferiu no
+    // manual e mandou ficar com a foto nova. A1 e A2 saíram idênticas nas
+    // duas fotos, o que dá lastro pra essa leitura.
+    A3: [0, 16, 18, 19, 20, 21, 21, 22, 22, 23, 23, 24, 24, 25, 25, 26, 26, 27, 28, 29, 30],
     A4: [0, 10, 13, 14, 15, 15, 16, 17, 17, 18, 18, 19, 19, 20, 21, 21, 22, 22, 23, 24, 27],
     A5: [0, 12, 13, 15, 15, 16, 16, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 23, 23, 24, 27],
-    A6: [0, 16, 18, 18, 19, 19, 20, 21, 21, 22, 22, 23, 23, 23, 24, 24, 25, 25, 26, 27, 30],
+    A6: [0, 16, 17, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 23, 24, 24, 25, 26, 26, 27, 30],
     // Anexo 7 (eixo C, 21 níveis). C1, C2, C3, C5 e C6 fecham contíguas.
     // C4 NÃO entra: a foto deu P30 e P35 com o mesmo valor impresso (18),
     // o que o manual não pode conter, e ainda perde o bruto 20 entre
@@ -349,6 +355,11 @@ export const neoPercentilFacetas: Partial<Record<NeoPISexo, Record<string, numbe
     C1: [0, 15, 17, 18, 18, 19, 20, 20, 21, 21, 22, 22, 22, 23, 23, 24, 24, 25, 25, 27, 29],
     C2: [0, 9, 11, 13, 14, 15, 16, 17, 17, 18, 19, 19, 20, 21, 21, 22, 23, 24, 25, 27, 30],
     C3: [0, 15, 17, 19, 19, 20, 21, 22, 23, 23, 24, 24, 24, 25, 26, 26, 27, 27, 28, 29, 31],
+    // ⚠️ C4: no recrop o bruto 20 aparece (P45), o que fecha o gap antigo,
+    //    mas P30 e P35 continuam imprimindo 18 nas duas. Gravado com o 18 em
+    //    P30 (linha cheia nas 6 colunas) e P35 vazio — a alternativa também
+    //    fecha contiguidade e só desloca o bruto 18 de P30 para P35. CONFERIR.
+    C4: [0, 12, 14, 15, 16, 17, 18, 18, 19, 20, 20, 20, 21, 21, 22, 22, 23, 24, 25, 26, 28],
     C5: [0, 10, 11, 13, 14, 15, 16, 17, 18, 18, 19, 20, 20, 21, 22, 22, 23, 24, 25, 26, 29],
     C6: [0, 9, 11, 12, 13, 14, 15, 16, 17, 18, 18, 19, 20, 20, 21, 22, 22, 23, 24, 26, 29],
   },
