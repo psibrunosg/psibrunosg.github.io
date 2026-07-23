@@ -160,9 +160,15 @@ export const neoPercentilPPsFacetasN = [
  * manual — Extroversão tem o nível 35 (Bruno confirmou), então o eixo
  * do Anexo 4 é diferente e entra quando o crop chegar.
  */
+/** Anexo 4 (facetas de Extroversão): 21 níveis, COM o 35, e 95 → 99. */
+export const neoPercentilPPsFacetasE = [
+  1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50,
+  55, 60, 65, 70, 75, 80, 85, 90, 95, 99,
+] as const;
+
 export const neoPercentilPPsPorDominio: Partial<Record<NeoFFIDominio, readonly number[]>> = {
   N: neoPercentilPPsFacetasN,
-  // E: TEM o nível 35 — eixo completo a confirmar com o Anexo 4.
+  E: neoPercentilPPsFacetasE,
   // O, A, C: a confirmar (Anexos 5, 6, 7).
 };
 
@@ -181,6 +187,17 @@ export const neoPercentilFacetas: Partial<Record<NeoPISexo, Record<string, numbe
     N4: [0, 9, 11, 12, 13, 13, 14, 15, 16, 17, 17, 18, 19, 19, 20, 21, 23, 23, 24, 27],
     N5: [0, 8, 9, 10, 11, 12, 14, 14, 15, 16, 17, 17, 17, 18, 19, 20, 21, 22, 24, 28],
     N6: [0, 4, 6, 7, 8, 9, 10, 10, 11, 12, 13, 13, 14, 15, 15, 17, 18, 19, 20, 24],
+    // Anexo 4 (eixo E, 21 níveis). Contiguidade fecha em E1, E3, E5 e E6.
+    // ⚠️ E2: P20 = 12 e P30 = 14 (P25 vazio) — o bruto 13 fica fora de
+    //    qualquer faixa. ⚠️ E4: P95 = 24-25 e P99 = ≥27 — o bruto 26 fica
+    //    fora. Ambos mantidos como impressos; CONFERIR no livro físico.
+    // PP:  1   5  10  15  20  25  30  35  40  45  50  55  60  65  70  75  80  85  90  95  99
+    E1: [0, 14, 16, 17, 18, 19, 20, 21, 21, 22, 22, 23, 24, 24, 24, 25, 25, 26, 27, 28, 31],
+    E2: [0, 8, 10, 11, 12, 12, 14, 15, 15, 16, 17, 17, 18, 19, 19, 20, 21, 22, 23, 25, 27],
+    E3: [0, 9, 10, 11, 12, 13, 13, 14, 14, 15, 16, 16, 16, 17, 17, 18, 19, 20, 21, 23, 28],
+    E4: [0, 10, 12, 13, 14, 14, 15, 15, 16, 16, 17, 17, 18, 19, 19, 20, 21, 21, 22, 24, 27],
+    E5: [0, 12, 14, 15, 16, 17, 17, 18, 18, 19, 19, 20, 21, 21, 22, 22, 23, 24, 25, 26, 29],
+    E6: [0, 12, 14, 16, 17, 17, 18, 19, 20, 20, 21, 21, 22, 23, 23, 24, 25, 26, 27, 28, 31],
   },
   // Feminino: contiguidade fecha nas 6 facetas, sem gap nem sobreposição.
   feminino: {
@@ -191,6 +208,14 @@ export const neoPercentilFacetas: Partial<Record<NeoPISexo, Record<string, numbe
     N4: [0, 11, 12, 13, 14, 15, 16, 17, 17, 18, 18, 19, 20, 20, 21, 22, 23, 24, 26, 28],
     N5: [0, 8, 10, 11, 12, 13, 13, 15, 16, 16, 17, 18, 19, 19, 20, 21, 22, 23, 25, 29],
     N6: [0, 7, 9, 10, 10, 11, 12, 13, 14, 14, 15, 16, 16, 17, 18, 19, 20, 21, 23, 27],
+    // Anexo 4 (eixo E, 21 níveis). Contiguidade fecha nas 6 facetas.
+    // PP:  1   5  10  15  20  25  30  35  40  45  50  55  60  65  70  75  80  85  90  95  99
+    E1: [0, 15, 17, 18, 19, 21, 21, 22, 22, 23, 23, 24, 24, 25, 25, 26, 27, 27, 28, 30, 31],
+    E2: [0, 9, 11, 13, 14, 15, 16, 16, 17, 18, 18, 19, 20, 21, 21, 22, 23, 24, 25, 27, 30],
+    E3: [0, 8, 9, 10, 11, 11, 12, 13, 14, 14, 15, 15, 16, 17, 17, 18, 19, 20, 22, 23, 26],
+    E4: [0, 10, 12, 13, 13, 14, 15, 15, 16, 17, 17, 18, 19, 19, 20, 20, 21, 22, 23, 25, 28],
+    E5: [0, 11, 13, 14, 15, 16, 17, 17, 18, 19, 19, 20, 21, 22, 22, 23, 23, 24, 25, 27, 30],
+    E6: [0, 12, 14, 16, 17, 18, 19, 20, 20, 21, 22, 22, 23, 23, 24, 25, 25, 26, 27, 28, 31],
   },
   // Geral: contiguidade fecha em N1, N2, N3, N5 e N6.
   // ⚠️ N4: o manual imprime P1 = 0-8 e P5 = 10-11 — o bruto 9 não aparece
