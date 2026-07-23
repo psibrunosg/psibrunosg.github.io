@@ -1,0 +1,166 @@
+{
+  "teste": "TEACO-FF",
+  "nome": "Teste de Atenção Concentrada",
+  "fonte": "Manual TEACO-FF (Rueda). Transcrito de fotos do manual; conferir contra o manual físico antes de uso de alto risco.",
+  "atualizadoEm": "2026-07-23",
+  "observacoes": "App usa 'spGeral' (Tabela 55) como norma ativa, espelhando TEADI/TEALT (normas SP). Demais tabelas ficam como referência para outros projetos. Grade21 = tabela geral nacional (percentis de 5 em 5); grade13 = demais tabelas (percentis 1,10,20,25,30,40,50,60,70,75,80,90,99).",
+  "faixasClassificacao": {
+    "grade21": [
+      { "classificacao": "Inferior", "minPercentil": 1, "maxPercentil": 20 },
+      { "classificacao": "Médio Inferior", "minPercentil": 25, "maxPercentil": 45 },
+      { "classificacao": "Médio", "minPercentil": 50, "maxPercentil": 60 },
+      { "classificacao": "Médio Superior", "minPercentil": 65, "maxPercentil": 85 },
+      { "classificacao": "Superior", "minPercentil": 90, "maxPercentil": 99 }
+    ],
+    "grade13": [
+      { "classificacao": "Inferior", "minPercentil": 1, "maxPercentil": 20 },
+      { "classificacao": "Médio Inferior", "minPercentil": 25, "maxPercentil": 40 },
+      { "classificacao": "Médio", "minPercentil": 50, "maxPercentil": 50 },
+      { "classificacao": "Médio Superior", "minPercentil": 60, "maxPercentil": 75 },
+      { "classificacao": "Superior", "minPercentil": 80, "maxPercentil": 99 }
+    ]
+  },
+  "tabelas": {
+    "nacionalGeral": {
+      "tabela": 43,
+      "amostra": "população geral (Brasil)",
+      "n": 3034,
+      "grade": 21,
+      "faixas": "grade21",
+      "normas": [
+        { "percentil": 1, "pontuacao": 10 },
+        { "percentil": 5, "pontuacao": 47 },
+        { "percentil": 10, "pontuacao": 63 },
+        { "percentil": 15, "pontuacao": 73 },
+        { "percentil": 20, "pontuacao": 79 },
+        { "percentil": 25, "pontuacao": 86 },
+        { "percentil": 30, "pontuacao": 91 },
+        { "percentil": 35, "pontuacao": 95 },
+        { "percentil": 40, "pontuacao": 99 },
+        { "percentil": 45, "pontuacao": 103 },
+        { "percentil": 50, "pontuacao": 107 },
+        { "percentil": 55, "pontuacao": 111 },
+        { "percentil": 60, "pontuacao": 115 },
+        { "percentil": 65, "pontuacao": 120 },
+        { "percentil": 70, "pontuacao": 124 },
+        { "percentil": 75, "pontuacao": 130 },
+        { "percentil": 80, "pontuacao": 136 },
+        { "percentil": 85, "pontuacao": 141 },
+        { "percentil": 90, "pontuacao": 148 },
+        { "percentil": 95, "pontuacao": 158 },
+        { "percentil": 99, "pontuacao": 173 }
+      ]
+    },
+    "spGeral": {
+      "tabela": 55,
+      "amostra": "população geral do Estado de São Paulo",
+      "n": 666,
+      "grade": 13,
+      "faixas": "grade13",
+      "ativaNoApp": true,
+      "normas": [
+        { "percentil": 1, "pontuacao": 11 },
+        { "percentil": 10, "pontuacao": 65 },
+        { "percentil": 20, "pontuacao": 80 },
+        { "percentil": 25, "pontuacao": 86 },
+        { "percentil": 30, "pontuacao": 91 },
+        { "percentil": 40, "pontuacao": 100 },
+        { "percentil": 50, "pontuacao": 108 },
+        { "percentil": 60, "pontuacao": 117 },
+        { "percentil": 70, "pontuacao": 126 },
+        { "percentil": 75, "pontuacao": 133 },
+        { "percentil": 80, "pontuacao": 139 },
+        { "percentil": 90, "pontuacao": 148 },
+        { "percentil": 99, "pontuacao": 175 }
+      ]
+    },
+    "nacionalPorIdade": {
+      "tabela": 44,
+      "amostra": "população geral (Brasil) por faixa etária",
+      "grade": 13,
+      "faixas": "grade13",
+      "colunas": ["18-19", "20-29", "30-39", "40-49", "50+"],
+      "normas": [
+        { "percentil": 1, "pontuacoes": { "18-19": 7, "20-29": 3, "30-39": 1, "40-49": -5, "50+": -13 } },
+        { "percentil": 10, "pontuacoes": { "18-19": 69, "20-29": 70, "30-39": 62, "40-49": 51, "50+": 38 } },
+        { "percentil": 20, "pontuacoes": { "18-19": 88, "20-29": 86, "30-39": 78, "40-49": 67, "50+": 56 } },
+        { "percentil": 25, "pontuacoes": { "18-19": 94, "20-29": 91, "30-39": 85, "40-49": 73, "50+": 59 } },
+        { "percentil": 30, "pontuacoes": { "18-19": 99, "20-29": 95, "30-39": 90, "40-49": 78, "50+": 65 } },
+        { "percentil": 40, "pontuacoes": { "18-19": 108, "20-29": 104, "30-39": 97, "40-49": 86, "50+": 74 } },
+        { "percentil": 50, "pontuacoes": { "18-19": 114, "20-29": 111, "30-39": 104, "40-49": 96, "50+": 80 } },
+        { "percentil": 60, "pontuacoes": { "18-19": 123, "20-29": 120, "30-39": 113, "40-49": 102, "50+": 90 } },
+        { "percentil": 70, "pontuacoes": { "18-19": 134, "20-29": 128, "30-39": 120, "40-49": 110, "50+": 96 } },
+        { "percentil": 75, "pontuacoes": { "18-19": 138, "20-29": 133, "30-39": 125, "40-49": 117, "50+": 98 } },
+        { "percentil": 80, "pontuacoes": { "18-19": 140, "20-29": 139, "30-39": 133, "40-49": 123, "50+": 102 } },
+        { "percentil": 90, "pontuacoes": { "18-19": 153, "20-29": 150, "30-39": 147, "40-49": 133, "50+": 114 } },
+        { "percentil": 99, "pontuacoes": { "18-19": 174, "20-29": 174, "30-39": 172, "40-49": 166, "50+": 142 } }
+      ]
+    },
+    "spPorIdade": {
+      "tabela": 56,
+      "amostra": "população geral do Estado de São Paulo por faixa etária",
+      "grade": 13,
+      "faixas": "grade13",
+      "colunas": ["18-19", "20-29", "30-39", "40-49", "50+"],
+      "normas": [
+        { "percentil": 1, "pontuacoes": { "18-19": 8, "20-29": 11, "30-39": 14, "40-49": 13, "50+": 8 } },
+        { "percentil": 10, "pontuacoes": { "18-19": 80, "20-29": 70, "30-39": 64, "40-49": 50, "50+": 36 } },
+        { "percentil": 20, "pontuacoes": { "18-19": 90, "20-29": 86, "30-39": 84, "40-49": 69, "50+": 56 } },
+        { "percentil": 25, "pontuacoes": { "18-19": 95, "20-29": 93, "30-39": 90, "40-49": 75, "50+": 61 } },
+        { "percentil": 30, "pontuacoes": { "18-19": 100, "20-29": 99, "30-39": 96, "40-49": 79, "50+": 71 } },
+        { "percentil": 40, "pontuacoes": { "18-19": 109, "20-29": 107, "30-39": 102, "40-49": 90, "50+": 75 } },
+        { "percentil": 50, "pontuacoes": { "18-19": 118, "20-29": 112, "30-39": 107, "40-49": 99, "50+": 81 } },
+        { "percentil": 60, "pontuacoes": { "18-19": 128, "20-29": 123, "30-39": 117, "40-49": 105, "50+": 88 } },
+        { "percentil": 70, "pontuacoes": { "18-19": 138, "20-29": 131, "30-39": 124, "40-49": 119, "50+": 96 } },
+        { "percentil": 75, "pontuacoes": { "18-19": 140, "20-29": 138, "30-39": 134, "40-49": 123, "50+": 98 } },
+        { "percentil": 80, "pontuacoes": { "18-19": 142, "20-29": 141, "30-39": 138, "40-49": 127, "50+": 99 } },
+        { "percentil": 90, "pontuacoes": { "18-19": 154, "20-29": 151, "30-39": 150, "40-49": 141, "50+": 110 } },
+        { "percentil": 99, "pontuacoes": { "18-19": 178, "20-29": 176, "30-39": 174, "40-49": 166, "50+": 159 } }
+      ]
+    },
+    "nacionalPorEscolaridade": {
+      "tabela": 45,
+      "amostra": "população geral (Brasil) por escolaridade",
+      "grade": 13,
+      "faixas": "grade13",
+      "colunas": ["Fundamental", "Médio", "Superior"],
+      "normas": [
+        { "percentil": 1, "pontuacoes": { "Fundamental": 8, "Médio": 32, "Superior": 46 } },
+        { "percentil": 10, "pontuacoes": { "Fundamental": 50, "Médio": 74, "Superior": 78 } },
+        { "percentil": 20, "pontuacoes": { "Fundamental": 67, "Médio": 87, "Superior": 90 } },
+        { "percentil": 25, "pontuacoes": { "Fundamental": 73, "Médio": 92, "Superior": 97 } },
+        { "percentil": 30, "pontuacoes": { "Fundamental": 77, "Médio": 96, "Superior": 101 } },
+        { "percentil": 40, "pontuacoes": { "Fundamental": 86, "Médio": 103, "Superior": 111 } },
+        { "percentil": 50, "pontuacoes": { "Fundamental": 94, "Médio": 108, "Superior": 119 } },
+        { "percentil": 60, "pontuacoes": { "Fundamental": 101, "Médio": 116, "Superior": 124 } },
+        { "percentil": 70, "pontuacoes": { "Fundamental": 111, "Médio": 127, "Superior": 134 } },
+        { "percentil": 75, "pontuacoes": { "Fundamental": 117, "Médio": 132, "Superior": 138 } },
+        { "percentil": 80, "pontuacoes": { "Fundamental": 122, "Médio": 139, "Superior": 143 } },
+        { "percentil": 90, "pontuacoes": { "Fundamental": 139, "Médio": 150, "Superior": 153 } },
+        { "percentil": 99, "pontuacoes": { "Fundamental": 167, "Médio": 175, "Superior": 178 } }
+      ]
+    },
+    "spPorEscolaridade": {
+      "tabela": 57,
+      "amostra": "população geral do Estado de São Paulo por escolaridade",
+      "grade": 13,
+      "faixas": "grade13",
+      "colunas": ["Fundamental", "Médio", "Superior"],
+      "normas": [
+        { "percentil": 1, "pontuacoes": { "Fundamental": 8, "Médio": 32, "Superior": 46 } },
+        { "percentil": 10, "pontuacoes": { "Fundamental": 48, "Médio": 75, "Superior": 78 } },
+        { "percentil": 20, "pontuacoes": { "Fundamental": 68, "Médio": 88, "Superior": 81 } },
+        { "percentil": 25, "pontuacoes": { "Fundamental": 75, "Médio": 92, "Superior": 97 } },
+        { "percentil": 30, "pontuacoes": { "Fundamental": 80, "Médio": 97, "Superior": 103 } },
+        { "percentil": 40, "pontuacoes": { "Fundamental": 88, "Médio": 104, "Superior": 105 } },
+        { "percentil": 50, "pontuacoes": { "Fundamental": 96, "Médio": 109, "Superior": 116 } },
+        { "percentil": 60, "pontuacoes": { "Fundamental": 105, "Médio": 119, "Superior": 124 } },
+        { "percentil": 70, "pontuacoes": { "Fundamental": 116, "Médio": 129, "Superior": 137 } },
+        { "percentil": 75, "pontuacoes": { "Fundamental": 120, "Médio": 135, "Superior": 144 } },
+        { "percentil": 80, "pontuacoes": { "Fundamental": 124, "Médio": 140, "Superior": 147 } },
+        { "percentil": 90, "pontuacoes": { "Fundamental": 139, "Médio": 151, "Superior": 160 } },
+        { "percentil": 99, "pontuacoes": { "Fundamental": 171, "Médio": 175, "Superior": 178 } }
+      ]
+    }
+  }
+}
