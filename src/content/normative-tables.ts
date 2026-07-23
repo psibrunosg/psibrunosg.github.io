@@ -356,7 +356,27 @@ export const tealtSP: AtencaoNorma[] = [
   { percentil: 99, pontuacao: 128 },
 ];
 
-// Classificação atenção (TEADI / TEALT / TEACO-FF)
+// ============================================================
+// TEACO-FF (Atenção Concentrada) — Normas SP (N=666)
+// Tabela 55: população geral do Estado de São Paulo
+// ============================================================
+export const teacoSP: AtencaoNorma[] = [
+  { percentil: 1,  pontuacao: 11  },
+  { percentil: 10, pontuacao: 65  },
+  { percentil: 20, pontuacao: 80  },
+  { percentil: 25, pontuacao: 86  },
+  { percentil: 30, pontuacao: 91  },
+  { percentil: 40, pontuacao: 100 },
+  { percentil: 50, pontuacao: 108 },
+  { percentil: 60, pontuacao: 117 },
+  { percentil: 70, pontuacao: 126 },
+  { percentil: 75, pontuacao: 133 },
+  { percentil: 80, pontuacao: 139 },
+  { percentil: 90, pontuacao: 148 },
+  { percentil: 99, pontuacao: 175 },
+];
+
+// Classificação atenção — TEADI / TEALT (grade de percentis 1..99, passos de 5)
 export const atencaoClassificacoes = [
   { minPercentil: 0,  maxPercentil: 10, classificacao: "Inferior" },
   { minPercentil: 15, maxPercentil: 40, classificacao: "Médio Inferior" },
@@ -365,12 +385,26 @@ export const atencaoClassificacoes = [
   { minPercentil: 90, maxPercentil: 99, classificacao: "Superior" },
 ] as const;
 
-export function classificarAtencao(pontuacao: number, tabela: AtencaoNorma[]): { percentil: number; classificacao: string } {
+// TEACO-FF (Tabela 55) usa grade de percentis mais grossa e faixas próprias —
+// não reaproveita atencaoClassificacoes. Bandas conferidas vs Tabelas 55/56.
+export const teacoClassificacoes = [
+  { minPercentil: 0,  maxPercentil: 20, classificacao: "Inferior" },
+  { minPercentil: 25, maxPercentil: 40, classificacao: "Médio Inferior" },
+  { minPercentil: 50, maxPercentil: 50, classificacao: "Médio" },
+  { minPercentil: 60, maxPercentil: 75, classificacao: "Médio Superior" },
+  { minPercentil: 80, maxPercentil: 99, classificacao: "Superior" },
+] as const;
+
+export function classificarAtencao(
+  pontuacao: number,
+  tabela: AtencaoNorma[],
+  classificacoes: readonly { minPercentil: number; maxPercentil: number; classificacao: string }[] = atencaoClassificacoes,
+): { percentil: number; classificacao: string } {
   let percentil = 1;
   for (const row of tabela) {
     if (pontuacao >= row.pontuacao) percentil = row.percentil;
   }
-  const classif = atencaoClassificacoes.find((c) => percentil >= c.minPercentil && percentil <= c.maxPercentil);
+  const classif = classificacoes.find((c) => percentil >= c.minPercentil && percentil <= c.maxPercentil);
   return { percentil, classificacao: classif?.classificacao ?? "Médio" };
 }
 
@@ -426,7 +460,7 @@ export function classificarPorFaixa(escore: number, faixas: readonly { min: numb
   return f ?? { classificacao: "Indeterminado", descricao: "" };
 }
 
-export type TesteId = "phq9" | "gad7" | "bai" | "bdi" | "bhs" | "asrs" | "neo-ffi" | "neo-pi" | "g36" | "teadi" | "tealt" | "ysq" | "ypi" | "yci" | "yrai" | "smi";
+export type TesteId = "phq9" | "gad7" | "bai" | "bdi" | "bhs" | "asrs" | "neo-ffi" | "neo-pi" | "g36" | "teadi" | "tealt" | "teaco" | "ysq" | "ypi" | "yci" | "yrai" | "smi";
 
 export const testesDisponiveis: { id: TesteId; sigla: string; nome: string; tipo: "faixa" | "t-score" | "percentil" | "schema" | "threshold" }[] = [
   { id: "phq9",    sigla: "PHQ-9",      nome: "Rastreio de Depressão",                tipo: "faixa" },
@@ -440,6 +474,7 @@ export const testesDisponiveis: { id: TesteId; sigla: string; nome: string; tipo
   { id: "g36",     sigla: "G-36",       nome: "Teste Não Verbal de Inteligência",     tipo: "percentil" },
   { id: "teadi",   sigla: "TEADI",      nome: "Teste de Atenção Dividida",            tipo: "percentil" },
   { id: "tealt",   sigla: "TEALT",      nome: "Teste de Atenção Alternada",           tipo: "percentil" },
+  { id: "teaco",   sigla: "TEACO-FF",   nome: "Teste de Atenção Concentrada",         tipo: "percentil" },
   { id: "ysq",     sigla: "YSQ-S3",     nome: "Questionário de Esquemas de Young",    tipo: "schema" },
   { id: "ypi",     sigla: "YPI",        nome: "Inventário Parental de Young",         tipo: "schema" },
   { id: "smi",     sigla: "SMI",        nome: "Inventário de Modos Esquemáticos",     tipo: "schema" },

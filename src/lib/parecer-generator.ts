@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import {
   classificarPorFaixa, classificarG36, classificarNeoT, calcularTScoreNeoPI,
-  classificarAtencao, teadiSP, tealtSP,
+  classificarAtencao, teadiSP, tealtSP, teacoSP, teacoClassificacoes,
   phq9Faixas, gad7Faixas, baiFaixas, bdiFaixas, bhsFaixas, asrsFaixas,
   neoDominioNomes, neoFacetasNomes, neoFacetasPorDominio,
   type NeoFFIDominio, type NeoSexo, type NeoPISexo, type G36Escolaridade, type TesteId,
@@ -265,6 +265,11 @@ export function processarTeste(t: ResultadoTeste): ResultadoTeste {
     case "tealt": {
       const r = classificarAtencao(escore, tealtSP);
       resultado = { classificacao: r.classificacao, detalhes: `Pontuação: ${escore}. Percentil: ${r.percentil}. Classificação: ${r.classificacao}. (Normas SP)` };
+      break;
+    }
+    case "teaco": {
+      const r = classificarAtencao(escore, teacoSP, teacoClassificacoes);
+      resultado = { classificacao: r.classificacao, detalhes: `Pontuação: ${escore}. Percentil: ${r.percentil}. Classificação: ${r.classificacao}. (Normas SP, N=666)` };
       break;
     }
     case "ysq":
