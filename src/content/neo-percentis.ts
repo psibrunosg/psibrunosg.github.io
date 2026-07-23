@@ -178,13 +178,23 @@ export const neoPercentilPPsFacetasA = [
   55, 60, 65, 70, 75, 80, 85, 90, 95, 99,
 ] as const;
 
+/**
+ * Anexo 7 (facetas de Conscienciosidade): 21 níveis, mesmo eixo do Anexo 4.
+ * As fotos mostram duas linhas rotuladas "61" e "81" entre os múltiplos de
+ * 5, mas elas saem VAZIAS nas 6 facetas nos 3 blocos — é marca de margem
+ * da página, não nível de percentil, então não entram no eixo.
+ */
+export const neoPercentilPPsFacetasC = [
+  1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50,
+  55, 60, 65, 70, 75, 80, 85, 90, 95, 99,
+] as const;
+
 export const neoPercentilPPsPorDominio: Partial<Record<NeoFFIDominio, readonly number[]>> = {
   N: neoPercentilPPsFacetasN,
   E: neoPercentilPPsFacetasE,
   O: neoPercentilPPsFacetasO,
   A: neoPercentilPPsFacetasA,
-  // C: a confirmar (Anexo 7) — a coluna de PP das fotos saiu com "61" e
-  // "81" entre os múltiplos de 5, leitura implausível e não resolvida.
+  C: neoPercentilPPsFacetasC,
 };
 
 /**
@@ -213,6 +223,17 @@ export const neoPercentilFacetas: Partial<Record<NeoPISexo, Record<string, numbe
     E4: [0, 10, 12, 13, 14, 14, 15, 15, 16, 16, 17, 17, 18, 19, 19, 20, 21, 21, 22, 24, 27],
     E5: [0, 12, 14, 15, 16, 17, 17, 18, 18, 19, 19, 20, 21, 21, 22, 22, 23, 24, 25, 26, 29],
     E6: [0, 12, 14, 16, 17, 17, 18, 19, 20, 20, 21, 21, 22, 23, 23, 24, 25, 26, 27, 28, 31],
+    // Anexo 7 (eixo C, 21 níveis). Contiguidade fecha em C1, C2, C3, C4 e C6.
+    // ⚠️ C5: P45 = 18 e P55 = 20 (P50 vazio) — o bruto 19 fica fora de
+    //    qualquer faixa; e P85 = 23 com P90 = 25, deixando o 24 fora.
+    //    Mantidos como impressos; CONFERIR no livro físico.
+    // PP:  1   5  10  15  20  25  30  35  40  45  50  55  60  65  70  75  80  85  90  95  99
+    C1: [0, 15, 16, 17, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 23, 24, 24, 25, 26, 27, 30],
+    C2: [0, 10, 11, 13, 14, 15, 16, 16, 17, 18, 18, 19, 20, 20, 21, 22, 22, 23, 24, 27, 29],
+    C3: [0, 15, 16, 18, 19, 19, 20, 21, 22, 22, 23, 23, 24, 24, 25, 25, 26, 27, 28, 30, 32],
+    C4: [0, 12, 14, 15, 16, 17, 18, 18, 19, 19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 27, 30],
+    C5: [0, 10, 11, 13, 13, 15, 15, 16, 17, 18, 18, 20, 20, 21, 21, 22, 22, 23, 25, 26, 29],
+    C6: [0, 10, 12, 13, 14, 15, 16, 17, 17, 18, 19, 19, 20, 21, 21, 22, 22, 23, 24, 26, 29],
   },
   // Feminino: contiguidade fecha nas 6 facetas, sem gap nem sobreposição.
   feminino: {
@@ -247,6 +268,14 @@ export const neoPercentilFacetas: Partial<Record<NeoPISexo, Record<string, numbe
     A4: [0, 10, 12, 14, 15, 16, 16, 17, 17, 18, 18, 19, 19, 20, 21, 21, 22, 22, 23, 25, 28],
     A5: [0, 12, 14, 15, 16, 16, 17, 17, 18, 19, 19, 19, 20, 20, 21, 21, 22, 23, 24, 25, 27],
     A6: [0, 16, 18, 18, 19, 19, 20, 21, 21, 22, 22, 23, 23, 23, 24, 24, 25, 25, 26, 27, 30],
+    // Anexo 7 (eixo C, 21 níveis). Contiguidade fecha nas 6 facetas.
+    // PP:  1   5  10  15  20  25  30  35  40  45  50  55  60  65  70  75  80  85  90  95  99
+    C1: [0, 15, 17, 18, 18, 19, 20, 20, 21, 21, 22, 22, 22, 23, 23, 24, 24, 25, 25, 27, 29],
+    C2: [0, 9, 11, 13, 14, 15, 16, 17, 18, 18, 19, 20, 20, 21, 22, 22, 23, 24, 25, 27, 30],
+    C3: [0, 16, 18, 19, 20, 21, 22, 22, 23, 23, 24, 24, 25, 25, 26, 26, 27, 27, 28, 29, 31],
+    C4: [0, 12, 14, 16, 17, 18, 18, 19, 19, 20, 20, 20, 21, 21, 22, 22, 23, 24, 25, 26, 28],
+    C5: [0, 9, 11, 13, 15, 15, 16, 17, 18, 19, 19, 20, 20, 21, 22, 23, 23, 24, 25, 26, 30],
+    C6: [0, 9, 10, 12, 13, 14, 15, 16, 16, 17, 18, 19, 20, 20, 21, 22, 22, 23, 24, 26, 29],
   },
   // Geral: contiguidade fecha em N1, N2, N3, N5 e N6.
   // ⚠️ N4: o manual imprime P1 = 0-8 e P5 = 10-11 — o bruto 9 não aparece
@@ -289,6 +318,16 @@ export const neoPercentilFacetas: Partial<Record<NeoPISexo, Record<string, numbe
     A2: [0, 11, 13, 15, 16, 16, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 23, 23, 24, 26, 28],
     A3: [0, 16, 18, 19, 20, 21, 21, 22, 22, 23, 23, 24, 24, 24, 25, 26, 26, 27, 28, 29, 30],
     A6: [0, 16, 18, 18, 19, 19, 20, 21, 21, 22, 22, 23, 23, 23, 24, 24, 25, 25, 26, 27, 30],
+    // Anexo 7 (eixo C, 21 níveis). C1, C2, C3, C5 e C6 fecham contíguas.
+    // C4 NÃO entra: a foto deu P30 e P35 com o mesmo valor impresso (18),
+    // o que o manual não pode conter, e ainda perde o bruto 20 entre
+    // P40 = 19 e P60 = 21. Pendente de recrop em vez de entrar torto.
+    // PP:  1   5  10  15  20  25  30  35  40  45  50  55  60  65  70  75  80  85  90  95  99
+    C1: [0, 15, 17, 18, 18, 19, 20, 20, 21, 21, 22, 22, 22, 23, 23, 24, 24, 25, 25, 27, 29],
+    C2: [0, 9, 11, 13, 14, 15, 16, 17, 17, 18, 19, 19, 20, 21, 21, 22, 23, 24, 25, 27, 30],
+    C3: [0, 15, 17, 19, 19, 20, 21, 22, 23, 23, 24, 24, 24, 25, 26, 26, 27, 27, 28, 29, 31],
+    C5: [0, 10, 11, 13, 14, 15, 16, 17, 18, 18, 19, 20, 20, 21, 22, 22, 23, 24, 25, 26, 29],
+    C6: [0, 9, 11, 12, 13, 14, 15, 16, 17, 18, 18, 19, 20, 20, 21, 22, 22, 23, 24, 26, 29],
   },
 };
 
