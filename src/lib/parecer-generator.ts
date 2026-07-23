@@ -7,6 +7,7 @@ import {
   type NeoFFIDominio, type NeoSexo, type NeoPISexo, type G36Escolaridade, type TesteId,
 } from "@/content/normative-tables";
 import { classificarNeoPITDominio, classificarNeoFFITDominio } from "@/content/neo-tabelas-t";
+import { percentilNeoPIDominio, percentilNeoPIFaceta } from "@/content/neo-percentis";
 import {
   templatesPorTeste, templatesNeoDominio, templatesNeoFaceta, templatesNeoFFIDominio,
 } from "@/content/parecer-templates";
@@ -169,13 +170,17 @@ export function processarTeste(t: ResultadoTeste): ResultadoTeste {
         const bruto = Number(d[dom] ?? 0);
         if (!bruto) continue;
         const { t: tScore, classificacao: cl } = classificarNeoPITDominio(dom, bruto, sexo);
-        linhas.push(`${neoDominioNomes[dom]} (${dom}): bruto=${bruto}, T=${tScore} — ${cl}`);
+        const pd = percentilNeoPIDominio(dom, bruto, sexo);
+        linhas.push(`${neoDominioNomes[dom]} (${dom}): bruto=${bruto}, T=${tScore}, percentil=${pd} — ${cl}`);
         for (const fac of neoFacetasPorDominio[dom]) {
           const fb = Number(d[fac] ?? 0);
           if (!fb) continue;
           const ft = calcularTScoreNeoPI(fac, fb, sexo);
           const fcl = classificarNeoT(ft);
-          linhas.push(`  ${fac} ${neoFacetasNomes[fac]}: bruto=${fb}, T=${ft} — ${fcl}`);
+          // Faceta sem tabela de percentil transcrita devolve null — omite o campo.
+          const pf = percentilNeoPIFaceta(fac, fb, sexo);
+          const pfTxt = pf === null ? "" : `, percentil=${pf}`;
+          linhas.push(`  ${fac} ${neoFacetasNomes[fac]}: bruto=${fb}, T=${ft}${pfTxt} — ${fcl}`);
         }
       }
       resultado = { classificacao: "Ver detalhes", detalhes: linhas.join("\n") || "Preencha os escores T." };
