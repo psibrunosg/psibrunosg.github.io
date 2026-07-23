@@ -132,3 +132,96 @@ if (typeof import.meta !== "undefined" && (import.meta as { env?: { DEV?: boolea
     }
   }
 }
+
+// ============================================================
+// ANEXO 3-7 — Percentis das FACETAS (Forma S)
+// ============================================================
+// ⚠️ O eixo de PP VARIA POR ANEXO — NÃO assumir eixo compartilhado.
+// Confirmado por Bruno no manual: Neuroticismo (Anexo 3) NÃO tem o
+// nível 35; Extroversão (Anexo 4) TEM. Por isso cada domínio guarda o
+// seu próprio eixo, e um domínio sem eixo confirmado devolve null em
+// vez de reusar o de outro.
+//
+// SEMÂNTICA: nas facetas a tabela lista o bruto QUE CAI em cada PP; nem
+// todo bruto aparece (faixa 0-32 sobre 20 níveis). Bruto intermediário
+// arredonda PRA BAIXO, para o nível listado imediatamente inferior —
+// leitura conservadora ("pelo menos o percentil X").
+// Mínimos IGUAIS em PPs vizinhos = nível sem bruto próprio no manual
+// (percentil inalcançável); o lookup varre de trás e devolve o maior PP.
+// ------------------------------------------------------------
+/** Anexo 3 (facetas de Neuroticismo): 20 níveis, SEM o 35, e 95 → 99. */
+export const neoPercentilPPsFacetasN = [
+  1, 5, 10, 15, 20, 25, 30, 40, 45, 50,
+  55, 60, 65, 70, 75, 80, 85, 90, 95, 99,
+] as const;
+
+/**
+ * Eixo de PP por domínio de faceta. Só entra o que foi conferido no
+ * manual — Extroversão tem o nível 35 (Bruno confirmou), então o eixo
+ * do Anexo 4 é diferente e entra quando o crop chegar.
+ */
+export const neoPercentilPPsPorDominio: Partial<Record<NeoFFIDominio, readonly number[]>> = {
+  N: neoPercentilPPsFacetasN,
+  // E: TEM o nível 35 — eixo completo a confirmar com o Anexo 4.
+  // O, A, C: a confirmar (Anexos 5, 6, 7).
+};
+
+/**
+ * Percentis das facetas. PARCIAL — só entra bloco lido e validado.
+ * Feito: Anexo 3 (facetas de Neuroticismo) — MASCULINO, validado nos 6
+ * pelo teste P50 ≈ média do Anexo 1.
+ * Pendente: Anexo 3 Mulheres/Geral e Anexos 4-7 (E, O, A, C).
+ */
+export const neoPercentilFacetas: Partial<Record<NeoPISexo, Record<string, number[]>>> = {
+  masculino: {
+    // PP:  1   5  10  15  20  25  30  40  45  50  55  60  65  70  75  80  85  90  95  99
+    N1: [0, 10, 11, 12, 13, 14, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 22, 24, 27],
+    N2: [0, 7, 8, 9, 10, 11, 11, 12, 13, 13, 14, 14, 15, 16, 17, 17, 18, 20, 22, 25],
+    N3: [0, 6, 8, 9, 10, 11, 13, 13, 14, 14, 15, 16, 16, 17, 18, 19, 20, 21, 23, 28],
+    N4: [0, 9, 11, 12, 13, 13, 14, 15, 16, 17, 17, 18, 19, 19, 20, 21, 23, 23, 24, 27],
+    N5: [0, 8, 9, 10, 11, 12, 14, 14, 15, 16, 17, 17, 17, 18, 19, 20, 21, 22, 24, 28],
+    N6: [0, 4, 6, 7, 8, 9, 10, 10, 11, 12, 13, 13, 14, 15, 15, 17, 18, 19, 20, 24],
+  },
+};
+
+/**
+ * Percentil de uma faceta NEO PI-R (Anexo 3-7, Forma S).
+ * Devolve null se o bloco (sexo/faceta) ainda não foi transcrito —
+ * percentil é empírico, não há como estimar sem a tabela.
+ */
+export function percentilNeoPIFaceta(
+  faceta: string,
+  bruto: number,
+  sexo: NeoPISexo = "geral",
+): number | null {
+  const mins = neoPercentilFacetas[sexo]?.[faceta];
+  const pps = neoPercentilPPsPorDominio[faceta[0] as NeoFFIDominio];
+  if (!mins || !pps) return null;
+  return percentilPorTabela(bruto, mins, pps);
+}
+
+if (typeof import.meta !== "undefined" && (import.meta as { env?: { DEV?: boolean } }).env?.DEV) {
+  for (const [sexo, escalas] of Object.entries(neoPercentilFacetas) as [NeoPISexo, Record<string, number[]>][]) {
+    for (const [k, mins] of Object.entries(escalas)) {
+      const tag = `[Percentil Facetas/${sexo}] ${k}`;
+      const pps = neoPercentilPPsPorDominio[k[0] as NeoFFIDominio];
+      if (!pps) {
+        console.error(`${tag}: eixo de PP do domínio ${k[0]} não confirmado`);
+        continue;
+      }
+      const j50 = pps.indexOf(50);
+      if (mins.length !== pps.length) {
+        console.error(`${tag}: ${mins.length} valores (esperado ${pps.length})`);
+      }
+      for (let i = 1; i < mins.length; i++) {
+        if (mins[i] < mins[i - 1]) {
+          console.error(`${tag}: mínimo cai em PP${pps[i]} (${mins[i]} < ${mins[i - 1]})`);
+        }
+      }
+      const media = neoPIRNormas[sexo]?.[k]?.m;
+      if (media != null && Math.abs(mins[j50] - media) > 3) {
+        console.error(`${tag}: P50 em ${mins[j50]}, média é ${media} (desvio > 3)`);
+      }
+    }
+  }
+}
