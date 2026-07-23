@@ -1585,13 +1585,19 @@ export default function BrunoPainel() {
                           </div>
                         ) : (t.testeId === "neo-pi") ? (
                           <div className="space-y-3">
-                            <p className="text-[10px] text-[var(--c-muted)]">Escores T por domínio e faceta (facetas opcionais)</p>
+                            <p className="text-[10px] text-[var(--c-muted)]">Escores brutos por domínio e faceta (facetas opcionais); o T é calculado pelas normas.</p>
+                            <select value={String(t.dados.sexo ?? "geral")} onChange={(e) => atualizarDadosTeste(idx, "sexo", e.target.value)}
+                              className="w-full rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-3 py-2 text-xs text-[var(--c-text)] focus:outline-none">
+                              <option value="geral">Norma geral</option>
+                              <option value="masculino">Masculino</option>
+                              <option value="feminino">Feminino</option>
+                            </select>
                             {(["N", "E", "O", "A", "C"] as const).map((dom) => (
                               <div key={dom} className="rounded-lg border border-[var(--c-border)]/50 p-3">
                                 <div className="mb-2 flex items-center gap-2">
                                   <span className="text-[10px] font-bold text-[var(--c-accent)]">{dom}</span>
                                   <span className="text-[10px] text-[var(--c-muted)]">{neoDominioNomes[dom]}</span>
-                                  <input type="number" placeholder="T" value={t.dados[dom] ?? ""}
+                                  <input type="number" placeholder="bruto" value={t.dados[dom] ?? ""}
                                     onChange={(e) => atualizarDadosTeste(idx, dom, Number(e.target.value))}
                                     className="ml-auto w-16 rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-2 py-1 text-center text-xs text-[var(--c-text)] focus:outline-none" />
                                 </div>

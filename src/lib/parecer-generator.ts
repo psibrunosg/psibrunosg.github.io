@@ -1,11 +1,13 @@
 import jsPDF from "jspdf";
 import {
-  classificarPorFaixa, classificarG36, classificarNeoT, calcularTScoreNeoFFI,
+  classificarPorFaixa, classificarG36, classificarNeoT, calcularTScoreNeoPI,
   classificarAtencao, teadiSP, tealtSP,
   phq9Faixas, gad7Faixas, baiFaixas, bdiFaixas, bhsFaixas, asrsFaixas,
   neoDominioNomes, neoFacetasNomes, neoFacetasPorDominio,
-  type NeoFFIDominio, type NeoSexo, type G36Escolaridade, type TesteId,
+  type NeoFFIDominio, type NeoSexo, type NeoPISexo, type G36Escolaridade, type TesteId,
 } from "@/content/normative-tables";
+import { classificarNeoPITDominio, classificarNeoFFITDominio } from "@/content/neo-tabelas-t";
+import { percentilNeoPIDominio, percentilNeoPIFaceta } from "@/content/neo-percentis";
 import {
   templatesPorTeste, templatesNeoDominio, templatesNeoFaceta, templatesNeoFFIDominio,
 } from "@/content/parecer-templates";
@@ -29,40 +31,112 @@ export interface ResultadoTeste {
   textoEditado?: boolean;
 }
 
+const NEO_DOMINIOS: NeoFFIDominio[] = ["N", "E", "O", "A", "C"];
+const NEO_ELEVADAS = new Set(["Alto", "Muito Alto"]);
+const NEO_REDUZIDAS = new Set(["Baixo", "Muito Baixo"]);
+
+/**
+ * Prepara o fragmento de faceta pra entrar no meio de uma frase: tira o ponto
+ * final e baixa a inicial. Sigla (duas maiúsculas seguidas) fica intacta.
+ */
+function fragmentoEmFrase(s: string): string {
+  const semPonto = s.replace(/\s*\.\s*$/, "");
+  if (/^\p{Lu}\p{Lu}/u.test(semPonto)) return semPonto;
+  return semPonto.charAt(0).toLowerCase() + semPonto.slice(1);
+}
+
+/** "A", "A e B", "A, B e C" — enumeração corrida, sem vírgula antes do "e". */
+function enumerar(itens: string[]): string {
+  if (itens.length <= 1) return itens[0] ?? "";
+  return `${itens.slice(0, -1).join(", ")} e ${itens[itens.length - 1]}`;
+}
+
+type FacetaLida = { rotulo: string; nome: string; ordem: number; classificacao: string; frase: string };
+
+/**
+ * Costura as facetas de um domínio em prosa. Só nomeia o que foge da média —
+ * listar seis facetas "dentro do esperado" enfraquece o texto e esconde o que
+ * de fato distingue o perfil. As médias entram apenas como contagem de fecho.
+ */
+function narrarFacetas(lidas: FacetaLida[]): string[] {
+  if (!lidas.length) return [];
+  const frases: string[] = [];
+  const altas = lidas.filter((f) => NEO_ELEVADAS.has(f.classificacao)).sort((a, b) => b.ordem - a.ordem);
+  const baixas = lidas.filter((f) => NEO_REDUZIDAS.has(f.classificacao)).sort((a, b) => a.ordem - b.ordem);
+  const medias = lidas.length - altas.length - baixas.length;
+  const marcar = (f: FacetaLida) => `${f.nome} (${f.rotulo})`;
+  const juntar = (fs: FacetaLida[]) => fs.map((f) => fragmentoEmFrase(f.frase)).join("; ");
+
+  if (altas.length) {
+    frases.push(`${altas.length > 1 ? "Sobressaem" : "Sobressai"} ${enumerar(altas.map(marcar))}: ${juntar(altas)}.`);
+  }
+  if (baixas.length) {
+    const abertura = altas.length ? "No sentido oposto" : "Abaixo da média";
+    frases.push(`${abertura}, ${enumerar(baixas.map(marcar))}: ${juntar(baixas)}.`);
+  }
+  if (!altas.length && !baixas.length) {
+    frases.push(medias === 1
+      ? "A faceta avaliada situa-se na faixa média."
+      : `As ${medias} facetas avaliadas situam-se na faixa média, sem dissociação interna relevante.`);
+  } else if (medias) {
+    frases.push(medias === 1
+      ? "A faceta restante situa-se na faixa média."
+      : `As outras ${medias} facetas situam-se na faixa média.`);
+  }
+  return frases;
+}
+
 function gerarTextoInterpretativo(testeId: string, classificacao: string, dados: Record<string, string | number>): string {
   if (testeId === "neo-pi") {
-    const partes: string[] = [];
-    const dominios: NeoFFIDominio[] = ["N", "E", "O", "A", "C"];
-    for (const dom of dominios) {
-      const tScore = Number(dados[dom] ?? 0);
-      if (!tScore) continue;
-      const cl = classificarNeoT(tScore);
-      const tpl = templatesNeoDominio[dom]?.[cl];
-      if (tpl) partes.push(tpl);
+    const blocos: string[] = [];
+    const sexo = (dados.sexo as NeoPISexo) || "geral";
+    for (const dom of NEO_DOMINIOS) {
+      const bruto = Number(dados[dom] ?? 0);
+      if (!bruto) continue;
+      const { t: tDom, classificacao: cl } = classificarNeoPITDominio(dom, bruto, sexo);
+      const pDom = percentilNeoPIDominio(dom, bruto, sexo);
+      const linhas = [`${neoDominioNomes[dom].toUpperCase()} — ${cl.toLowerCase()} (percentil ${pDom}, T ${tDom}).`];
+
+      const lidas: FacetaLida[] = [];
       for (const fac of neoFacetasPorDominio[dom]) {
-        const ft = Number(dados[fac] ?? 0);
-        if (!ft) continue;
+        const fb = Number(dados[fac] ?? 0);
+        if (!fb) continue;
+        const ft = calcularTScoreNeoPI(fac, fb, sexo);
         const fcl = classificarNeoT(ft);
-        const ftpl = templatesNeoFaceta[fac]?.[fcl];
-        if (ftpl) partes.push(`  ${fac} (${neoFacetasNomes[fac]}): ${ftpl}`);
+        const frase = templatesNeoFaceta[fac]?.[fcl];
+        if (!frase) continue;
+        // Sem tabela de percentil transcrita a faceta é ancorada pelo T, não omitida.
+        const pFac = percentilNeoPIFaceta(fac, fb, sexo);
+        lidas.push({
+          rotulo: pFac === null ? `T ${ft}` : `P${pFac}`,
+          nome: neoFacetasNomes[fac] ?? fac,
+          ordem: pFac ?? ft,
+          classificacao: fcl,
+          frase,
+        });
       }
+
+      const corpo = [templatesNeoDominio[dom]?.[cl], ...narrarFacetas(lidas)].filter(Boolean).join(" ");
+      if (corpo) linhas.push(corpo);
+      blocos.push(linhas.join("\n"));
     }
-    return partes.join("\n") || "Preencha os escores T para gerar o texto interpretativo.";
+    return blocos.join("\n\n") || "Preencha os escores brutos para gerar o texto interpretativo.";
   }
 
   if (testeId === "neo-ffi") {
-    const partes: string[] = [];
+    const blocos: string[] = [];
     const sexo = (dados.sexo as NeoSexo) || "combinado";
-    const dominios: NeoFFIDominio[] = ["N", "E", "O", "A", "C"];
-    for (const dom of dominios) {
+    const sexoT = sexo === "combinado" ? "geral" : sexo;
+    for (const dom of NEO_DOMINIOS) {
       const bruto = Number(dados[dom] ?? 0);
       if (!bruto) continue;
-      const t = calcularTScoreNeoFFI(dom, bruto, sexo);
-      const cl = classificarNeoT(t);
+      const { t: tDom, classificacao: cl } = classificarNeoFFITDominio(dom, bruto, sexoT);
       const tpl = templatesNeoFFIDominio[dom]?.[cl];
-      if (tpl) partes.push(tpl);
+      if (!tpl) continue;
+      // O FFI-R não tem tabela de percentil transcrita: só o T ancora o escore.
+      blocos.push(`${neoDominioNomes[dom].toUpperCase()} — ${cl.toLowerCase()} (T ${tDom}).\n${tpl}`);
     }
-    return partes.join("\n") || "Preencha os escores brutos para gerar o texto interpretativo.";
+    return blocos.join("\n\n") || "Preencha os escores brutos para gerar o texto interpretativo.";
   }
 
   // Schema / threshold — texto gerado diretamente pelo caller, não via template.
@@ -152,26 +226,32 @@ export function processarTeste(t: ResultadoTeste): ResultadoTeste {
       const linhas = dominios.map((dom) => {
         const bruto = Number(d[dom] ?? 0);
         if (!bruto) return null;
-        const tVal = calcularTScoreNeoFFI(dom, bruto, sexo);
-        const cl = classificarNeoT(tVal);
+        const sexoT = sexo === "combinado" ? "geral" : sexo;
+        const { t: tVal, classificacao: cl } = classificarNeoFFITDominio(dom, bruto, sexoT);
         return `${neoDominioNomes[dom]}: bruto=${bruto}, T=${tVal} (${cl})`;
       }).filter(Boolean);
       resultado = { classificacao: "Ver detalhes", detalhes: linhas.join("\n") };
       break;
     }
     case "neo-pi": {
+      const sexo = (d.sexo as NeoPISexo) || "geral";
       const dominios: NeoFFIDominio[] = ["N", "E", "O", "A", "C"];
       const linhas: string[] = [];
       for (const dom of dominios) {
-        const tScore = Number(d[dom] ?? 0);
-        if (!tScore) continue;
-        const cl = classificarNeoT(tScore);
-        linhas.push(`${neoDominioNomes[dom]} (${dom}): T=${tScore} — ${cl}`);
+        const bruto = Number(d[dom] ?? 0);
+        if (!bruto) continue;
+        const { t: tScore, classificacao: cl } = classificarNeoPITDominio(dom, bruto, sexo);
+        const pd = percentilNeoPIDominio(dom, bruto, sexo);
+        linhas.push(`${neoDominioNomes[dom]} (${dom}): bruto=${bruto}, T=${tScore}, percentil=${pd} — ${cl}`);
         for (const fac of neoFacetasPorDominio[dom]) {
-          const ft = Number(d[fac] ?? 0);
-          if (!ft) continue;
+          const fb = Number(d[fac] ?? 0);
+          if (!fb) continue;
+          const ft = calcularTScoreNeoPI(fac, fb, sexo);
           const fcl = classificarNeoT(ft);
-          linhas.push(`  ${fac} ${neoFacetasNomes[fac]}: T=${ft} — ${fcl}`);
+          // Faceta sem tabela de percentil transcrita devolve null — omite o campo.
+          const pf = percentilNeoPIFaceta(fac, fb, sexo);
+          const pfTxt = pf === null ? "" : `, percentil=${pf}`;
+          linhas.push(`  ${fac} ${neoFacetasNomes[fac]}: bruto=${fb}, T=${ft}${pfTxt} — ${fcl}`);
         }
       }
       resultado = { classificacao: "Ver detalhes", detalhes: linhas.join("\n") || "Preencha os escores T." };

@@ -63,41 +63,45 @@ export const templatesPorTeste: Record<string, Record<string, string>> = {
 };
 
 // NEO — textos interpretativos por domínio × classificação
+// O montador (gerarTextoInterpretativo) já imprime o nome do domínio, a
+// classificação e o percentil num cabeçalho próprio. Por isso estes textos
+// entram direto no que o escore diz sobre a pessoa, sem repetir "o escore
+// foi alto, indicando...". Tom assertivo por decisão do Bruno.
 export const templatesNeoDominio: Record<string, Record<string, string>> = {
   N: {
-    "Muito Baixo": "O domínio Neuroticismo apresentou escore muito baixo, indicando notável estabilidade emocional. O(a) avaliando(a) tende a ser emocionalmente equilibrado(a), calmo(a) e resiliente diante de estressores.",
-    "Baixo": "O escore baixo em Neuroticismo sugere boa estabilidade emocional. O(a) avaliando(a) demonstra adequada regulação afetiva e menor vulnerabilidade ao estresse.",
-    "Médio": "O Neuroticismo situa-se na faixa média, indicando padrão emocional dentro do esperado para a população de referência.",
-    "Alto": "O escore alto em Neuroticismo indica tendência a experienciar emoções negativas com maior intensidade e frequência, incluindo ansiedade, irritabilidade e instabilidade emocional.",
-    "Muito Alto": "O Neuroticismo apresentou escore muito alto, sugerindo vulnerabilidade emocional significativa, com propensão acentuada a ansiedade, humor depressivo e dificuldades de regulação afetiva.",
+    "Muito Baixo": "A estabilidade emocional é notável. O(a) avaliando(a) mantém-se calmo(a) e equilibrado(a) sob pressão e se recupera rápido de estressores, com pouca reverberação afetiva.",
+    "Baixo": "A regulação afetiva é consistente. O(a) avaliando(a) tolera bem frustração e apresenta baixa vulnerabilidade ao estresse.",
+    "Médio": "O padrão emocional acompanha o da população de referência: há reatividade a estressores, sem que ela comprometa o funcionamento.",
+    "Alto": "O(a) avaliando(a) experiencia emoções negativas com intensidade e frequência acima da média. Ansiedade, irritabilidade e oscilação de humor integram o funcionamento cotidiano.",
+    "Muito Alto": "Há vulnerabilidade emocional significativa. Ansiedade, humor depressivo e dificuldade de regulação afetiva aparecem de forma acentuada e interferem no funcionamento.",
   },
   E: {
-    "Muito Baixo": "A Extroversão apresentou escore muito baixo, indicando forte preferência por solidão e ambientes tranquilos. O(a) avaliando(a) tende a ser introspectivo(a) e reservado(a).",
-    "Baixo": "O escore baixo em Extroversão sugere tendência à introversão, com preferência por atividades individuais e círculos sociais reduzidos.",
-    "Médio": "A Extroversão situa-se na faixa média, indicando equilíbrio entre sociabilidade e necessidade de tempo pessoal.",
-    "Alto": "O escore alto em Extroversão indica pessoa sociável, assertiva e energética, com tendência a buscar estimulação social e experiências ativas.",
-    "Muito Alto": "A Extroversão apresentou escore muito alto, sugerindo forte orientação interpessoal, alta assertividade e busca constante de estimulação social.",
+    "Muito Baixo": "O(a) avaliando(a) prefere a solidão e ambientes tranquilos. É introspectivo(a) e reservado(a), e o contato social prolongado consome mais energia do que repõe.",
+    "Baixo": "O funcionamento é introvertido. O(a) avaliando(a) prioriza atividades individuais e mantém círculo social reduzido, por preferência e não por dificuldade.",
+    "Médio": "Sociabilidade e necessidade de tempo pessoal se equilibram: o(a) avaliando(a) transita entre os dois sem custo relevante.",
+    "Alto": "O(a) avaliando(a) é sociável, assertivo(a) e energético(a). Busca ativamente estimulação social e funciona bem em contextos de grupo.",
+    "Muito Alto": "A orientação interpessoal é forte e constante. O(a) avaliando(a) exerce assertividade com naturalidade e busca estimulação social de modo persistente.",
   },
   O: {
-    "Muito Baixo": "A Abertura à Experiência apresentou escore muito baixo, indicando forte preferência pelo familiar e convencional. O(a) avaliando(a) tende a valorizar tradição e estabilidade.",
-    "Baixo": "O escore baixo em Abertura sugere preferência por abordagens práticas e concretas, com menor interesse por questões abstratas ou artísticas.",
-    "Médio": "A Abertura à Experiência situa-se na faixa média, indicando equilíbrio entre curiosidade intelectual e pragmatismo.",
-    "Alto": "O escore alto em Abertura indica curiosidade intelectual, sensibilidade estética e receptividade a novas ideias e experiências.",
-    "Muito Alto": "A Abertura apresentou escore muito alto, sugerindo forte criatividade, rica vida imaginativa e acentuada sensibilidade estética e intelectual.",
+    "Muito Baixo": "O(a) avaliando(a) prefere o familiar e o convencional. Valoriza tradição e estabilidade, e vê pouco ganho em revisar o que já está resolvido.",
+    "Baixo": "A abordagem é prática e concreta. O(a) avaliando(a) tem menor interesse por questões abstratas ou artísticas e privilegia o que tem aplicação direta.",
+    "Médio": "Curiosidade intelectual e pragmatismo aparecem em proporção equivalente: o(a) avaliando(a) se abre ao novo sem abrir mão do que já funciona.",
+    "Alto": "O(a) avaliando(a) é intelectualmente curioso(a), sensível esteticamente e receptivo(a) a ideias e experiências novas.",
+    "Muito Alto": "A vida imaginativa é rica e a sensibilidade estética e intelectual é acentuada. O(a) avaliando(a) busca o novo de forma ativa e produz a partir dele.",
   },
   A: {
-    "Muito Baixo": "A Amabilidade apresentou escore muito baixo, indicando postura competitiva e independente nas relações interpessoais, com tendência ao ceticismo em relação às intenções alheias.",
-    "Baixo": "O escore baixo em Amabilidade sugere postura mais crítica e assertiva nas relações, priorizando interesses pessoais sobre a harmonia grupal.",
-    "Médio": "A Amabilidade situa-se na faixa média, indicando equilíbrio entre cooperação e assertividade nas relações interpessoais.",
-    "Alto": "O escore alto em Amabilidade indica pessoa cooperativa, empática e sensível às necessidades dos outros, valorizando harmonia nas relações.",
-    "Muito Alto": "A Amabilidade apresentou escore muito alto, sugerindo forte orientação prossocial, confiança nas pessoas e disposição acentuada para ceder e cooperar.",
+    "Muito Baixo": "As relações são conduzidas em chave competitiva e independente. O(a) avaliando(a) mantém ceticismo quanto às intenções alheias e não cede terreno com facilidade.",
+    "Baixo": "A postura relacional é crítica e assertiva. O(a) avaliando(a) sustenta os próprios interesses quando eles colidem com a harmonia do grupo.",
+    "Médio": "Cooperação e assertividade se equilibram: o(a) avaliando(a) coopera sem abrir mão de posição própria.",
+    "Alto": "O(a) avaliando(a) é cooperativo(a) e empático(a), atento(a) às necessidades dos outros e ativo(a) na preservação da harmonia relacional.",
+    "Muito Alto": "A orientação prossocial é forte. O(a) avaliando(a) confia nas pessoas e cede com facilidade — disposição que favorece o vínculo e pede atenção quanto à própria delimitação.",
   },
   C: {
-    "Muito Baixo": "A Conscienciosidade apresentou escore muito baixo, indicando tendência à desorganização e dificuldade com planejamento, disciplina e metas de longo prazo.",
-    "Baixo": "O escore baixo em Conscienciosidade sugere estilo mais flexível e espontâneo, com menor ênfase em organização e cumprimento rigoroso de obrigações.",
-    "Médio": "A Conscienciosidade situa-se na faixa média, indicando nível adequado de organização, responsabilidade e orientação para objetivos.",
-    "Alto": "O escore alto em Conscienciosidade indica pessoa organizada, disciplinada e orientada para realizações, com forte senso de dever.",
-    "Muito Alto": "A Conscienciosidade apresentou escore muito alto, sugerindo elevado nível de autodisciplina, perfeccionismo e forte orientação para metas e desempenho.",
+    "Muito Baixo": "Planejamento, disciplina e metas de longo prazo são áreas de dificuldade. A desorganização é consistente e gera custo prático.",
+    "Baixo": "O estilo é flexível e espontâneo. O(a) avaliando(a) dá menos ênfase a organização e ao cumprimento rigoroso de obrigações.",
+    "Médio": "Organização, responsabilidade e orientação para objetivos estão em nível adequado ao funcionamento cotidiano.",
+    "Alto": "O(a) avaliando(a) é organizado(a), disciplinado(a) e orientado(a) para realizações, com senso de dever bem estabelecido.",
+    "Muito Alto": "A autodisciplina é elevada e a orientação para metas e desempenho é forte, com traço perfeccionista — configuração que sustenta alto rendimento e cobra custo em flexibilidade.",
   },
 };
 
