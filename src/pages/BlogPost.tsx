@@ -6,8 +6,10 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { Element as HastElement } from "hast";
 import { RichBlock, LINGUAGENS_RICAS } from "@/components/blog/RichBlock";
+import { GlossarioTermo } from "@/components/blog/GlossarioTermo";
 import { getPost, loadDynamicPosts, isDynamicLoaded, type BlogPost as BlogPostType } from "@/content/posts-loader";
 import { areaDe } from "@/content/areas-blog";
+import { GLOSSARIO } from "@/content/glossario";
 import { MobileMenu } from "@/components/ui/MobileMenu";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
 import { SkipLink } from "@/components/shared/SkipLink";
@@ -52,6 +54,58 @@ function textoDe(node: ReactNode): string {
     return textoDe((node as { props?: { children?: ReactNode } }).props?.children);
   }
   return "";
+}
+
+// Build regex for glossary term matching: longest terms first to avoid partial matches
+function construirRegexGlossario(): RegExp {
+  const termosSordenados = [...GLOSSARIO].sort((a, b) => b.termo.length - a.termo.length);
+  const padrao = termosSordenados.map((g) => g.termo.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+  return new RegExp(`(${padrao})`, "gi");
+}
+
+const REGEX_GLOSSARIO = construirRegexGlossario();
+
+// Highlight glossary terms in ReactNode children
+function destacarTermos(node: ReactNode, depth = 0): ReactNode {
+  if (depth > 10) return node; // Prevent infinite recursion
+  if (node == null) return null;
+
+  // Plain string: split by glossary terms and wrap matches with GlossarioTermo
+  if (typeof node === "string") {
+    const parts = node.split(REGEX_GLOSSARIO);
+    if (parts.length === 1) return node; // No match found
+
+    return parts.map((part, i) => {
+      if (!part) return null; // Empty string from split
+
+      // Check if this part is a glossary term (case-insensitive match)
+      const glossarioEntry = GLOSSARIO.find(
+        (g) => g.termo.toLowerCase() === part.toLowerCase()
+      );
+
+      if (glossarioEntry) {
+        return (
+          <GlossarioTermo
+            key={`glossario-${i}`}
+            termo={glossarioEntry.termo}
+            definicao={glossarioEntry.definicao}
+          >
+            {part}
+          </GlossarioTermo>
+        );
+      }
+      return part;
+    });
+  }
+
+  // Array of nodes: recursively process each
+  if (Array.isArray(node)) {
+    return node.map((child, i) => (
+      <span key={i}>{destacarTermos(child, depth + 1)}</span>
+    ));
+  }
+
+  return node;
 }
 
 const CALLOUTS: Record<string, { Icon: typeof KeyRound }> = {
@@ -112,6 +166,29 @@ export default function BlogPost() {
     return () => window.removeEventListener("scroll", onScroll);
   }, [post]);
 
+  // JSON-LD (Schema.org Article) para SEO / E-E-A-T. Injeta no <head> e remove ao sair.
+  useEffect(() => {
+    if (!post) return;
+    const url = `${window.location.origin}/blog/${post.slug}`;
+    const ld = {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: post.titulo,
+      description: post.subtitulo || post.resumo,
+      inLanguage: "pt-BR",
+      articleSection: post.categoria,
+      keywords: post.tags?.join(", "),
+      mainEntityOfPage: { "@type": "WebPage", "@id": url },
+      author: { "@type": "Person", name: contato.nome, jobTitle: "Psicólogo", identifier: contato.crp, address: contato.cidade },
+      publisher: { "@type": "Person", name: contato.nome },
+    };
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.text = JSON.stringify(ld);
+    document.head.appendChild(script);
+    return () => { document.head.removeChild(script); };
+  }, [post]);
+
   if (loading) return <div className="flex min-h-screen items-center justify-center bg-[var(--c-bg)]"><p className="text-[var(--c-muted)]">Carregando...</p></div>;
   if (!post) return <Navigate to="/blog" replace />;
 
@@ -132,7 +209,7 @@ export default function BlogPost() {
         <div className="max-w-2xl mx-auto">
           <Link
             to="/blog"
-            className="inline-flex items-center gap-2 text-sm text-[var(--c-muted)] hover:text-[var(--c-accent)] transition-colors mb-10"
+            className="inline-flex items-center gap-2 text-sm text-[var(--c-muted)] hover:text-[var(--c-accent)] transition-colors mb-10 py-2 min-h-[44px]"
           >
             <ArrowLeft size={16} />
             Todos os artigos
@@ -264,6 +341,8 @@ export default function BlogPost() {
                       </blockquote>
                     );
                   },
+                  p: ({ children }) => <p>{destacarTermos(children)}</p>,
+                  li: ({ children }) => <li>{destacarTermos(children)}</li>,
                 }}
               >
                 {post.conteudo}
@@ -287,9 +366,18 @@ export default function BlogPost() {
               </motion.div>
             )}
 
+            <motion.div variants={fadeUp} className="mt-12 flex items-center gap-4 rounded-2xl border border-[var(--c-border)] bg-[var(--c-surface)] p-5">
+              <img src={contato.foto} alt={contato.nome} className="h-14 w-14 flex-shrink-0 rounded-full object-cover" loading="lazy" />
+              <div>
+                <p className="mb-0.5 text-xs font-bold uppercase tracking-wider" style={{ color: cor }}>Sobre o autor</p>
+                <p className="text-sm font-semibold text-[var(--c-text)]">{contato.nome} <span className="font-normal text-[var(--c-muted)]">· {contato.crp}</span></p>
+                <p className="mt-1 text-xs leading-relaxed text-[var(--c-muted)]">Psicólogo clínico · TCC e Terapia do Esquema. {contato.modalidade}.</p>
+              </div>
+            </motion.div>
+
             <motion.div
               variants={fadeUp}
-              className="mt-12 rounded-2xl bg-[var(--c-bg-dark)] text-white p-8 text-center"
+              className="mt-6 rounded-2xl bg-[var(--c-bg-dark)] text-white p-8 text-center"
             >
               <p className="text-2xl font-light mb-4" style={{ fontFamily: "var(--font-display)" }}>
                 Quer conversar sobre isso?

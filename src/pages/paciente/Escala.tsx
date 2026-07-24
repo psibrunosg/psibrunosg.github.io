@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Link, useParams, useSearchParams, Navigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ChevronRight, ChevronLeft, User, Check, ClipboardList, AlertTriangle, Loader2 } from "lucide-react";
 import { salvarResposta } from "@/lib/supabase";
 import { escalas } from "@/content/escalas";
@@ -107,6 +107,9 @@ export default function Escala() {
   const [atual, setAtual] = useState(0);
   const [erroEnvio, setErroEnvio] = useState("");
   const [rovingIndex, setRovingIndex] = useState(0);
+  const [crossedMilestones, setCrossedMilestones] = useState<Set<number>>(new Set());
+  const [showMilestonePulse, setShowMilestonePulse] = useState<number | null>(null);
+  const reducedMotion = useReducedMotion();
   const questionHeadingRef = useRef<HTMLHeadingElement>(null);
   const optionRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -118,6 +121,7 @@ export default function Escala() {
     return config.itens.length;
   }, [config]);
   const total = itensBase * numRodadas;
+  const pct = total > 0 ? Math.round(((atual + 1) / total) * 100) : 0;
 
   useEffect(() => {
     if (total > 0) setRespostas(Array(total).fill(null));
@@ -189,6 +193,20 @@ export default function Escala() {
       questionHeadingRef.current.focus({ preventScroll: true });
     }
   }, [atual, etapa]);
+
+  // Milestone pulse animation (25%, 50%, 75%, 100%)
+  useEffect(() => {
+    if (etapa !== "form") return;
+    const milestones = [25, 50, 75, 100];
+    for (const milestone of milestones) {
+      if (pct >= milestone && !crossedMilestones.has(milestone)) {
+        setCrossedMilestones((prev) => new Set([...prev, milestone]));
+        setShowMilestonePulse(milestone);
+        setTimeout(() => setShowMilestonePulse(null), 800);
+        break;
+      }
+    }
+  }, [pct, etapa, crossedMilestones]);
 
   if (!config) return <Navigate to="/paciente" replace />;
 
@@ -315,7 +333,6 @@ export default function Escala() {
   }
 
   const isBDI = isEscalaGeral(config) && config.tipo === "likert-statements";
-  const pct = total > 0 ? Math.round(((atual + 1) / total) * 100) : 0;
 
   return (
     <div className="relative flex min-h-screen flex-col" data-theme="lobo">
@@ -545,8 +562,23 @@ export default function Escala() {
                   <span className="tabular-nums">Pergunta {atual + 1} de {total}</span>
                   <span className="tabular-nums text-[var(--c-accent)]">{pct}%</span>
                 </div>
-                <div className="mb-6 h-2 overflow-hidden rounded-full bg-[var(--c-border)]" role="progressbar" aria-valuenow={atual + 1} aria-valuemin={1} aria-valuemax={total} aria-label="Progresso do questionário">
+                <div className="mb-6 relative h-2 overflow-visible rounded-full bg-[var(--c-border)]" role="progressbar" aria-valuenow={atual + 1} aria-valuemin={1} aria-valuemax={total} aria-label="Progresso do questionário">
                   <div className="h-full w-full rounded-full transition-transform duration-300 ease-out" style={{ transform: `scaleX(${pct / 100})`, transformOrigin: "left", background: "linear-gradient(90deg, var(--c-accent), var(--c-accent-lt))" }} />
+                  <AnimatePresence>
+                    {showMilestonePulse !== null && !reducedMotion && (
+                      <motion.div
+                        key={`milestone-${showMilestonePulse}`}
+                        initial={{ scale: 0.8, opacity: 1 }}
+                        animate={{ scale: 1.2, opacity: 0 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
+                        className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full pointer-events-none"
+                        style={{ background: "var(--c-accent)" }}
+                      >
+                        <Check size={10} className="text-white" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {rodadaLabel && (

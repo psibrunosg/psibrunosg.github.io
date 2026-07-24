@@ -5,6 +5,7 @@ import { MobileMenu } from "@/components/ui/MobileMenu";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
 import { SkipLink } from "@/components/shared/SkipLink";
 import { WhatsAppFloat } from "@/components/shared/WhatsAppFloat";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { contato } from "@/content/copy";
 
 interface ExercicioShellProps {
@@ -30,12 +31,13 @@ export function ExercicioShell({ titulo, subtitulo, tempo, children, theme = "c"
       <SkipLink />
       <MobileMenu items={navItems} crp={contato.crp} whatsappLink={contato.whatsappLink} />
       <WhatsAppFloat />
+      <ThemeToggle />
 
-      <main id="main" className="min-h-screen bg-[var(--c-bg)] pt-28 pb-24 px-6" data-theme={theme}>
+      <main id="main" className="min-h-screen bg-[var(--c-bg)] pt-28 pb-24 px-6 transition-colors duration-300" data-theme={theme}>
         <div className="max-w-2xl mx-auto">
           <Link
             to="/exercicios"
-            className="inline-flex items-center gap-2 text-sm text-[var(--c-muted)] hover:text-[var(--c-accent)] transition-colors mb-12"
+            className="inline-flex items-center gap-2 text-sm text-[var(--c-muted)] hover:text-[var(--c-accent)] transition-colors mb-12 py-2 min-h-[44px]"
           >
             <ArrowLeft size={16} />
             Voltar aos exercícios

@@ -1,4 +1,4 @@
-﻿import { motion, useMotionValue, useSpring } from "framer-motion";
+﻿import { motion, useMotionValue, useSpring, useReducedMotion } from "framer-motion";
 import { useRef } from "react";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +16,7 @@ export function AnimatedCTA({ href, label, sublabel, sublabelClassName, classNam
   const y = useMotionValue(0);
   const sx = useSpring(x, { stiffness: 200, damping: 20 });
   const sy = useSpring(y, { stiffness: 200, damping: 20 });
+  const reduce = useReducedMotion();
 
   const onMouseMove = (e: React.MouseEvent) => {
     const rect = ref.current!.getBoundingClientRect();
@@ -26,6 +27,16 @@ export function AnimatedCTA({ href, label, sublabel, sublabelClassName, classNam
 
   return (
     <div className={cn("flex flex-col items-center gap-2", className)}>
+      <div className="relative">
+        {!reduce && (
+          <motion.span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 rounded-full"
+            style={{ background: "var(--c-accent)" }}
+            animate={{ scale: [1, 1.12, 1], opacity: [0.3, 0, 0.3] }}
+            transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+          />
+        )}
       <motion.a
         ref={ref}
         href={href}
@@ -55,6 +66,7 @@ export function AnimatedCTA({ href, label, sublabel, sublabelClassName, classNam
         />
         <span className="relative z-10">{label}</span>
       </motion.a>
+      </div>
       {sublabel && (
         <span className={cn("text-xs", sublabelClassName ?? "text-[var(--c-muted)]")}>
           {sublabel}

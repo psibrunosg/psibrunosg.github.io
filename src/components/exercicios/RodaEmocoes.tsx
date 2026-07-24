@@ -1,8 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useExerciseSession } from "@/hooks/useExerciseSession";
+import CheckinEmoji from "./CheckinEmoji";
+import ReflexaoPosExercicio from "./ReflexaoPosExercicio";
 
-type Fase = "nomeacao" | "resultado";
+type Fase = "checkin" | "nomeacao" | "resultado" | "reflexao";
 
 const EMOCOES = [
   { nome: "Alegria", cor: "#22c55e", nuances: ["Contentamento", "Orgulho", "Entusiasmo", "Gratidão"] },
@@ -14,8 +17,10 @@ const EMOCOES = [
 ];
 
 export default function RodaEmocoes() {
+  const navigate = useNavigate();
   const { save, complete } = useExerciseSession("roda-emocoes");
-  const [fase, setFase] = useState<Fase>("nomeacao");
+  const [fase, setFase] = useState<Fase>("checkin");
+  const [checkin, setCheckin] = useState<string | null>(null);
   const [emocaoAtual, setEmocaoAtual] = useState<string | null>(null);
   const [nuanceAtual, setNuanceAtual] = useState<string | null>(null);
   const [intensidade, setIntensidade] = useState(50);
@@ -44,6 +49,32 @@ export default function RodaEmocoes() {
       setFase("resultado");
     }
   };
+
+  if (fase === "checkin") {
+    return (
+      <div className="space-y-4">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <CheckinEmoji
+            value={checkin}
+            onChange={(v) => {
+              setCheckin(v);
+              save({ checkinInicial: v });
+            }}
+          />
+        </motion.div>
+
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => setFase("nomeacao")}
+          disabled={!checkin}
+          className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm disabled:opacity-50"
+        >
+          Começar
+        </motion.button>
+      </div>
+    );
+  }
 
   if (fase === "nomeacao") {
     return (
@@ -129,6 +160,17 @@ export default function RodaEmocoes() {
     );
   }
 
+  if (fase === "reflexao") {
+    return (
+      <ReflexaoPosExercicio
+        onSalvar={(data) => {
+          save({ reflexao: data.reflexao, humorFinal: data.humorFinal }, { partial: false });
+          navigate("/exercicios");
+        }}
+      />
+    );
+  }
+
   return (
     <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="space-y-4">
       <div className="glass-card rounded-2xl p-6 text-center border-l-4" style={{ borderLeftColor: "var(--c-accent)" }}>
@@ -171,6 +213,15 @@ export default function RodaEmocoes() {
       <p className="text-[10px] text-[var(--c-muted)] italic text-center mt-4">
         Nomear com precisão o que se sente já muda a relação com a emoção — é o primeiro passo para regulá-la.
       </p>
+
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={() => setFase("reflexao")}
+        className="w-full py-2 rounded-lg bg-[var(--c-accent)]/10 text-[var(--c-accent)] font-semibold text-sm border border-[var(--c-accent)]/30 hover:bg-[var(--c-accent)]/20"
+      >
+        Refletir
+      </motion.button>
     </motion.div>
   );
 }

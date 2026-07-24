@@ -1,7 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import { useExerciseSession } from "@/hooks/useExerciseSession";
+import CheckinEmoji from "./CheckinEmoji";
+import ReflexaoPosExercicio from "./ReflexaoPosExercicio";
 
 interface NodoChat {
   id: string;
@@ -10,6 +13,8 @@ interface NodoChat {
   opcoes?: Array<{ id: string; texto: string; proximo: string; xp: number }>;
   campo?: { tipo: "texto" | "area"; placeholder: string };
 }
+
+type Fase = "checkin" | "chat" | "reflexao";
 
 const SCRIPT: Record<string, NodoChat> = {
   inicio: {
@@ -50,7 +55,10 @@ const SCRIPT: Record<string, NodoChat> = {
 };
 
 export default function RegistroV2() {
+  const navigate = useNavigate();
   const { save, complete } = useExerciseSession("registro-v2");
+  const [fase, setFase] = useState<Fase>("checkin");
+  const [checkin, setCheckin] = useState<string | null>(null);
   const [nodoAtual, setNodoAtual] = useState("inicio");
   const [historico, setHistorico] = useState<Array<{ nodo: string; resposta: string; xp: number }>>([]);
   const [respostaAtual, setRespostaAtual] = useState("");
@@ -78,9 +86,49 @@ export default function RegistroV2() {
     setRespostaAtual("");
 
     if (proxNodo === "fim") {
-      setTimeout(() => complete(xp + (xpGanho || 10)), 1500);
+      setTimeout(() => {
+        complete(xp + (xpGanho || 10));
+        setFase("reflexao");
+      }, 1500);
     }
   };
+
+  if (fase === "checkin") {
+    return (
+      <div className="space-y-4">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <CheckinEmoji
+            value={checkin}
+            onChange={(v) => {
+              setCheckin(v);
+              save({ checkinInicial: v });
+            }}
+          />
+        </motion.div>
+
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => setFase("chat")}
+          disabled={!checkin}
+          className="w-full py-3 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm disabled:opacity-50"
+        >
+          Começar
+        </motion.button>
+      </div>
+    );
+  }
+
+  if (fase === "reflexao") {
+    return (
+      <ReflexaoPosExercicio
+        onSalvar={(data) => {
+          save({ reflexao: data.reflexao, humorFinal: data.humorFinal }, { partial: false });
+          navigate("/exercicios");
+        }}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">
