@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ChevronRight } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
+import { ChevronRight, ChevronLeft } from "lucide-react";
 import { useExerciseSession } from "@/hooks/useExerciseSession";
 import CheckinEmoji from "./CheckinEmoji";
 import ReflexaoPosExercicio from "./ReflexaoPosExercicio";
@@ -64,9 +64,24 @@ export default function RegistroV2() {
   const [respostaAtual, setRespostaAtual] = useState("");
   const [xp, setXp] = useState(0);
   const [progresso, setProgresso] = useState(0);
+  const prefersReducedMotion = useReducedMotion();
 
   const nodo = SCRIPT[nodoAtual];
   const totalNodos = Object.keys(SCRIPT).length - 1; // "fim" não conta como etapa
+
+  // Extract advance logic into reusable function for both button and swipe gestures
+  const avancar = () => {
+    if (!respostaAtual.trim()) return;
+
+    const proximo = nodoAtual === "inicio" ? "situacao" :
+                    nodoAtual === "situacao" ? "evidencias" :
+                    nodoAtual === "evidencias" ? "contra_evidencias" :
+                    nodoAtual === "contra_evidencias" ? "reformulacao" :
+                    "fim";
+    const xpGanho = nodoAtual === "reformulacao" ? 20 : 10;
+
+    handleResposta(proximo, xpGanho);
+  };
 
   const handleResposta = (proxNodo?: string, xpGanho?: number) => {
     if (!proxNodo) return;
@@ -148,7 +163,32 @@ export default function RegistroV2() {
       </div>
 
       {/* Chat */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card rounded-2xl p-6 min-h-40">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        drag={!prefersReducedMotion && nodo.tipo !== "validacao" ? "x" : false}
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.15}
+        onDragEnd={(_e, info) => {
+          // Swipe left (negative offset) to advance
+          if (info.offset.x < -100 && respostaAtual.trim()) {
+            avancar();
+          }
+        }}
+        className="glass-card rounded-2xl p-6 min-h-40 relative"
+      >
+        {/* Swipe hint - only show when draggable and answer is ready */}
+        {!prefersReducedMotion && nodo.tipo !== "validacao" && respostaAtual.trim() && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.4 }}
+            transition={{ delay: 0.5, duration: 0.3 }}
+            className="absolute left-2 top-1/2 -translate-y-1/2 text-[var(--c-muted)]"
+          >
+            <ChevronLeft size={16} />
+          </motion.div>
+        )}
+
         {/* Histórico */}
         <div className="space-y-3 mb-4 max-h-24 overflow-y-auto">
           {historico.map((h, i) => (
@@ -185,14 +225,7 @@ export default function RegistroV2() {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => {
-                  const proximo = nodoAtual === "inicio" ? "situacao" :
-                                  nodoAtual === "situacao" ? "evidencias" :
-                                  nodoAtual === "evidencias" ? "contra_evidencias" :
-                                  nodoAtual === "contra_evidencias" ? "reformulacao" :
-                                  "fim";
-                  handleResposta(proximo, nodoAtual === "reformulacao" ? 20 : 10);
-                }}
+                onClick={avancar}
                 disabled={!respostaAtual.trim()}
                 className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-xs disabled:opacity-50"
               >
