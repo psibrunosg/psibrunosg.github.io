@@ -8,6 +8,7 @@ import ExerciciosRestritos from "./pages/ExerciciosRestritos";
 import AcerteDistorcaoPage from "./pages/exercicios/AcerteDistorcaoPage";
 import MuralhaEvidenciasPage from "./pages/exercicios/MuralhaEvidenciasPage";
 import RegistroPage from "./pages/exercicios/RegistroPage";
+import RespiracaoPage from "./pages/exercicios/RespiracaoPage";
 import JardimPage from "./pages/exercicios/JardimPage";
 import BaralhoAdultoPage from "./pages/exercicios/BaralhoAdultoPage";
 import ParesMentePage from "./pages/exercicios/ParesMentePage";
@@ -82,6 +83,7 @@ export default function App() {
         <Route path="/exercicios/acerte-distorcao" element={<AcerteDistorcaoPage />} />
         <Route path="/exercicios/muralha-evidencias" element={<MuralhaEvidenciasPage />} />
         <Route path="/exercicios/registro" element={<RegistroPage />} />
+        <Route path="/exercicios/respiracao" element={<RespiracaoPage />} />
         <Route path="/exercicios/jardim" element={<JardimPage />} />
         <Route path="/exercicios/baralho-adulto" element={<BaralhoAdultoPage />} />
         <Route path="/exercicios/pares" element={<ParesMentePage />} />

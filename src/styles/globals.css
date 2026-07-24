@@ -14,6 +14,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background: var(--c-bg);
   color: var(--c-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 #root {
@@ -142,6 +143,7 @@ body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+  body { transition: none; }
   .app-aurora::before { animation: none; }
   .shine-host:hover::after { opacity: 0; }
 }

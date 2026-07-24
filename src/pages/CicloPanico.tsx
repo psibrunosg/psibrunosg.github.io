@@ -6,6 +6,7 @@ import { MobileMenu } from "@/components/ui/MobileMenu";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
 import { SkipLink } from "@/components/shared/SkipLink";
 import { WhatsAppFloat } from "@/components/shared/WhatsAppFloat";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { contato } from "@/content/copy";
 import { fadeUp, stagger } from "@/lib/motion";
 import { cicloPanico, mensagemReinterpretacao, panicoQuiz } from "@/content/psicoed/panico";
@@ -171,8 +172,9 @@ export default function CicloPanico() {
       <SkipLink />
       <MobileMenu items={navItems} crp={contato.crp} whatsappLink={contato.whatsappLink} />
       <WhatsAppFloat />
+      <ThemeToggle />
 
-      <main id="main" className="min-h-screen bg-[var(--c-bg)] pt-28 pb-24 px-6">
+      <main id="main" className="min-h-screen bg-[var(--c-bg)] pt-28 pb-24 px-6 transition-colors duration-300">
         <div className="max-w-2xl mx-auto">
           <Link
             to="/psicoeducacao"

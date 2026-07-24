@@ -249,6 +249,14 @@ const exercicios: Exercicio[] = [
     trilha: "emocoes",
   },
   {
+    Icon: Wind,
+    titulo: "Respiração Guiada",
+    resumo: "Técnica 4-7-8 com círculo visual: inspire, segure, expire no seu ritmo.",
+    tempo: "5 min",
+    href: "/exercicios/respiracao",
+    trilha: "emocoes",
+  },
+  {
     Icon: Compass,
     titulo: "Bússola de Valores",
     resumo: "Ordene o que importa pra você e descubra seus 3 nortes.",

@@ -61,6 +61,34 @@
   --c-neutral-text:#9CA8A2;
 }
 
+/* ===== Modo noturno acolhedor — paciente (exercícios) =====
+   Ativado via data-mode="noturno" no <html>. Azul-cinza + dourado,
+   distinto do dark verde do Painel (data-mode="dark", reservado). */
+[data-theme="lobo"][data-mode="noturno"] {
+  --c-deep:     #B8C4D9;
+  --c-moss:     #5A6B85;
+  --c-moss-dk:  #3F4E66;
+  --c-accent:   #D4A94F;
+  --c-accent-lt:#E8C878;
+  --c-warm:     #D4A94F;
+  --c-warm-lt:  #6B5A38;
+  --c-bg:       #171D2B;
+  --c-bg-dark:  #0F131D;
+  --c-text:     #EAEDF4;
+  --c-muted:    #94A0B8;
+  --c-surface:  #212940;
+  --c-border:   #2E3850;
+
+  --c-danger:      #f87171;
+  --c-danger-bg:   rgba(248, 113, 113, 0.16);
+  --c-success:     #4ade80;
+  --c-success-bg:  rgba(74, 222, 128, 0.16);
+  --c-warning:     #fbbf24;
+  --c-warning-bg:  rgba(251, 191, 36, 0.16);
+  --c-neutral-bg:  rgba(255, 255, 255, 0.08);
+  --c-neutral-text:#9CA8BC;
+}
+
 /* ===== Elementos lúdicos da Trilha da matilha ===== */
 
 @keyframes lobo-float {
