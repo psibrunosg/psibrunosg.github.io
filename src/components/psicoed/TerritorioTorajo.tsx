@@ -6,10 +6,10 @@
 // personagens via prop (não fixo no Mundo Torajo) pra servir qualquer elenco.
 // Ver docs/mundo-torajo-playbook.md.
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useReducedMotion } from "framer-motion";
-import { ArrowLeft, ArrowDown } from "lucide-react";
+import { ArrowLeft, ArrowDown, ChevronLeft, ChevronRight } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import lottie, { type AnimationItem } from "lottie-web";
@@ -20,6 +20,8 @@ import { WhatsAppFloat } from "@/components/shared/WhatsAppFloat";
 import { contato } from "@/content/copy";
 import type { Personagem } from "@/content/psicoed/personagens";
 import LensShardsBackground from "@/components/psicoed/LensShardsBackground";
+import QuizEngine from "@/components/psicoed/QuizEngine";
+import { gerarQuizPersonagens } from "@/components/psicoed/gerarQuizPersonagens";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -56,6 +58,10 @@ export interface TerritorioTorajoProps {
   itens: CenaTorajo[];
   fechamentoTitulo: string;
   fechamentoTexto: string;
+  /** Rota do botão "Mapa"/"Voltar ao mapa" — default aponta pro mapa geral. */
+  rotaVoltar?: string;
+  /** Segundo botão no fechamento, ex: link pro território clínico equivalente. */
+  fechamentoLinkExtra?: { titulo: string; rota: string };
 }
 
 function useLottieJson(url: string) {
@@ -109,11 +115,45 @@ export default function TerritorioTorajo({
   itens,
   fechamentoTitulo,
   fechamentoTexto,
+  rotaVoltar = "/psicoeducacao",
+  fechamentoLinkExtra,
 }: TerritorioTorajoProps) {
   const reduced = useReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
   const corPadrao = personagens[itens[0].personagem].cor;
   const [activeColor, setActiveColor] = useState(corPadrao);
+
+  // Navegação por cena (setinhas na tela + teclado) — pra apresentar em
+  // projetor com clicker (Left/Right ou PageUp/PageDown avançam 1 cena).
+  const alvosNavegacao = useMemo(
+    () => ["hero", ...itens.map((it) => `cena-${it.id}`), "quiz-final", "fechamento"],
+    [itens],
+  );
+  const [indiceAtual, setIndiceAtual] = useState(0);
+  const quizConfig = useMemo(() => gerarQuizPersonagens(itens, personagens), [itens, personagens]);
+
+  const mover = (delta: number) => {
+    setIndiceAtual((atual) => {
+      const novo = Math.max(0, Math.min(alvosNavegacao.length - 1, atual + delta));
+      document.getElementById(alvosNavegacao[novo])?.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+      return novo;
+    });
+  };
+
+  useEffect(() => {
+    const aoTeclar = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight" || e.key === "PageDown") {
+        e.preventDefault();
+        mover(1);
+      } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+        e.preventDefault();
+        mover(-1);
+      }
+    };
+    window.addEventListener("keydown", aoTeclar);
+    return () => window.removeEventListener("keydown", aoTeclar);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [alvosNavegacao, reduced]);
 
   const heartData = useLottieJson("/media/lottie/coracao-partido.json");
   const glassData = useLottieJson("/media/lottie/vidro-estilhacado.json");
@@ -214,12 +254,35 @@ export default function TerritorioTorajo({
 
       <div ref={containerRef} className="relative min-h-screen">
         <Link
-          to="/psicoeducacao"
+          to={rotaVoltar}
           className="fixed top-24 left-4 z-30 inline-flex items-center gap-2 text-sm bg-[var(--c-surface)]/80 backdrop-blur px-3 py-2 rounded-full border border-[var(--c-border)] text-[var(--c-muted)] hover:text-[var(--c-accent)] transition-colors"
         >
           <ArrowLeft size={16} />
           Mapa
         </Link>
+
+        {/* Navegação por cena — pra clicker de apresentação (setas do teclado também funcionam). */}
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 bg-[var(--c-surface)]/90 backdrop-blur rounded-full px-3 py-2 border border-[var(--c-border)] shadow-lg">
+          <button
+            onClick={() => mover(-1)}
+            disabled={indiceAtual === 0}
+            aria-label="Cena anterior"
+            className="w-8 h-8 flex items-center justify-center rounded-full text-[var(--c-text)] disabled:opacity-30 hover:bg-[var(--c-border)]/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--c-accent)]"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <span className="text-xs text-[var(--c-muted)] tabular-nums w-10 text-center">
+            {indiceAtual + 1}/{alvosNavegacao.length}
+          </span>
+          <button
+            onClick={() => mover(1)}
+            disabled={indiceAtual === alvosNavegacao.length - 1}
+            aria-label="Próxima cena"
+            className="w-8 h-8 flex items-center justify-center rounded-full text-[var(--c-text)] disabled:opacity-30 hover:bg-[var(--c-border)]/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--c-accent)]"
+          >
+            <ChevronRight size={18} />
+          </button>
+        </div>
 
         <nav className="hidden md:flex fixed top-24 right-4 z-30 flex-col gap-2 bg-[var(--c-surface)]/80 backdrop-blur rounded-full p-2 border border-[var(--c-border)]">
           {Object.values(personagens).map((p) => (
@@ -236,7 +299,7 @@ export default function TerritorioTorajo({
         </nav>
 
         {/* Hero */}
-        <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 py-24">
+        <section id="hero" className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 py-24">
           <p className="text-xs tracking-[0.3em] uppercase text-[var(--c-accent)] font-semibold mb-2">{eyebrow}</p>
           <h1
             className="text-4xl md:text-6xl font-semibold mb-4 text-[var(--c-text)]"
@@ -334,6 +397,22 @@ export default function TerritorioTorajo({
           );
         })}
 
+        {/* Quiz final — testa o que o paciente aprendeu, gerado dos próprios itens. */}
+        <section id="quiz-final" className="relative py-16 px-6">
+          <div className="max-w-xl mx-auto">
+            <p className="text-xs tracking-[0.2em] uppercase text-[var(--c-accent)] font-semibold mb-2 text-center">
+              Praticar
+            </p>
+            <h2
+              className="text-2xl md:text-3xl font-semibold text-[var(--c-text)] mb-6 text-center"
+              style={{ fontFamily: "var(--font-heading)" }}
+            >
+              Teste o que você aprendeu
+            </h2>
+            <QuizEngine config={quizConfig} />
+          </div>
+        </section>
+
         {/* Fechamento */}
         <section
           id="fechamento"
@@ -348,13 +427,28 @@ export default function TerritorioTorajo({
             {fechamentoTitulo}
           </h2>
           <p className="max-w-xl text-[var(--c-muted)] leading-relaxed mb-8">{fechamentoTexto}</p>
-          <Link
-            to="/psicoeducacao"
-            className="px-6 py-3 rounded-full text-white text-sm font-semibold"
-            style={{ background: "var(--c-accent)" }}
-          >
-            Voltar ao mapa
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-3">
+            {fechamentoLinkExtra && (
+              <Link
+                to={fechamentoLinkExtra.rota}
+                className="px-6 py-3 rounded-full text-white text-sm font-semibold"
+                style={{ background: "var(--c-accent)" }}
+              >
+                {fechamentoLinkExtra.titulo}
+              </Link>
+            )}
+            <Link
+              to={rotaVoltar}
+              className={
+                fechamentoLinkExtra
+                  ? "px-6 py-3 rounded-full text-sm font-semibold border border-[var(--c-border)] text-[var(--c-muted)]"
+                  : "px-6 py-3 rounded-full text-white text-sm font-semibold"
+              }
+              style={fechamentoLinkExtra ? undefined : { background: "var(--c-accent)" }}
+            >
+              Voltar ao mapa
+            </Link>
+          </div>
         </section>
       </div>
 

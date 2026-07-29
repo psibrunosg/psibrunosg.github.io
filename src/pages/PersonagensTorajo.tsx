@@ -203,7 +203,7 @@ export default function PersonagensTorajo() {
       <main id="main" className="min-h-screen bg-[var(--c-bg)] pt-28 pb-24 px-6">
         <div className="max-w-3xl mx-auto">
           <Link
-            to="/psicoeducacao"
+            to="/psicoeducacao/mundos/torajo"
             className="inline-flex items-center gap-2 text-sm text-[var(--c-muted)] hover:text-[var(--c-accent)] transition-colors mb-12"
           >
             <ArrowLeft size={16} />

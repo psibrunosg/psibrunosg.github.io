@@ -35,6 +35,8 @@ import CrencasCentraisJujutsuKaisen from "./pages/CrencasCentraisJujutsuKaisen";
 import DistorcoesJujutsuKaisen from "./pages/DistorcoesJujutsuKaisen";
 import EsquemasJujutsuKaisen from "./pages/EsquemasJujutsuKaisen";
 import ModosJujutsuKaisen from "./pages/ModosJujutsuKaisen";
+import MundosTematicos from "./pages/MundosTematicos";
+import MundoTemas from "./pages/MundoTemas";
 import DeOndeVemPadroes from "./pages/DeOndeVemPadroes";
 import BalaoPensamentosPage from "./pages/exercicios/BalaoPensamentosPage";
 import CacaFatosPage from "./pages/exercicios/CacaFatosPage";
@@ -97,6 +99,8 @@ export default function App() {
         <Route path="/psicoeducacao/jujutsu-kaisen/distorcoes" element={<DistorcoesJujutsuKaisen />} />
         <Route path="/psicoeducacao/jujutsu-kaisen/esquemas" element={<EsquemasJujutsuKaisen />} />
         <Route path="/psicoeducacao/jujutsu-kaisen/modos" element={<ModosJujutsuKaisen />} />
+        <Route path="/psicoeducacao/mundos" element={<MundosTematicos />} />
+        <Route path="/psicoeducacao/mundos/:mundoId" element={<MundoTemas />} />
         {/* Território novo — acessível por link direto; ainda NÃO surfaceado no
             mapa público (src/content/psicoed.ts) até aprovação do Bruno. */}
         <Route path="/psicoeducacao/de-onde-vem-seus-padroes" element={<DeOndeVemPadroes />} />

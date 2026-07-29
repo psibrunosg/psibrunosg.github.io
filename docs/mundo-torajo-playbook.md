@@ -375,7 +375,67 @@ personagem).
   Demon Slayer, 6/12/6/10 Jujutsu Kaisen) + regressão rápida nas 4 páginas
   Torajo que usam o componente generalizado — sem erro de console em nenhuma.
 
-## 14. Checklist rápido pra próximo território
+## 14. Atualização 2026-07-29 (4): mundos viram aba separada + quiz + clicker
+
+Pedido do Bruno: tirar os 12 territórios (4 temas × Torajo/Demon
+Slayer/Jujutsu Kaisen) do mapa principal de `/psicoeducacao` (fica só com
+neuroanatomia, pânico, janela, sono), e trocar por navegação em 2 níveis numa
+aba própria: escolhe o **mundo** → escolhe o **tema** → carrega a página.
+Mais 2 pedidos que valem pra qualquer território futuro:
+
+- **Quiz automático no fechamento de cada página**: gerado dos próprios dados
+  do território (`item.frase` → "quem diria isso?", opções = personagem
+  certo + 2 distratores aleatórios do elenco daquele mundo). Função em
+  `src/components/psicoed/gerarQuizPersonagens.ts`, chamada dentro do
+  `TerritorioTorajo` (`useMemo`), renderizada com o `QuizEngine` que já
+  existia. **Zero conteúdo novo pra escrever** — funciona igual em qualquer
+  território, inclusive futuros, só precisa que os itens tenham `frase`
+  preenchida (se não tiver, aquele item não vira pergunta — o `.filter` já
+  trata isso).
+- **Navegação por cena via clicker/teclado**: pedido específico pra usar em
+  projetor com apresentador (PowerPoint clicker) em sessão com paciente.
+  `ArrowLeft`/`ArrowRight`/`PageUp`/`PageDown` (`e.preventDefault()` pra não
+  duplicar o scroll nativo do navegador) navegam pela lista
+  `["hero", ...cenas, "quiz-final", "fechamento"]` via `scrollIntoView`.
+  Também tem par de setinhas fixas no rodapé da tela (clique com mouse,
+  redundante com o teclado) com indicador "3/12". Mesma lógica serve pra
+  passar slide com o polegar no clicker sem precisar rolar manualmente.
+
+### Estrutura de navegação nova
+
+```
+src/content/psicoed-mundos.ts     # 3 mundos × 4 temas + link extra opcional
+src/pages/MundosTematicos.tsx     # /psicoeducacao/mundos — escolhe o mundo
+src/pages/MundoTemas.tsx          # /psicoeducacao/mundos/:mundoId — escolhe o tema
+```
+
+- `territorios[]` (`src/content/psicoed.ts`) perdeu os 12 territórios Torajo/
+  Demon Slayer/JJK e ganhou 1 entrada só: "Mundos Temáticos" →
+  `/psicoeducacao/mundos`.
+- Todo `TerritorioTorajo` agora recebe `rotaVoltar` (aponta pro
+  `/psicoeducacao/mundos/<mundo>` certo, não mais pro `/psicoeducacao` geral).
+- **`EsquemasIniciais.tsx` foi migrado pra usar `TerritorioTorajo`** (era o
+  único território ainda com implementação própria, ~340 linhas, de antes do
+  componente genérico existir). Isso quase causou uma regressão: a página
+  original tinha um **segundo botão no fechamento** (link pro território
+  clínico `/psicoeducacao/de-onde-vem-seus-padroes`), que o componente
+  genérico não suportava. Adicionei prop opcional
+  `fechamentoLinkExtra?: {titulo, rota}` antes de migrar, pra não perder essa
+  feature. **Lição**: ao migrar uma página bespoke pro componente genérico,
+  ler a implementação antiga inteira primeiro e listar toda feature antes de
+  trocar — não só o "formato geral".
+- `PersonagensTorajo.tsx` (hub de personagens Torajo) não virou território
+  no `territorios[]` nem entrou no `MundoTemas` como "tema" — ficou como
+  `linkExtra` (link de texto simples) na página `MundoTemas` do Torajo,
+  mesmo padrão de antes (só mudou de onde o link mora).
+- Testado: mapa principal (5 itens), `/mundos` (3 cards), `/mundos/torajo`
+  (4 temas + link extra), quiz gerando pergunta correta em pelo menos 2
+  territórios diferentes, `ArrowRight` avançando o índice (confirmado via
+  keydown real, não só dispatch sintético — o dispatch sintético "falhou" na
+  primeira tentativa por race condition da própria verificação, não bug real:
+  ler o estado *depois* de um `setTimeout`, não no mesmo tick).
+
+## 15. Checklist rápido pra próximo território
 
 - [ ] Ler HTML fonte em `G:\Meu Drive\Torajo\`, extrair conteúdo pro `.ts`
 - [ ] Assets de personagem já existem em `public/img/torajo/` (reaproveitar)

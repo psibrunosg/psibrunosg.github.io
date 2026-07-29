@@ -18,6 +18,7 @@ export default function ModosDemonSlayer() {
       introLonga="Se os esquemas são as nossas feridas, os modos são as máscaras ou estados de humor que assumimos no dia a dia para lidar com elas. Existem modos infantis, vozes parentais, estilos de enfrentamento e o Adulto Saudável. Vamos conhecer os 10 principais através dos caçadores de demônios."
       personagens={personagensDemonSlayer}
       itens={modosDemonSlayer}
+      rotaVoltar="/psicoeducacao/mundos/demon-slayer"
       fechamentoTitulo="Quem você quer que segure a espada?"
       fechamentoTexto="O objetivo não é nunca mais sentir raiva ou medo, mas fortalecer o Adulto Saudável — a parte que acolhe, coloca limites e escolhe com calma. Isso se treina com prática e, quando fizer sentido, com apoio profissional."
     />

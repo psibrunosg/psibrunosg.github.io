@@ -18,6 +18,7 @@ export default function CrencasCentraisJujutsuKaisen() {
       introLonga="Uma crença central é a verdade mais absoluta que você tem sobre quem você é, sobre os outros e sobre o mundo — geralmente dividida entre Desamor, Desvalor e Desamparo. Vamos ver 6 delas na vida dos feiticeiros de Jujutsu Kaisen."
       personagens={personagensJujutsuKaisen}
       itens={crencasJujutsuKaisen}
+      rotaVoltar="/psicoeducacao/mundos/jujutsu-kaisen"
       fechamentoTitulo="E se essas raízes pudessem ser reescritas?"
       fechamentoTexto="Reconhecer uma crença central não é se rotular — é perceber que ela é uma história antiga, não um fato. Isso se trabalha com tempo, evidências novas e, muitas vezes, com apoio profissional."
     />
