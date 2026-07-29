@@ -276,7 +276,37 @@ quiz+simulador). Mudanças no processo que valem pra próxima vez:
   mudado de verdade — confirma pelo `document.title` ou `get_page_text`, não
   pela string de URL que a tool devolve.
 
-## 10. Checklist rápido pra próximo território
+## 11. Atualização 2026-07-29 (2): página "A Turma do Mundo Torajo"
+
+Em vez de deletar o conteúdo órfão apontado na seção 9 (quiz/flashcards de
+Distorções, quiz/flashcards/simulador de Modos), criamos
+`src/pages/PersonagensTorajo.tsx` (rota `/psicoeducacao/personagens`) — hub
+com os 7 personagens; escolher um mostra, cruzando os 4 arrays de conteúdo
+(`crencas`, `distorcoesTorajo`, `esquemas`, `modosTorajo`), quais itens aquele
+personagem representa em cada território, com link pra lá. Abaixo, seção
+"Pratique" reaproveita o quiz/flashcards/simulador antigos (que ficariam
+mortos) em abas.
+
+- **Atenção**: esse conteúdo de quiz (`distorcoesQuiz`/`distorcoesFlashcards`
+  em `src/content/psicoed.ts`, `modosQuiz`/`modosFlashcards`/`cenariosModo` em
+  `src/content/psicoed/modos.ts`) **não é sobre os personagens Torajo** — é o
+  módulo clínico genérico que existia antes (ex: `modosQuiz` usa o framework
+  de 4 modos largos — Criança Vulnerável, Protetor Desligado, Crítico Interno,
+  Adulto Saudável —, diferente dos 10 modos do Young usados em
+  `modos-torajo.ts`). Por isso a seção "Pratique" é rotulada como genérica
+  ("não amarrados a um personagem específico"), não como parte do perfil do
+  personagem selecionado — não force esse tipo de conteúdo a parecer que é
+  sobre o personagem, é enganoso.
+- `MiniSimuladorModos` (antes só dentro de `ModosEsquema.tsx`) virou
+  componente compartilhado em `src/components/psicoed/MiniSimuladorModos.tsx`
+  (aceita `cenarios` via prop em vez de importar fixo).
+- Não virou território no mapa (`territorios[]`) — só um link de texto em
+  `Psicoeducacao.tsx`, abaixo do grid.
+- Rota registrada em `App.tsx`; `useProgresso("distorcoes-cognitivas")` /
+  `useProgresso("modos-do-esquema")` continuam funcionando aqui, mesmos ids
+  de antes (progresso de paciente não perde histórico).
+
+## 12. Checklist rápido pra próximo território
 
 - [ ] Ler HTML fonte em `G:\Meu Drive\Torajo\`, extrair conteúdo pro `.ts`
 - [ ] Assets de personagem já existem em `public/img/torajo/` (reaproveitar)

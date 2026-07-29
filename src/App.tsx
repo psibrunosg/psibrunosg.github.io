@@ -26,6 +26,7 @@ import Sono from "./pages/Sono";
 import ModosEsquema from "./pages/ModosEsquema";
 import EsquemasIniciais from "./pages/EsquemasIniciais";
 import CrencasCentrais from "./pages/CrencasCentrais";
+import PersonagensTorajo from "./pages/PersonagensTorajo";
 import DeOndeVemPadroes from "./pages/DeOndeVemPadroes";
 import BalaoPensamentosPage from "./pages/exercicios/BalaoPensamentosPage";
 import CacaFatosPage from "./pages/exercicios/CacaFatosPage";
@@ -79,6 +80,7 @@ export default function App() {
         <Route path="/psicoeducacao/modos-do-esquema" element={<ModosEsquema />} />
         <Route path="/psicoeducacao/esquemas" element={<EsquemasIniciais />} />
         <Route path="/psicoeducacao/crencas" element={<CrencasCentrais />} />
+        <Route path="/psicoeducacao/personagens" element={<PersonagensTorajo />} />
         {/* Território novo — acessível por link direto; ainda NÃO surfaceado no
             mapa público (src/content/psicoed.ts) até aprovação do Bruno. */}
         <Route path="/psicoeducacao/de-onde-vem-seus-padroes" element={<DeOndeVemPadroes />} />

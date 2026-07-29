@@ -64,6 +64,20 @@ export default function Psicoeducacao() {
           >
             <MapaExploratorio />
           </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="mt-10 text-center"
+          >
+            <Link
+              to="/psicoeducacao/personagens"
+              className="inline-flex items-center gap-2 text-sm text-[var(--c-muted)] hover:text-[var(--c-accent)] transition-colors underline underline-offset-4"
+            >
+              Conheça a turma do Mundo Torajo, personagem por personagem
+            </Link>
+          </motion.div>
         </div>
       </main>
 
