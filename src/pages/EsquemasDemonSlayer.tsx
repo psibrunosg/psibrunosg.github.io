@@ -18,6 +18,7 @@ export default function EsquemasDemonSlayer() {
       introLonga="Imagine que, durante a vida, o cérebro instala um 'sistema' pra entender como o mundo funciona, geralmente baseado em traumas. Um esquema é como uma ferida emocional profunda que dita como você se sente em relação a si mesmo e aos outros. Vamos ver 12 deles na história de Demon Slayer."
       personagens={personagensDemonSlayer}
       itens={esquemasDemonSlayer}
+      tipoConceito="esquema inicial"
       rotaVoltar="/psicoeducacao/mundos/demon-slayer"
       fechamentoTitulo="E se essas feridas pudessem cicatrizar?"
       fechamentoTexto="Reconhecer um esquema não é se rotular — é entender de onde vieram essas feridas e treinar um jeito novo de olhar. Isso se trabalha com tempo, prática e, muitas vezes, com apoio profissional."

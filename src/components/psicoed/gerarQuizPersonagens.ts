@@ -1,10 +1,9 @@
 // Gera um QuizConfig automaticamente a partir dos itens de um território
-// (frase em personagem → "quem diria isso?"). Não precisa de conteúdo
-// escrito à mão por território/mundo — reaproveita os dados que a página já
-// tem. Ver docs/mundo-torajo-playbook.md.
+// (frase em personagem → "qual distorção/crença/esquema/modo é essa?"). Não
+// precisa de conteúdo escrito à mão por território/mundo — reaproveita os
+// dados que a página já tem. Ver docs/mundo-torajo-playbook.md.
 
 import type { CenaTorajo } from "@/components/psicoed/TerritorioTorajo";
-import type { Personagem } from "@/content/psicoed/personagens";
 import type { QuizConfig } from "@/components/psicoed/QuizEngine";
 
 function embaralhar<T>(lista: T[]): T[] {
@@ -16,33 +15,29 @@ function embaralhar<T>(lista: T[]): T[] {
   return copia;
 }
 
-export function gerarQuizPersonagens(itens: CenaTorajo[], personagens: Record<string, Personagem>): QuizConfig {
-  const idsDisponiveis = Object.keys(personagens);
-
+export function gerarQuizPersonagens(itens: CenaTorajo[], tipoConceito: string): QuizConfig {
   const perguntas = itens
     .filter((item) => !!item.frase)
     .map((item) => {
-      const correto = personagens[item.personagem];
-      const nomeCorreto = item.personagemLabel ?? correto.nome;
-      const distratoresIds = embaralhar(idsDisponiveis.filter((id) => id !== item.personagem)).slice(0, 2);
+      const distratores = embaralhar(itens.filter((it) => it.titulo !== item.titulo)).slice(0, 2);
       const opcoes = embaralhar([
         {
-          id: item.personagem,
-          texto: nomeCorreto,
+          id: item.id,
+          texto: item.titulo,
           correta: true,
-          explicacao: `Isso mesmo — ${nomeCorreto}. ${item.oQueE}`,
+          explicacao: `Isso mesmo — ${item.titulo}. ${item.oQueE}`,
         },
-        ...distratoresIds.map((id) => ({
-          id,
-          texto: personagens[id].nome,
+        ...distratores.map((it) => ({
+          id: it.id,
+          texto: it.titulo,
           correta: false,
-          explicacao: `Quem diria isso é ${nomeCorreto}, não ${personagens[id].nome}. ${item.oQueE}`,
+          explicacao: `A resposta certa é "${item.titulo}": ${item.oQueE}`,
         })),
       ]);
 
       return {
         id: `qp-${item.id}`,
-        pergunta: `Quem diria isso: "${item.frase}"?`,
+        pergunta: `Isso é qual ${tipoConceito}: "${item.frase}"?`,
         opcoes,
       };
     });

@@ -56,6 +56,8 @@ export interface TerritorioTorajoProps {
   introLonga: string;
   personagens: Record<string, Personagem>;
   itens: CenaTorajo[];
+  /** Nome do conceito, pro quiz final ("distorção cognitiva", "crença central", "esquema inicial", "modo do esquema"). */
+  tipoConceito: string;
   fechamentoTitulo: string;
   fechamentoTexto: string;
   /** Rota do botão "Mapa"/"Voltar ao mapa" — default aponta pro mapa geral. */
@@ -113,6 +115,7 @@ export default function TerritorioTorajo({
   introLonga,
   personagens,
   itens,
+  tipoConceito,
   fechamentoTitulo,
   fechamentoTexto,
   rotaVoltar = "/psicoeducacao",
@@ -130,7 +133,7 @@ export default function TerritorioTorajo({
     [itens],
   );
   const [indiceAtual, setIndiceAtual] = useState(0);
-  const quizConfig = useMemo(() => gerarQuizPersonagens(itens, personagens), [itens, personagens]);
+  const quizConfig = useMemo(() => gerarQuizPersonagens(itens, tipoConceito), [itens, tipoConceito]);
 
   const mover = (delta: number) => {
     setIndiceAtual((atual) => {

@@ -18,6 +18,7 @@ export default function EsquemasIniciais() {
       introLonga="Imagine que, durante a infância e adolescência, o cérebro instala um 'sistema operacional' pra entender como o mundo funciona. Um esquema é como uma lente de óculos super grossa — dita como você se sente em relação a si mesmo e aos outros. Vamos usar a turma do Mundo Torajo pra enxergar 12 deles."
       personagens={personagens}
       itens={esquemas}
+      tipoConceito="esquema inicial"
       rotaVoltar="/psicoeducacao/mundos/torajo"
       fechamentoTitulo="E se essas lentes pudessem ser trocadas?"
       fechamentoTexto="Reconhecer um esquema não é se rotular — é entender de onde vieram essas lentes e treinar um jeito novo de olhar. Isso se trabalha com tempo, prática e, muitas vezes, com apoio profissional."

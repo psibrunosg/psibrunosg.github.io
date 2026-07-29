@@ -18,6 +18,7 @@ export default function DistorcoesDemonSlayer() {
       introLonga="Assim como os caçadores precisam de espadas especiais para ver e cortar os onis, nós precisamos de ferramentas para enxergar e cortar os 'erros' da nossa mente. Distorções cognitivas são falhas em como o cérebro processa informações — óculos sujos e rachados que distorcem a realidade. Vamos ver 12 delas."
       personagens={personagensDemonSlayer}
       itens={distorcoesDemonSlayer}
+      tipoConceito="distorção cognitiva"
       rotaVoltar="/psicoeducacao/mundos/demon-slayer"
       fechamentoTitulo="E se você trocasse os óculos sujos?"
       fechamentoTexto="Reconhecer uma distorção não significa que o pensamento é mentira o tempo todo — é aprender a checar antes de acreditar de cara. Isso se treina com prática e, quando fizer sentido, com apoio profissional."
