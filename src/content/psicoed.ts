@@ -11,7 +11,7 @@ export interface Territorio {
   id: string;
   titulo: string;
   descricaoCurta: string;
-  icone: "brain" | "waves" | "scale" | "compass" | "moon" | "layers";
+  icone: "brain" | "waves" | "scale" | "compass" | "moon" | "layers" | "eye";
   rota: string;
   status: TerritorioStatus;
   teaser?: string; // exibido quando status = "em-breve"
@@ -73,6 +73,15 @@ export const territorios: Territorio[] = [
     rota: "/psicoeducacao/modos-do-esquema",
     status: "disponivel",
     posicao: { x: 50, y: 85 },
+  },
+  {
+    id: "esquemas-iniciais",
+    titulo: "Esquemas Iniciais Desadaptativos",
+    descricaoCurta: "As lentes profundas através das quais enxergamos o mundo — explicadas pela turma do Mundo Torajo.",
+    icone: "eye",
+    rota: "/psicoeducacao/esquemas",
+    status: "disponivel",
+    posicao: { x: 85, y: 78 },
   },
 ];
 

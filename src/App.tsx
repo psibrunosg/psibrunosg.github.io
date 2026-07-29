@@ -24,6 +24,7 @@ import CicloPanico from "./pages/CicloPanico";
 import JanelaTolerancia from "./pages/JanelaTolerancia";
 import Sono from "./pages/Sono";
 import ModosEsquema from "./pages/ModosEsquema";
+import EsquemasIniciais from "./pages/EsquemasIniciais";
 import DeOndeVemPadroes from "./pages/DeOndeVemPadroes";
 import BalaoPensamentosPage from "./pages/exercicios/BalaoPensamentosPage";
 import CacaFatosPage from "./pages/exercicios/CacaFatosPage";
@@ -75,6 +76,7 @@ export default function App() {
         <Route path="/psicoeducacao/janela-de-tolerancia" element={<JanelaTolerancia />} />
         <Route path="/psicoeducacao/sono" element={<Sono />} />
         <Route path="/psicoeducacao/modos-do-esquema" element={<ModosEsquema />} />
+        <Route path="/psicoeducacao/esquemas" element={<EsquemasIniciais />} />
         {/* Território novo — acessível por link direto; ainda NÃO surfaceado no
             mapa público (src/content/psicoed.ts) até aprovação do Bruno. */}
         <Route path="/psicoeducacao/de-onde-vem-seus-padroes" element={<DeOndeVemPadroes />} />

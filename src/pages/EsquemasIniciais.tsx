@@ -1,0 +1,344 @@
+import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { useReducedMotion } from "framer-motion";
+import { ArrowLeft, ArrowDown } from "lucide-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import lottie, { type AnimationItem } from "lottie-web";
+import { MobileMenu } from "@/components/ui/MobileMenu";
+import { EthicalFooter } from "@/components/shared/EthicalFooter";
+import { SkipLink } from "@/components/shared/SkipLink";
+import { WhatsAppFloat } from "@/components/shared/WhatsAppFloat";
+import { contato } from "@/content/copy";
+import { esquemas, personagens } from "@/content/psicoed/esquemas";
+import LensShardsBackground from "@/components/psicoed/LensShardsBackground";
+
+gsap.registerPlugin(ScrollTrigger);
+
+const navItems = [
+  { label: "Inicio", href: "/" },
+  { label: "Psicoeducacao", href: "/psicoeducacao" },
+  { label: "Exercicios", href: "/exercicios" },
+  { label: "Blog", href: "/blog" },
+];
+
+const corPadrao = personagens.torajo.cor;
+
+function useLottieJson(url: string) {
+  const [data, setData] = useState<object | null>(null);
+  useEffect(() => {
+    let ativo = true;
+    fetch(url)
+      .then((r) => r.json())
+      .then((json) => {
+        if (ativo) setData(json);
+      })
+      .catch(() => {});
+    return () => {
+      ativo = false;
+    };
+  }, [url]);
+  return data;
+}
+
+function useLottiePlayer(data: object | null, opts: { loop?: boolean; autoplay?: boolean } = {}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const animRef = useRef<AnimationItem | null>(null);
+  const { loop = false, autoplay = true } = opts;
+
+  useEffect(() => {
+    if (!containerRef.current || !data) return;
+    animRef.current = lottie.loadAnimation({
+      container: containerRef.current,
+      renderer: "svg",
+      loop,
+      autoplay,
+      animationData: data,
+    });
+    return () => {
+      animRef.current?.destroy();
+      animRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
+
+  return { containerRef, animRef };
+}
+
+export default function EsquemasIniciais() {
+  const reduced = useReducedMotion();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [activeColor, setActiveColor] = useState(corPadrao);
+
+  const heartData = useLottieJson("/media/lottie/coracao-partido.json");
+  const glassData = useLottieJson("/media/lottie/vidro-estilhacado.json");
+  const heart = useLottiePlayer(heartData, { loop: false, autoplay: true });
+  const glass = useLottiePlayer(glassData, { loop: false, autoplay: false });
+  const heartContainerRef = heart.containerRef;
+  const glassContainerRef = glass.containerRef;
+  const glassAnimRef = glass.animRef;
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", "lobo");
+    document.title = "Esquemas Iniciais Desadaptativos | Psicoeducação | Bruno de Souza Gonçalves";
+    return () => document.documentElement.removeAttribute("data-theme");
+  }, []);
+
+  useEffect(() => {
+    if (reduced) return;
+
+    const ctx = gsap.context(() => {
+      esquemas.forEach((esq, i) => {
+        const cor = personagens[esq.personagem].cor;
+        const secao = `#cena-${esq.id}`;
+        const direcao = i % 2 === 0 ? -1 : 1;
+
+        // Cor de fundo acompanha a cena ativa, independente de pin (funciona em qualquer tela).
+        ScrollTrigger.create({
+          trigger: secao,
+          start: "top 70%",
+          end: "bottom 30%",
+          onEnter: () => setActiveColor(cor),
+          onEnterBack: () => setActiveColor(cor),
+        });
+
+        // Entrada "andando": desliza da lateral com um bamboleio vertical (passos) + leve giro,
+        // depois o texto aparece. Dispara uma vez ao entrar, não fica preso a meio-caminho no scroll.
+        const tl = gsap.timeline({
+          scrollTrigger: { trigger: secao, start: "top 78%", toggleActions: "play none none reverse" },
+        });
+
+        tl.fromTo(
+          `${secao} .personagem-render img`,
+          { x: direcao * 110, opacity: 0, rotate: direcao * -5 },
+          { x: 0, opacity: 1, rotate: 0, duration: 0.85, ease: "power2.out" },
+        )
+          .to(
+            `${secao} .personagem-render img`,
+            { y: -13, duration: 0.14, repeat: 5, yoyo: true, ease: "sine.inOut" },
+            0,
+          )
+          .fromTo(
+            `${secao} .texto-cena > *`,
+            { opacity: 0, y: 22 },
+            { opacity: 1, y: 0, duration: 0.5, stagger: 0.07, ease: "power2.out" },
+            0.2,
+          );
+      });
+
+      // Pin só em telas maiores — no celular a cena rola normal, sem prender o scroll.
+      const mm = gsap.matchMedia();
+      mm.add("(min-width: 768px)", () => {
+        esquemas.forEach((esq) => {
+          ScrollTrigger.create({
+            trigger: `#cena-${esq.id}`,
+            start: "top top",
+            end: "+=100%",
+            pin: true,
+          });
+        });
+        return () => undefined;
+      });
+
+      ScrollTrigger.create({
+        trigger: "#fechamento",
+        start: "top 70%",
+        onEnter: () => {
+          const anim = glassAnimRef.current;
+          if (!anim) return;
+          anim.setDirection(-1);
+          anim.goToAndPlay(anim.totalFrames, true);
+        },
+      });
+    }, containerRef);
+
+    return () => ctx.revert();
+    // glassAnimRef is a ref (stable identity) — intentionally excluded.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reduced, glassData]);
+
+  const irParaPersonagem = (personagemId: string) => {
+    const primeiro = esquemas.find((e) => e.personagem === personagemId);
+    if (!primeiro) return;
+    document.getElementById(`cena-${primeiro.id}`)?.scrollIntoView({ behavior: reduced ? "auto" : "smooth" });
+  };
+
+  return (
+    <>
+      <SkipLink />
+      <MobileMenu items={navItems} crp={contato.crp} whatsappLink={contato.whatsappLink} />
+      <WhatsAppFloat />
+
+      {!reduced && <LensShardsBackground color={activeColor} />}
+
+      <div ref={containerRef} className="relative min-h-screen">
+        <Link
+          to="/psicoeducacao"
+          className="fixed top-24 left-4 z-30 inline-flex items-center gap-2 text-sm bg-[var(--c-surface)]/80 backdrop-blur px-3 py-2 rounded-full border border-[var(--c-border)] text-[var(--c-muted)] hover:text-[var(--c-accent)] transition-colors"
+        >
+          <ArrowLeft size={16} />
+          Mapa
+        </Link>
+
+        <nav className="hidden md:flex fixed top-24 right-4 z-30 flex-col gap-2 bg-[var(--c-surface)]/80 backdrop-blur rounded-full p-2 border border-[var(--c-border)]">
+          {Object.values(personagens).map((p) => (
+            <button
+              key={p.id}
+              onClick={() => irParaPersonagem(p.id)}
+              title={p.nome}
+              className="w-10 h-10 rounded-full overflow-hidden border-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--c-accent)]"
+              style={{ borderColor: p.cor }}
+            >
+              <img src={p.imagem} alt={p.nome} className="w-full h-full object-cover object-top" />
+            </button>
+          ))}
+        </nav>
+
+        {/* Hero */}
+        <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 py-24">
+          <p className="text-xs tracking-[0.3em] uppercase text-[var(--c-accent)] font-semibold mb-2">
+            Entender para cuidar · Mundo Torajo
+          </p>
+          <h1
+            className="text-4xl md:text-6xl font-semibold mb-4 text-[var(--c-text)]"
+            style={{ fontFamily: "var(--font-heading)" }}
+          >
+            Esquemas Iniciais
+            <br />
+            Desadaptativos
+          </h1>
+          <p className="max-w-xl text-[var(--c-muted)] mb-8 leading-relaxed">
+            As lentes profundas através das quais enxergamos o mundo — explicadas pelos personagens do Mundo Torajo.
+          </p>
+
+          <div ref={heartContainerRef} className="w-56 h-56 -mb-4" />
+
+          <div className="flex flex-wrap gap-3 justify-center max-w-md mb-2">
+            {Object.values(personagens).map((p) => (
+              <img
+                key={p.id}
+                src={p.imagem}
+                alt={p.nome}
+                className="w-14 h-14 rounded-full object-cover object-top border-2 shadow-sm"
+                style={{ borderColor: p.cor }}
+              />
+            ))}
+          </div>
+
+          <p className="max-w-lg text-sm text-[var(--c-muted)] leading-relaxed mt-4">
+            Imagine que, durante a infância e adolescência, o cérebro instala um "sistema operacional" pra entender
+            como o mundo funciona. Um <b>esquema</b> é como uma lente de óculos super grossa — dita como você se
+            sente em relação a si mesmo e aos outros. Vamos usar a turma do Mundo Torajo pra enxergar 12 deles.
+          </p>
+
+          <ArrowDown className="mt-10 text-[var(--c-muted)] animate-bounce" size={20} aria-hidden="true" />
+        </section>
+
+        {/* Cenas */}
+        {esquemas.map((esq) => {
+          const personagem = personagens[esq.personagem];
+          return (
+            <section
+              key={esq.id}
+              id={`cena-${esq.id}`}
+              className="relative min-h-screen flex items-center justify-center px-6 py-8 md:py-10 overflow-hidden"
+            >
+              <div className="max-w-5xl w-full grid md:grid-cols-2 gap-6 items-center">
+                <div className="personagem-render flex justify-center order-1">
+                  <img
+                    src={personagem.imagem}
+                    alt={personagem.nome}
+                    className="h-[34vh] md:h-[46vh] object-contain drop-shadow-2xl"
+                  />
+                </div>
+                <div className="texto-cena order-2 rounded-3xl bg-[var(--c-surface)]/90 backdrop-blur-sm shadow-lg p-4 md:p-5">
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <span className="text-3xl font-bold opacity-20 leading-none" style={{ color: personagem.cor }}>
+                      {esq.numero}
+                    </span>
+                    <p className="text-[11px] uppercase tracking-widest font-semibold" style={{ color: personagem.cor }}>
+                      {personagem.nome}
+                    </p>
+                  </div>
+                  <h2
+                    className="text-xl md:text-2xl font-semibold text-[var(--c-text)] mb-0.5"
+                    style={{ fontFamily: "var(--font-heading)" }}
+                  >
+                    {esq.titulo}
+                  </h2>
+                  <p className="text-[11px] italic text-[var(--c-muted)] mb-2">{esq.subtitulo}</p>
+                  <p
+                    className="border-l-[3px] pl-3 mb-2 text-sm text-[var(--c-text)] leading-snug"
+                    style={{ borderColor: personagem.cor }}
+                  >
+                    <b style={{ color: personagem.cor }}>O que é: </b>
+                    {esq.oQueE}
+                  </p>
+                  <p className="mb-2 text-xs text-[var(--c-muted)] leading-snug">
+                    <b style={{ color: personagem.cor }}>De onde costuma vir: </b>
+                    {esq.origem}
+                  </p>
+                  <p className="mb-2 text-sm text-[var(--c-text)] leading-snug">{esq.descricao}</p>
+                  <div
+                    className="rounded-lg p-3 italic mb-2 text-sm leading-snug text-white border-l-4"
+                    style={{ background: "#161428", borderColor: personagem.cor }}
+                  >
+                    "{esq.frase}"
+                  </div>
+                  <div
+                    className="rounded-lg border border-dashed p-3 mb-2"
+                    style={{ borderColor: personagem.cor, background: `${personagem.cor}0d` }}
+                  >
+                    <p
+                      className="text-[9px] font-bold uppercase tracking-wider mb-0.5"
+                      style={{ color: personagem.cor }}
+                    >
+                      E na sua vida?
+                    </p>
+                    <p className="text-xs italic text-[var(--c-text)] leading-snug">{esq.vidaBox}</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          );
+        })}
+
+        {/* Fechamento */}
+        <section
+          id="fechamento"
+          className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 py-24"
+        >
+          {/* eslint-disable-next-line react-hooks/refs -- container ref only mounts the lottie player, read solely inside the scroll callback above, never during render */}
+          <div ref={glassContainerRef} className="w-64 h-64 mb-4" />
+          <h2
+            className="text-3xl md:text-4xl font-semibold text-[var(--c-text)] mb-4"
+            style={{ fontFamily: "var(--font-heading)" }}
+          >
+            E se essas lentes pudessem ser trocadas?
+          </h2>
+          <p className="max-w-xl text-[var(--c-muted)] leading-relaxed mb-8">
+            Reconhecer um esquema não é se rotular — é entender de onde vieram essas lentes e treinar um jeito novo
+            de olhar. Isso se trabalha com tempo, prática e, muitas vezes, com apoio profissional.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Link
+              to="/psicoeducacao/de-onde-vem-seus-padroes"
+              className="px-6 py-3 rounded-full text-white text-sm font-semibold"
+              style={{ background: "var(--c-accent)" }}
+            >
+              Quer ir mais fundo? Conheça "De onde vêm seus padrões"
+            </Link>
+            <Link
+              to="/psicoeducacao"
+              className="px-6 py-3 rounded-full text-sm font-semibold border border-[var(--c-border)] text-[var(--c-muted)]"
+            >
+              Voltar ao mapa
+            </Link>
+          </div>
+        </section>
+      </div>
+
+      <EthicalFooter />
+    </>
+  );
+}
