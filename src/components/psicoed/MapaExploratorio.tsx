@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
-import { Brain, Waves, Scale, Compass, Moon, Layers, Eye, Lock, Sparkles, ChevronRight } from "lucide-react";
+import { Brain, Waves, Scale, Compass, Moon, Layers, Eye, Gem, Lock, Sparkles, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { territorios, type Territorio } from "@/content/psicoed";
 import { fadeUp, stagger } from "@/lib/motion";
@@ -13,6 +13,7 @@ const icones = {
   moon: Moon,
   layers: Layers,
   eye: Eye,
+  gem: Gem,
 } as const;
 
 function useConcluidos() {

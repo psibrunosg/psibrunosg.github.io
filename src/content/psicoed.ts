@@ -11,7 +11,7 @@ export interface Territorio {
   id: string;
   titulo: string;
   descricaoCurta: string;
-  icone: "brain" | "waves" | "scale" | "compass" | "moon" | "layers" | "eye";
+  icone: "brain" | "waves" | "scale" | "compass" | "moon" | "layers" | "eye" | "gem";
   rota: string;
   status: TerritorioStatus;
   teaser?: string; // exibido quando status = "em-breve"
@@ -82,6 +82,15 @@ export const territorios: Territorio[] = [
     rota: "/psicoeducacao/esquemas",
     status: "disponivel",
     posicao: { x: 85, y: 78 },
+  },
+  {
+    id: "crencas-centrais",
+    titulo: "Crenças Centrais",
+    descricaoCurta: "As raízes profundas da nossa mente, sobre nós mesmos, os outros e o mundo — explicadas pela turma do Mundo Torajo.",
+    icone: "gem",
+    rota: "/psicoeducacao/crencas",
+    status: "disponivel",
+    posicao: { x: 15, y: 78 },
   },
 ];
 

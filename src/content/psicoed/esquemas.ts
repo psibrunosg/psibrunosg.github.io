@@ -3,24 +3,10 @@
 // baseado na Terapia do Esquema de Jeffrey Young. Dados puros — sem lógica de UI.
 // Ver docs/superpowers/specs/2026-07-28-esquemas-torajo-design.md.
 
-export type PersonagemId = "torajo" | "morajo" | "zulmi" | "linn" | "pessy" | "azedo" | "margo";
+import { personagens, type PersonagemId, type Personagem } from "@/content/psicoed/personagens";
 
-export interface Personagem {
-  id: PersonagemId;
-  nome: string;
-  cor: string;
-  imagem: string;
-}
-
-export const personagens: Record<PersonagemId, Personagem> = {
-  torajo: { id: "torajo", nome: "Torajo", cor: "#4CAF50", imagem: "/img/torajo/torajo.png" },
-  morajo: { id: "morajo", nome: "Morajo", cor: "#8B5FBF", imagem: "/img/torajo/morajo.png" },
-  zulmi: { id: "zulmi", nome: "Zulmi", cor: "#4C5FD6", imagem: "/img/torajo/zulmi.png" },
-  linn: { id: "linn", nome: "Linn", cor: "#D6BB2E", imagem: "/img/torajo/linn.png" },
-  pessy: { id: "pessy", nome: "Pessy", cor: "#E8833A", imagem: "/img/torajo/pessy.png" },
-  azedo: { id: "azedo", nome: "Azedo", cor: "#E4483F", imagem: "/img/torajo/azedo.png" },
-  margo: { id: "margo", nome: "Margo", cor: "#F0578F", imagem: "/img/torajo/margo.png" },
-};
+export { personagens };
+export type { PersonagemId, Personagem };
 
 export interface Esquema {
   numero: string;
