@@ -306,7 +306,76 @@ mortos) em abas.
   `useProgresso("modos-do-esquema")` continuam funcionando aqui, mesmos ids
   de antes (progresso de paciente não perde histórico).
 
-## 12. Checklist rápido pra próximo território
+## 13. Atualização 2026-07-29 (3): Demon Slayer e Jujutsu Kaisen (⚠️ não públicos)
+
+Mesmo padrão de scrollytelling aplicado a dois universos de terceiros, a
+partir de material em `G:\Meu Drive\Demons slayer\` e
+`G:\Meu Drive\Jujutsu Kaisen\` (mesmos 4 arquivos por universo: `crencas.html`,
+`distorcoes.html`, `esquemas.html`, `modos.html` + `fundo.png` + PNGs de
+personagem).
+
+- **⚠️ Direitos autorais**: diferente do Mundo Torajo (IP própria do Bruno),
+  os personagens de Demon Slayer e Jujutsu Kaisen são arte oficial de
+  terceiros (Koyoharu Gotouge/Shueisha/Aniplex; Gege Akutami/Shueisha/MAPPA).
+  Isso foi sinalizado explicitamente antes de codar, com risco explicado
+  (reclamação de direitos autorais numa página comercial/profissional).
+  Decisão do Bruno, confirmada duas vezes: seguir mesmo assim, **e depois
+  também indexar os 8 territórios no mapa público** (`territorios[]`, cards
+  visíveis em `/psicoeducacao`, mesmo padrão dos outros 9). Não ficou nada
+  "escondido" — se algum dia precisar reverter por causa de direitos
+  autorais, é só remover as 8 entradas de `territorios[]` em
+  `src/content/psicoed.ts` (as rotas em si podem continuar existindo, só
+  não indexadas — ver seção 11 do PersonagensTorajo pra esse padrão
+  "não-linkado").
+- **Componente `TerritorioTorajo` generalizado**: antes recebia o mapa de
+  personagens do Mundo Torajo fixo via import. Agora recebe via prop
+  `personagens: Record<string, Personagem>` — qualquer elenco serve. O campo
+  `CenaTorajo.personagem` virou `string` (antes `PersonagemId` do Torajo).
+  `Personagem.id` (em `personagens.ts`) também virou `string` genérico. Os 4
+  callers antigos (`CrencasCentrais`, `Distorcoes`, `ModosEsquema`,
+  `EsquemasIniciais` — este não usa o componente) foram atualizados pra passar
+  `personagens={personagens}` explicitamente.
+- **Rotas**: `/psicoeducacao/<mundo>/<territorio>` — ex:
+  `/psicoeducacao/demon-slayer/crencas`,
+  `/psicoeducacao/jujutsu-kaisen/modos`. Assets em
+  `public/img/demon-slayer/*.png` e `public/img/jujutsu-kaisen/*.png`
+  (copiados 1:1 da pasta fonte, mesmos nomes de arquivo).
+- **Cores por personagem**: nenhum dos dois materiais fonte definia cor por
+  personagem (diferente do Torajo, que já vinha com "1 cor por fruta"). Defini
+  uma cor hex por personagem a mão (inspirada no visual canônico de cada um —
+  ex: Gojo azul-céu, Tanjiro verde, Sukuna vermelho) em
+  `personagens-demon-slayer.ts` / `personagens-jujutsu-kaisen.ts`. Critério
+  livre, sem fonte oficial — ajustar se o Bruno preferir outra paleta.
+- **Qualidade do material fonte variou muito entre os 4 arquivos por mundo**,
+  ao contrário do Torajo (que era uniforme). Demon Slayer veio completo nos 4
+  (mesmos 5 blocos: oQueE, personagem, descrição, frase, vidaBox). Jujutsu
+  Kaisen veio bem mais cru:
+  - `crencas.html`: só 6 itens (não 8), sem oQueE/frase/vidaBox — só
+    número+título+personagem+descrição. Completei oQueE/frase/vidaBox à mão,
+    no mesmo tom do resto do conteúdo.
+  - `esquemas.html`: só 6 itens (não 12) — ok, esses vieram completos
+    (oQueE+frase+vidaBox presentes), só é uma lista mais curta mesmo.
+  - `modos.html`: o mais incompleto — sem oQueE em nenhum item, sem
+    frase/vidaBox na maioria, e 2 cartões combinando 2 personagens cada
+    ("07 & 08" = Geto+Nanami, "09 & 10" = Gojo+Itadori). Completei oQueE
+    reaproveitando a **definição clínica padrão de cada modo** (mesmo texto
+    usado em `modos-demon-slayer.ts` — é o mesmo framework de Young, não muda
+    por universo, então reaproveitar não é invenção de conteúdo clínico) e
+    separei os 2 cartões combinados em 4 itens individuais pra fechar os 10
+    modos no mesmo padrão das outras 3 páginas. `frase`/`vidaBox` sintetizados
+    a mão quando ausentes, sempre ancorados na descrição que a fonte já dava
+    (nunca inventando fatos novos do enredo).
+  - Por causa disso, `CenaTorajo.frase` e `CenaTorajo.vidaBox` viraram
+    **opcionais** no componente (bloco só renderiza se o campo existir) — só
+    não sobrou nenhum caso de uso real disso porque acabei preenchendo os 2
+    campos em tudo; manter opcional mesmo assim, é mais honesto pra próxima
+    fonte incompleta que aparecer.
+- **Build/preview**: `npm run build` limpo, testei as 8 rotas novas
+  (contagem de cenas confere com o número de itens de cada array: 8/12/12/10
+  Demon Slayer, 6/12/6/10 Jujutsu Kaisen) + regressão rápida nas 4 páginas
+  Torajo que usam o componente generalizado — sem erro de console em nenhuma.
+
+## 14. Checklist rápido pra próximo território
 
 - [ ] Ler HTML fonte em `G:\Meu Drive\Torajo\`, extrair conteúdo pro `.ts`
 - [ ] Assets de personagem já existem em `public/img/torajo/` (reaproveitar)

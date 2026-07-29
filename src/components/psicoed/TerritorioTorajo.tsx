@@ -1,8 +1,10 @@
-// Componente genérico de território "Mundo Torajo" (scrollytelling): hero + N
-// cenas (uma por item) + fechamento. Usado por Crenças Centrais, Distorções
-// Cognitivas e Modos do Esquema — mesmo padrão de Esquemas Iniciais
-// (src/pages/EsquemasIniciais.tsx), mas parametrizado para não duplicar ~300
-// linhas por território. Ver docs/mundo-torajo-playbook.md.
+// Componente genérico de território "scrollytelling" no estilo Mundo Torajo:
+// hero + N cenas (uma por item) + fechamento. Usado por todos os territórios
+// baseados em personagens (Mundo Torajo, Demon Slayer, Jujutsu Kaisen) — mesmo
+// padrão de Esquemas Iniciais (src/pages/EsquemasIniciais.tsx), parametrizado
+// pra não duplicar ~300 linhas por território/universo. Recebe o mapa de
+// personagens via prop (não fixo no Mundo Torajo) pra servir qualquer elenco.
+// Ver docs/mundo-torajo-playbook.md.
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
@@ -16,7 +18,7 @@ import { EthicalFooter } from "@/components/shared/EthicalFooter";
 import { SkipLink } from "@/components/shared/SkipLink";
 import { WhatsAppFloat } from "@/components/shared/WhatsAppFloat";
 import { contato } from "@/content/copy";
-import { personagens, type PersonagemId } from "@/content/psicoed/personagens";
+import type { Personagem } from "@/content/psicoed/personagens";
 import LensShardsBackground from "@/components/psicoed/LensShardsBackground";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -33,13 +35,15 @@ export interface CenaTorajo {
   id: string;
   titulo: string;
   subtitulo: string;
-  personagem: PersonagemId;
+  personagem: string;
   /** Rótulo do badge, quando difere do nome padrão do personagem (ex: "Toda a Turma"). */
   personagemLabel?: string;
   oQueE: string;
   descricao: string;
-  frase: string;
-  vidaBox: string;
+  /** Frase/quote em personagem — omitida quando o material fonte não trouxe uma. */
+  frase?: string;
+  /** Box "E na sua vida?" — omitido quando o material fonte não trouxe um. */
+  vidaBox?: string;
 }
 
 export interface TerritorioTorajoProps {
@@ -48,6 +52,7 @@ export interface TerritorioTorajoProps {
   titulo: ReactNode;
   introCurta: string;
   introLonga: string;
+  personagens: Record<string, Personagem>;
   itens: CenaTorajo[];
   fechamentoTitulo: string;
   fechamentoTexto: string;
@@ -100,6 +105,7 @@ export default function TerritorioTorajo({
   titulo,
   introCurta,
   introLonga,
+  personagens,
   itens,
   fechamentoTitulo,
   fechamentoTexto,
@@ -300,24 +306,28 @@ export default function TerritorioTorajo({
                     {item.oQueE}
                   </p>
                   <p className="mb-2 text-sm text-[var(--c-text)] leading-snug">{item.descricao}</p>
-                  <div
-                    className="rounded-lg p-3 italic mb-2 text-sm leading-snug text-white border-l-4"
-                    style={{ background: "#161428", borderColor: personagem.cor }}
-                  >
-                    "{item.frase}"
-                  </div>
-                  <div
-                    className="rounded-lg border border-dashed p-3 mb-2"
-                    style={{ borderColor: personagem.cor, background: `${personagem.cor}0d` }}
-                  >
-                    <p
-                      className="text-[9px] font-bold uppercase tracking-wider mb-0.5"
-                      style={{ color: personagem.cor }}
+                  {item.frase && (
+                    <div
+                      className="rounded-lg p-3 italic mb-2 text-sm leading-snug text-white border-l-4"
+                      style={{ background: "#161428", borderColor: personagem.cor }}
                     >
-                      E na sua vida?
-                    </p>
-                    <p className="text-xs italic text-[var(--c-text)] leading-snug">{item.vidaBox}</p>
-                  </div>
+                      "{item.frase}"
+                    </div>
+                  )}
+                  {item.vidaBox && (
+                    <div
+                      className="rounded-lg border border-dashed p-3 mb-2"
+                      style={{ borderColor: personagem.cor, background: `${personagem.cor}0d` }}
+                    >
+                      <p
+                        className="text-[9px] font-bold uppercase tracking-wider mb-0.5"
+                        style={{ color: personagem.cor }}
+                      >
+                        E na sua vida?
+                      </p>
+                      <p className="text-xs italic text-[var(--c-text)] leading-snug">{item.vidaBox}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </section>

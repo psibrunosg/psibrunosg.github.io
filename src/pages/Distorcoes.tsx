@@ -1,10 +1,12 @@
 import TerritorioTorajo from "@/components/psicoed/TerritorioTorajo";
 import { distorcoesTorajo } from "@/content/psicoed/distorcoes-torajo";
+import { personagens } from "@/content/psicoed/personagens";
 
 export default function Distorcoes() {
   return (
     <TerritorioTorajo
       documentTitle="Distorções Cognitivas | Psicoeducação | Bruno de Souza Gonçalves"
+      personagens={personagens}
       eyebrow="Entender para cuidar · Mundo Torajo"
       titulo={
         <>

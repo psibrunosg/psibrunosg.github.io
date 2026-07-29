@@ -1,10 +1,12 @@
 import TerritorioTorajo from "@/components/psicoed/TerritorioTorajo";
 import { modosTorajo } from "@/content/psicoed/modos-torajo";
+import { personagens } from "@/content/psicoed/personagens";
 
 export default function ModosEsquema() {
   return (
     <TerritorioTorajo
       documentTitle="Modos do Esquema | Psicoeducação | Bruno de Souza Gonçalves"
+      personagens={personagens}
       eyebrow="Entender para cuidar · Mundo Torajo"
       titulo={
         <>

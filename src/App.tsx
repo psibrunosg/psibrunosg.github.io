@@ -27,6 +27,14 @@ import ModosEsquema from "./pages/ModosEsquema";
 import EsquemasIniciais from "./pages/EsquemasIniciais";
 import CrencasCentrais from "./pages/CrencasCentrais";
 import PersonagensTorajo from "./pages/PersonagensTorajo";
+import CrencasCentraisDemonSlayer from "./pages/CrencasCentraisDemonSlayer";
+import DistorcoesDemonSlayer from "./pages/DistorcoesDemonSlayer";
+import EsquemasDemonSlayer from "./pages/EsquemasDemonSlayer";
+import ModosDemonSlayer from "./pages/ModosDemonSlayer";
+import CrencasCentraisJujutsuKaisen from "./pages/CrencasCentraisJujutsuKaisen";
+import DistorcoesJujutsuKaisen from "./pages/DistorcoesJujutsuKaisen";
+import EsquemasJujutsuKaisen from "./pages/EsquemasJujutsuKaisen";
+import ModosJujutsuKaisen from "./pages/ModosJujutsuKaisen";
 import DeOndeVemPadroes from "./pages/DeOndeVemPadroes";
 import BalaoPensamentosPage from "./pages/exercicios/BalaoPensamentosPage";
 import CacaFatosPage from "./pages/exercicios/CacaFatosPage";
@@ -81,6 +89,14 @@ export default function App() {
         <Route path="/psicoeducacao/esquemas" element={<EsquemasIniciais />} />
         <Route path="/psicoeducacao/crencas" element={<CrencasCentrais />} />
         <Route path="/psicoeducacao/personagens" element={<PersonagensTorajo />} />
+        <Route path="/psicoeducacao/demon-slayer/crencas" element={<CrencasCentraisDemonSlayer />} />
+        <Route path="/psicoeducacao/demon-slayer/distorcoes" element={<DistorcoesDemonSlayer />} />
+        <Route path="/psicoeducacao/demon-slayer/esquemas" element={<EsquemasDemonSlayer />} />
+        <Route path="/psicoeducacao/demon-slayer/modos" element={<ModosDemonSlayer />} />
+        <Route path="/psicoeducacao/jujutsu-kaisen/crencas" element={<CrencasCentraisJujutsuKaisen />} />
+        <Route path="/psicoeducacao/jujutsu-kaisen/distorcoes" element={<DistorcoesJujutsuKaisen />} />
+        <Route path="/psicoeducacao/jujutsu-kaisen/esquemas" element={<EsquemasJujutsuKaisen />} />
+        <Route path="/psicoeducacao/jujutsu-kaisen/modos" element={<ModosJujutsuKaisen />} />
         {/* Território novo — acessível por link direto; ainda NÃO surfaceado no
             mapa público (src/content/psicoed.ts) até aprovação do Bruno. */}
         <Route path="/psicoeducacao/de-onde-vem-seus-padroes" element={<DeOndeVemPadroes />} />

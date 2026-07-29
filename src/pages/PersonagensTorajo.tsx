@@ -233,7 +233,7 @@ export default function PersonagensTorajo() {
             {Object.values(personagens).map((p) => (
               <button
                 key={p.id}
-                onClick={() => setSelecionado(p.id)}
+                onClick={() => setSelecionado(p.id as PersonagemId)}
                 className="flex flex-col items-center gap-1.5 focus:outline-none"
               >
                 <img

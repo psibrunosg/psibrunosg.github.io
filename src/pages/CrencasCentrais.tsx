@@ -1,10 +1,12 @@
 import TerritorioTorajo from "@/components/psicoed/TerritorioTorajo";
 import { crencas } from "@/content/psicoed/crencas";
+import { personagens } from "@/content/psicoed/personagens";
 
 export default function CrencasCentrais() {
   return (
     <TerritorioTorajo
       documentTitle="Crenças Centrais | Psicoeducação | Bruno de Souza Gonçalves"
+      personagens={personagens}
       eyebrow="Entender para cuidar · Mundo Torajo"
       titulo={
         <>

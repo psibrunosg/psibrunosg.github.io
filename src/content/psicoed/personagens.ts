@@ -5,7 +5,7 @@
 export type PersonagemId = "torajo" | "morajo" | "zulmi" | "linn" | "pessy" | "azedo" | "margo";
 
 export interface Personagem {
-  id: PersonagemId;
+  id: string;
   nome: string;
   cor: string;
   imagem: string;
