@@ -1,10 +1,11 @@
 ﻿import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ClipboardList, Brain, ArrowRight, Shield, Lock, Heart, Leaf, Activity, BookOpen, Gauge, Zap, Eye, Sprout, Smile, Star, Wine, Flame, Moon, HeartHandshake, ShieldOff, Layers, Sun, AlertTriangle, Repeat, Coffee, BarChart3, Users, Focus, Sparkles, Scale, Wind, BatteryWarning, LifeBuoy, Dumbbell, GraduationCap, ChevronDown, CircleCheck } from "lucide-react";
+import { ClipboardList, Brain, ArrowLeft, ArrowRight, Shield, Lock, Heart, Leaf, Activity, BookOpen, Gauge, Zap, Eye, Sprout, Smile, Star, Wine, Flame, Moon, HeartHandshake, ShieldOff, Layers, Sun, AlertTriangle, Repeat, Coffee, BarChart3, Users, Focus, Sparkles, Scale, Wind, BatteryWarning, LifeBuoy, Dumbbell, GraduationCap, Clock3, PawPrint } from "lucide-react";
 import { SkipLink } from "@/components/shared/SkipLink";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
-import { AppAurora } from "@/components/ui/AppAurora";
+import { MobileMenu } from "@/components/ui/MobileMenu";
+import { WhatsAppFloat } from "@/components/shared/WhatsAppFloat";
 import { contato } from "@/content/copy";
 import { fadeUp, stagger } from "@/lib/motion";
 import { ESCALAS_RESTRITAS_IDS } from "@/content/escalas-restritas";
@@ -55,40 +56,28 @@ const ferramentasEsquemas: Ferramenta[] = [
   { id: "smi", href: "/paciente/escala/smi", icon: Layers, sigla: "SMI", nome: "Inventario de Modos Esquematicos", descricao: "118 perguntas sobre modos de funcionamento emocional. ~25 min.", cor: "#6B4A8C" },
 ];
 
-function FerramentaCard({ f, featured = false }: { f: Ferramenta; featured?: boolean }) {
+const navItems = [
+  { label: "Inicio", href: "/" },
+  { label: "Psicoeducacao", href: "/psicoeducacao" },
+  { label: "Exercicios", href: "/exercicios" },
+  { label: "Blog", href: "/blog" },
+];
+
+function FerramentaCard({ f }: { f: Ferramenta }) {
   const Icon = f.icon;
+  const tempo = f.descricao.match(/~[^.]+/)?.[0]?.replace("~", "") ?? "Questionario";
   return (
-    <motion.div variants={fadeUp} className={featured ? "sm:col-span-2" : undefined}>
-      <Link
-        to={f.href}
-        className={`shine-host glass-card group relative block h-full overflow-hidden rounded-2xl transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_18px_44px_-16px_rgba(58,42,31,0.4)] ${featured ? "p-7 sm:p-8" : "p-6"}`}
-        style={{ border: `1px solid ${f.cor}40`, background: `color-mix(in oklab, ${f.cor} 4%, transparent)` }}
-      >
-        <div className={`flex items-start gap-4 ${featured ? "sm:gap-5" : ""}`}>
-          <div
-            className={`relative flex-shrink-0 rounded-2xl transition-transform duration-200 group-hover:scale-110 group-hover:rotate-6 ${featured ? "p-4" : "p-3.5"}`}
-            style={{ background: f.cor + "1A", boxShadow: `0 8px 22px -8px ${f.cor}88` }}
-          >
-            <Icon size={featured ? 30 : 24} style={{ color: f.cor }} aria-hidden="true" />
-          </div>
-          <div className="flex-1">
-            <div className="mb-1 flex items-center gap-2">
-              <span className={`font-bold tracking-[0.15em] uppercase ${featured ? "text-xs" : "text-[11px]"}`} style={{ color: f.cor }}>{f.sigla}</span>
-              {featured && (
-                <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide" style={{ background: f.cor + "1A", color: f.cor }}>
-                  Mais usada
-                </span>
-              )}
-            </div>
-            <h3 className={`mb-1.5 font-semibold text-[var(--c-text)] leading-snug ${featured ? "text-xl sm:text-2xl" : "text-lg"}`} style={{ fontFamily: "var(--font-heading)" }}>{f.nome}</h3>
-            <p className={`mb-4 leading-relaxed text-[var(--c-muted)] ${featured ? "text-[15px] sm:max-w-md" : "text-sm"}`}>{f.descricao}</p>
-            <span className="inline-flex items-center gap-1.5 text-sm font-semibold transition-all group-hover:gap-3" style={{ color: f.cor }}>
-              Responder <ArrowRight size={15} />
-            </span>
-          </div>
+    <Link to={f.href} className="group block h-full focus-visible:outline-none">
+      <motion.article whileHover={{ y: -6, rotate: -0.8 }} transition={{ type: "spring", stiffness: 300, damping: 22 }} className="lobo-card h-full rounded-[26px] border bg-[var(--c-surface)] p-6 transition-shadow hover:shadow-lg group-focus-visible:ring-2" style={{ borderColor: "var(--c-border)" }} onMouseEnter={(event) => { event.currentTarget.style.borderColor = f.cor; }} onMouseLeave={(event) => { event.currentTarget.style.borderColor = "var(--c-border)"; }}>
+        <div className="mb-4 flex items-start justify-between">
+          <span className="lobo-blob inline-flex h-12 w-12 items-center justify-center" style={{ background: `color-mix(in oklab, ${f.cor} 16%, var(--c-bg))`, color: f.cor }}><Icon size={21} /></span>
+          <span className="inline-flex items-center gap-1 rounded-full border border-[var(--c-border)] bg-[var(--c-bg)] px-2.5 py-1 text-[11px] font-bold text-[var(--c-muted)]"><Clock3 size={11} />{tempo}</span>
         </div>
-      </Link>
-    </motion.div>
+        <h3 className="mb-1.5 text-xl font-medium text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{f.nome}</h3>
+        <p className="mb-4 text-sm leading-relaxed text-[var(--c-muted)]">{f.descricao}</p>
+        <p className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider" style={{ color: f.cor }}><Icon size={12} />{f.sigla}</p>
+      </motion.article>
+    </Link>
   );
 }
 
@@ -100,37 +89,13 @@ const acessosRapidos = [
 function AcessoRapidoCard({ item }: { item: (typeof acessosRapidos)[number] }) {
   const Icon = item.icon;
   return (
-    <motion.div variants={fadeUp}>
-      <Link
-        to={item.href}
-        className="shine-host glass-card group relative flex h-full items-center gap-4 overflow-hidden rounded-2xl p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_18px_44px_-16px_rgba(58,42,31,0.4)]"
-      >
-        <div
-          className="relative flex-shrink-0 rounded-2xl p-3.5 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-6"
-          style={{ background: item.cor + "1A", boxShadow: `0 8px 22px -8px ${item.cor}88` }}
-        >
-          <Icon size={24} style={{ color: item.cor }} aria-hidden="true" />
-        </div>
-        <div className="flex-1">
-          <h3 className="mb-1 text-base font-semibold text-[var(--c-text)] leading-snug" style={{ fontFamily: "var(--font-heading)" }}>{item.titulo}</h3>
-          <p className="text-sm leading-relaxed text-[var(--c-muted)]">{item.descricao}</p>
-        </div>
-        <ArrowRight size={18} className="flex-shrink-0 text-[var(--c-muted)] transition-all group-hover:translate-x-1 group-hover:text-[var(--c-accent)]" aria-hidden="true" />
-      </Link>
-    </motion.div>
-  );
-}
-
-function CatalogoSection({ titulo, count, children, cols = "sm:grid-cols-2" }: { titulo: string; count: number; children: React.ReactNode; cols?: string }) {
-  return (
-    <motion.details variants={fadeUp} className="group mb-5 rounded-2xl border border-[var(--c-border)] bg-[var(--c-surface)]/60 px-5 py-1 shadow-[0_12px_32px_-26px_rgba(58,42,31,0.55)]">
-      <summary className="flex cursor-pointer list-none items-center gap-3 py-4 marker:content-none">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--c-accent)]/10 text-sm font-bold text-[var(--c-accent)]">{count}</span>
-        <span className="flex-1 font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{titulo}</span>
-        <ChevronDown size={18} className="text-[var(--c-muted)] transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
-      </summary>
-      <div className={`grid gap-5 border-t border-[var(--c-border)] py-5 ${cols}`}>{children}</div>
-    </motion.details>
+    <Link to={item.href} className="group block h-full focus-visible:outline-none">
+      <motion.article whileHover={{ y: -6, rotate: -0.8 }} transition={{ type: "spring", stiffness: 300, damping: 22 }} className="lobo-card h-full rounded-[26px] border bg-[var(--c-surface)] p-6 transition-shadow hover:shadow-lg group-focus-visible:ring-2" style={{ borderColor: "var(--c-border)" }}>
+        <div className="mb-4 flex items-start justify-between"><span className="lobo-blob inline-flex h-12 w-12 items-center justify-center" style={{ background: `color-mix(in oklab, ${item.cor} 16%, var(--c-bg))`, color: item.cor }}><Icon size={21} /></span><ArrowRight size={18} className="text-[var(--c-muted)] transition-transform group-hover:translate-x-1" /></div>
+        <h3 className="mb-1.5 text-xl font-medium text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{item.titulo}</h3>
+        <p className="text-sm leading-relaxed text-[var(--c-muted)]">{item.descricao}</p>
+      </motion.article>
+    </Link>
   );
 }
 
@@ -148,99 +113,63 @@ export default function PacienteHub() {
   return (
     <>
       <SkipLink />
-      <AppAurora withLandmark />
-
-      <header className="fixed top-0 left-0 right-0 z-50 px-6 py-4 glass-panel">
-        <div className="mx-auto flex max-w-4xl items-center justify-between">
-          <Link to="/" className="text-sm font-semibold text-[var(--c-text)] transition-colors hover:text-[var(--c-accent)]">Bruno de Souza Gonçalves</Link>
-          <span className="text-xs text-[var(--c-muted)]">{contato.crp}</span>
-        </div>
-      </header>
-
-      <main id="main" className="relative z-10 min-h-screen px-6 pb-24 pt-28">
-        <div className="mx-auto max-w-4xl">
+      <MobileMenu items={navItems} crp={contato.crp} whatsappLink={contato.whatsappLink} />
+      <WhatsAppFloat />
+      <main id="main" className="min-h-screen overflow-x-clip bg-[var(--c-bg)] px-6 pb-24 pt-24" style={{ fontFamily: "var(--font-body)", color: "var(--c-text)" }}>
+        <div className="mx-auto max-w-5xl">
+          <Link to="/" className="mb-10 inline-flex items-center gap-2 text-sm font-semibold text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]"><ArrowLeft size={16} />Voltar ao site</Link>
           <motion.div variants={stagger.container} initial="hidden" animate="visible">
 
-            <motion.section variants={fadeUp} className="mb-10 overflow-hidden rounded-[2rem] border border-[var(--c-border)] bg-[var(--c-surface)]/80 shadow-[0_24px_70px_-42px_rgba(58,42,31,0.55)]">
-              <div className="grid gap-8 p-7 sm:p-10 md:grid-cols-[1fr_auto] md:items-center">
-                <div>
-                  <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-[var(--c-accent)]">Seu espaço de cuidado</p>
-                  <h1 className="mb-4 text-4xl font-semibold leading-[1.05] text-[var(--c-text)] sm:text-5xl" style={{ fontFamily: "var(--font-heading)" }}>
-                    Vamos por partes.
-                  </h1>
-                  <p className="max-w-xl text-base leading-relaxed text-[var(--c-muted)]">
-                    Use as ferramentas combinadas com seu psicologo. Elas ajudam a organizar o que voce vem sentindo — nao substituem uma conversa em sessao.
-                  </p>
-                </div>
-                <div className="hidden h-28 w-28 items-center justify-center rounded-full border border-[var(--c-border)] bg-[var(--c-warm-lt)]/55 md:flex">
-                  <img src="/img/lobo.svg" alt="" className="h-16 w-16 object-contain" draggable={false} />
-                </div>
+            <motion.section variants={fadeUp} className="mb-6 grid items-center gap-10 md:grid-cols-[1.15fr_0.85fr]">
+              <div>
+                <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.32em] text-[var(--c-accent)]">Clínica Bruno de Souza Gonçalves · Saúde <span className="text-[var(--c-warm)]">&</span> Bem-estar</p>
+                <h1 className="mb-6 text-4xl font-medium text-[var(--c-accent)] md:text-[3.4rem] md:leading-[1.1]" style={{ fontFamily: "var(--font-heading)" }}>Cuidar de si pode ser leve — um passo de cada vez.</h1>
+                <p className="mb-7 max-w-lg leading-relaxed text-[var(--c-muted)]">Ferramentas de autoavaliação indicadas pelo seu psicólogo para organizar o que você vem sentindo. Responda no seu ritmo e leve suas percepções para a sessão.</p>
+                <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-semibold text-[var(--c-text)]"><span className="inline-flex items-center gap-1.5"><Sparkles size={15} className="text-[var(--c-warm)]" />{ferramentasRastreio.length} rastreios rápidos</span><span className="inline-flex items-center gap-1.5"><Clock3 size={15} className="text-[var(--c-warm)]" />1 a 45 min</span><span className="inline-flex items-center gap-1.5"><Heart size={15} className="text-[var(--c-warm)]" />com acompanhamento</span></div>
               </div>
-              <div className="grid border-t border-[var(--c-border)] bg-[var(--c-bg)]/55 sm:grid-cols-3">
-                {[
-                  ["1", "Escolha", "o questionario indicado"],
-                  ["2", "Responda", "no seu ritmo e com sinceridade"],
-                  ["3", "Converse", "sobre isso na proxima sessao"],
-                ].map(([numero, titulo, texto]) => (
-                  <div key={numero} className="flex items-center gap-3 border-b border-[var(--c-border)] px-6 py-4 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
-                    <span className="text-sm font-bold text-[var(--c-accent)]">{numero}</span>
-                    <p className="text-xs leading-relaxed text-[var(--c-muted)]"><strong className="text-[var(--c-text)]">{titulo}.</strong> {texto}</p>
-                  </div>
-                ))}
+              <div className="relative flex flex-col items-center">
+                <PawPrint aria-hidden size={24} className="absolute -left-1 top-5 -rotate-12 text-[var(--c-moss-dk)]/50" />
+                <div className="lobo-blob flex h-56 w-56 items-center justify-center md:h-72 md:w-72" style={{ background: "color-mix(in oklab, var(--c-moss) 42%, var(--c-bg))", animation: "lobo-float 7s ease-in-out infinite" }}><img src="/img/lobo.svg" alt="Símbolo da Clínica Bruno de Souza Gonçalves" className="h-[82%] w-[82%] object-contain" /></div>
+                <div className="relative -mt-6 max-w-[270px] rounded-2xl border border-[var(--c-border)] bg-[var(--c-surface)] px-4 py-3 shadow-sm"><p className="text-xs leading-relaxed text-[var(--c-muted)]"><PawPrint size={13} className="mr-1 inline -mt-0.5 text-[var(--c-warm)]" />Você não precisa fazer isso sozinho. O que aparecer aqui pode virar conversa e cuidado na sessão.</p></div>
               </div>
             </motion.section>
+            <div aria-hidden="true" className="my-10 flex items-center justify-center gap-6">{Array.from({ length: 7 }).map((_, index) => <PawPrint key={index} size={index % 2 ? 14 : 19} className={index % 2 ? "-translate-y-1.5 rotate-[22deg] text-[var(--c-moss-dk)]/30" : "translate-y-1 rotate-[-16deg] text-[var(--c-moss-dk)]/50"} />)}</div>
 
             <motion.section variants={fadeUp} className="mb-12">
-              <div className="mb-5 flex items-end justify-between gap-4">
-                <div>
-                  <p className="mb-1 text-xs font-bold uppercase tracking-[0.18em] text-[var(--c-accent)]">Para começar</p>
-                  <h2 className="text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Rastreios rápidos</h2>
-                </div>
-                <span className="hidden items-center gap-1.5 text-xs text-[var(--c-muted)] sm:flex"><CircleCheck size={14} className="text-[var(--c-accent)]" /> leva poucos minutos</span>
-              </div>
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--c-accent)]">Para começar</p>
+              <h2 className="mb-6 text-2xl font-medium text-[var(--c-text)] md:text-3xl" style={{ fontFamily: "var(--font-heading)" }}>Rastreios rápidos</h2>
               <div className="grid gap-5 sm:grid-cols-2">
-                {ferramentasRastreio.map((f) => <FerramentaCard key={f.id} f={f} featured />)}
+                {ferramentasRastreio.map((f) => <FerramentaCard key={f.id} f={f} />)}
               </div>
             </motion.section>
 
             <motion.section variants={fadeUp} className="mb-12">
-              <div className="mb-5">
-                <p className="mb-1 text-xs font-bold uppercase tracking-[0.18em] text-[var(--c-accent)]">Entre sessões</p>
-                <h2 className="text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Continue o cuidado</h2>
-              </div>
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--c-accent)]">Entre sessões</p>
+              <h2 className="mb-6 text-2xl font-medium text-[var(--c-text)] md:text-3xl" style={{ fontFamily: "var(--font-heading)" }}>Continue o cuidado</h2>
               <div className="grid gap-5 sm:grid-cols-2">
                 {acessosRapidos.map((item) => <AcessoRapidoCard key={item.id} item={item} />)}
               </div>
             </motion.section>
 
             <motion.section variants={fadeUp} className="mb-12">
-              <div className="mb-5">
-                <p className="mb-1 text-xs font-bold uppercase tracking-[0.18em] text-[var(--c-accent)]">Quando indicado</p>
-                <h2 className="text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Outras escalas</h2>
-                <p className="mt-2 text-sm leading-relaxed text-[var(--c-muted)]">Abra apenas a categoria que seu psicologo recomendou.</p>
-              </div>
-              <CatalogoSection titulo="Escalas gerais" count={ferramentasGeraisPublicas.length} cols="sm:grid-cols-2 lg:grid-cols-3">
-                {ferramentasGeraisPublicas.map((f) => <FerramentaCard key={f.id} f={f} />)}
-              </CatalogoSection>
-              <CatalogoSection titulo="Escalas de esquemas" count={ferramentasEsquemas.length}>
-                {ferramentasEsquemas.map((f) => <FerramentaCard key={f.id} f={f} />)}
-              </CatalogoSection>
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--c-accent)]">Quando indicado</p>
+              <h2 className="mb-2 text-2xl font-medium text-[var(--c-text)] md:text-3xl" style={{ fontFamily: "var(--font-heading)" }}>Escalas gerais</h2>
+              <p className="mb-6 text-sm leading-relaxed text-[var(--c-muted)]">Escolha somente o questionário combinado com seu psicólogo.</p>
+              <div className="mb-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{ferramentasGeraisPublicas.map((f) => <FerramentaCard key={f.id} f={f} />)}</div>
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--c-accent)]">Aprofundamento</p>
+              <h2 className="mb-6 text-2xl font-medium text-[var(--c-text)] md:text-3xl" style={{ fontFamily: "var(--font-heading)" }}>Escalas de esquemas</h2>
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{ferramentasEsquemas.map((f) => <FerramentaCard key={f.id} f={f} />)}</div>
             </motion.section>
 
-            <motion.div variants={fadeUp} className="glass-card rounded-2xl p-6">
-              <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-[var(--c-accent)]/12">
-                  <Lock size={17} className="text-[var(--c-accent)]" />
-                </div>
-                <div>
-                  <strong className="mb-1 block text-sm text-[var(--c-text)]">Privacidade</strong>
-                  <p className="text-sm leading-relaxed text-[var(--c-muted)]">
-                    Suas respostas sao armazenadas de forma segura e acessiveis exclusivamente por Bruno de Souza Gonçalves, {contato.crp}. Estas ferramentas sao de rastreio, nao de diagnostico.
-                    {" "}Leia a <Link to="/privacidade" className="text-[var(--c-accent)] hover:underline">politica de privacidade</Link>.
-                  </p>
-                </div>
+            <motion.section variants={fadeUp} className="relative mb-5 overflow-hidden rounded-[32px] bg-[var(--c-accent)] px-7 py-10 md:px-12 md:py-12">
+              <PawPrint aria-hidden size={130} className="absolute -bottom-8 -right-6 -rotate-[18deg] text-white/10" />
+              <div className="relative max-w-2xl">
+                <p className="mb-3 inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--c-moss)]"><Lock size={13} />Privacidade e cuidado</p>
+                <h2 className="mb-3 text-2xl font-medium text-[var(--c-bg)] md:text-3xl" style={{ fontFamily: "var(--font-heading)" }}>Suas respostas fazem parte do seu processo.</h2>
+                <p className="mb-6 text-sm leading-relaxed text-[var(--c-moss)]">Elas são armazenadas de forma segura e acessíveis exclusivamente por Bruno de Souza Gonçalves, {contato.crp}. Estas ferramentas são de rastreio, não de diagnóstico.</p>
+                <Link to="/privacidade" className="inline-flex rounded-full bg-[var(--c-warm)] px-6 py-3 text-sm font-bold text-white shadow-md transition-transform hover:scale-[1.03]">Ler política de privacidade</Link>
               </div>
-            </motion.div>
+            </motion.section>
 
             <motion.div variants={fadeUp} className="mt-4 text-center">
               <Link
