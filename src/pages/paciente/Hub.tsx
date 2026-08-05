@@ -173,7 +173,7 @@ export default function PacienteHub() {
                   </p>
                 </div>
                 <div className="hidden h-28 w-28 items-center justify-center rounded-full border border-[var(--c-border)] bg-[var(--c-warm-lt)]/55 md:flex">
-                  <img src="/img/simbolo-estendido.png" alt="" className="h-16 w-16 object-contain" style={{ mixBlendMode: "multiply" }} draggable={false} />
+                  <img src="/img/lobo.svg" alt="" className="h-16 w-16 object-contain" draggable={false} />
                 </div>
               </div>
               <div className="grid border-t border-[var(--c-border)] bg-[var(--c-bg)]/55 sm:grid-cols-3">
