@@ -1,6 +1,6 @@
 ﻿import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, ArrowRight } from "lucide-react";
+import { ArrowLeft, Clock, ArrowRight, BookOpen, PawPrint, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getAllPosts, loadDynamicPosts, isDynamicLoaded, type BlogPost } from "@/content/posts-loader";
 import { areaDe, areasLista } from "@/content/areas-blog";
@@ -43,7 +43,7 @@ export default function Blog() {
       <WhatsAppFloat />
 
       <main id="main" className="min-h-screen bg-[var(--c-bg)] pt-28 pb-24 px-6">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <Link
             to="/"
             className="inline-flex items-center gap-2 text-sm text-[var(--c-muted)] hover:text-[var(--c-accent)] transition-colors mb-12"
@@ -53,22 +53,28 @@ export default function Blog() {
           </Link>
 
           <motion.div variants={stagger.container} initial="hidden" animate="visible">
+            <motion.section variants={fadeUp} className="mb-10 grid items-center gap-10 rounded-[32px] border border-[var(--c-border)] bg-[var(--c-surface)] p-7 shadow-sm md:grid-cols-[1.15fr_0.85fr] md:p-10">
+              <div>
             <motion.p variants={fadeUp} className="text-xs tracking-[0.3em] uppercase text-[var(--c-accent)] font-semibold mb-2">
               Conteudo educativo
             </motion.p>
             <motion.h1
               variants={fadeUp}
-              className="text-4xl md:text-5xl font-semibold text-[var(--c-text)] mb-4"
+              className="text-4xl font-medium text-[var(--c-accent)] mb-4 md:text-[3.4rem] md:leading-[1.1]"
               style={{ fontFamily: "var(--font-heading)" }}
             >
               Blog
             </motion.h1>
-            <motion.p variants={fadeUp} className="text-[var(--c-muted)] max-w-xl mb-8 leading-relaxed">
+            <motion.p variants={fadeUp} className="text-[var(--c-muted)] max-w-xl mb-7 leading-relaxed">
               Textos sobre saude mental, terapia e o que acontece quando decidimos entender melhor o que sentimos. Baseados em pesquisa recente, escritos para serem lidos sem dor de cabeca.
             </motion.p>
+              <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-[var(--c-text)]"><span className="inline-flex items-center gap-1.5"><BookOpen size={15} className="text-[var(--c-warm)]" />leitura acessível</span><span className="inline-flex items-center gap-1.5"><Sparkles size={15} className="text-[var(--c-warm)]" />baseada em evidências</span></div>
+              </div>
+              <div className="relative mx-auto flex h-48 w-48 items-center justify-center md:h-60 md:w-60"><PawPrint aria-hidden size={24} className="absolute left-0 top-5 -rotate-12 text-[var(--c-moss-dk)]/50" /><div className="lobo-blob flex h-full w-full items-center justify-center" style={{ background: "color-mix(in oklab, var(--c-moss) 42%, var(--c-bg))", animation: "lobo-float 7s ease-in-out infinite" }}><img src="/img/lobo.svg" alt="" className="h-[82%] w-[82%] object-contain" /></div></div>
+            </motion.section>
 
             {/* filtro por area */}
-            <motion.div variants={fadeUp} className="mb-12 flex flex-wrap gap-2">
+            <motion.div variants={fadeUp} className="mb-10 flex flex-wrap gap-2.5">
               <button onClick={() => setAreaFiltro("todos")}
                 className={"rounded-full px-3 py-1.5 text-xs font-semibold transition-all " + (areaFiltro === "todos" ? "bg-[var(--c-accent)] text-white" : "border border-[var(--c-border)] text-[var(--c-muted)] hover:text-[var(--c-text)]")}>
                 Todas
@@ -96,17 +102,13 @@ export default function Blog() {
                     key={post.slug}
                     variants={fadeUp}
                     custom={i}
-                    className="group rounded-2xl border border-[var(--c-border)] bg-[var(--c-surface)] transition-colors overflow-hidden"
-                    style={{ borderLeftWidth: 4, borderLeftColor: cor }}
+                    className="lobo-card group overflow-hidden rounded-[26px] border border-[var(--c-border)] bg-[var(--c-surface)] transition-shadow hover:shadow-lg"
+                    style={{ borderColor: "var(--c-border)" }}
                   >
-                    <Link to={"/blog/" + post.slug} className="block p-7">
+                    <Link to={"/blog/" + post.slug} className="block p-6">
                       <div className="flex items-center justify-between mb-4">
-                        <span
-                          className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase px-3 py-1 rounded-full"
-                          style={{ color: cor, background: cor + "20" }}
-                        >
+                        <span className="lobo-blob inline-flex h-11 w-11 items-center justify-center" style={{ color: cor, background: cor + "20" }}>
                           {AreaIcon && <AreaIcon size={12} />}
-                          {area?.label ?? post.categoria}
                         </span>
                         <span className="flex items-center gap-1 text-xs text-[var(--c-muted)]">
                           <Clock size={13} aria-hidden="true" />
@@ -120,7 +122,7 @@ export default function Blog() {
                         {post.titulo}
                       </h2>
                       <p className="text-[var(--c-muted)] text-sm leading-relaxed mb-5">{post.resumo}</p>
-                      <span className="inline-flex items-center gap-1.5 text-sm font-medium" style={{ color: cor }}>
+                      <span className="inline-flex items-center gap-1.5 text-sm font-bold" style={{ color: cor }}>
                         Ler artigo <ArrowRight size={15} />
                       </span>
                     </Link>

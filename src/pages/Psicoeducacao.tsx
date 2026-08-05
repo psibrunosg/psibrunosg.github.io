@@ -31,7 +31,7 @@ export default function Psicoeducacao() {
       <WhatsAppFloat />
 
       <main id="main" className="min-h-screen bg-[var(--c-bg)] pt-28 pb-24 px-6">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <Link
             to="/"
             className="inline-flex items-center gap-2 text-sm text-[var(--c-muted)] hover:text-[var(--c-accent)] transition-colors mb-12"
@@ -40,13 +40,13 @@ export default function Psicoeducacao() {
             Voltar ao site
           </Link>
 
-          <motion.div variants={stagger.container} initial="hidden" animate="visible">
+          <motion.div variants={stagger.container} initial="hidden" animate="visible" className="rounded-[32px] border border-[var(--c-border)] bg-[var(--c-surface)] p-7 shadow-sm md:p-10">
             <motion.p variants={fadeUp} className="text-xs tracking-[0.3em] uppercase text-[var(--c-accent)] font-semibold mb-2">
               Entender para cuidar
             </motion.p>
             <motion.h1
               variants={fadeUp}
-              className="text-4xl md:text-5xl font-semibold text-[var(--c-text)] mb-4"
+              className="text-4xl font-medium text-[var(--c-accent)] mb-4 md:text-[3.4rem] md:leading-[1.1]"
               style={{ fontFamily: "var(--font-heading)" }}
             >
               Psicoeducação
@@ -60,7 +60,7 @@ export default function Psicoeducacao() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="mt-8"
+            className="mt-8 rounded-[32px] border border-[var(--c-border)] bg-[var(--c-surface)] p-4 shadow-sm md:p-8"
           >
             <MapaExploratorio />
           </motion.div>
