@@ -1,7 +1,7 @@
 ﻿import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ClipboardList, Brain, ArrowRight, Shield, Lock, Heart, Leaf, Activity, BookOpen, Gauge, Zap, Eye, Sprout, Smile, Star, Wine, Flame, Moon, HeartHandshake, ShieldOff, Layers, Sun, AlertTriangle, Repeat, Coffee, BarChart3, Users, Focus, Sparkles, Scale, Wind, BatteryWarning, LifeBuoy, Dumbbell, GraduationCap } from "lucide-react";
+import { ClipboardList, Brain, ArrowRight, Shield, Lock, Heart, Leaf, Activity, BookOpen, Gauge, Zap, Eye, Sprout, Smile, Star, Wine, Flame, Moon, HeartHandshake, ShieldOff, Layers, Sun, AlertTriangle, Repeat, Coffee, BarChart3, Users, Focus, Sparkles, Scale, Wind, BatteryWarning, LifeBuoy, Dumbbell, GraduationCap, ChevronDown, CircleCheck } from "lucide-react";
 import { SkipLink } from "@/components/shared/SkipLink";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
 import { AppAurora } from "@/components/ui/AppAurora";
@@ -121,16 +121,16 @@ function AcessoRapidoCard({ item }: { item: (typeof acessosRapidos)[number] }) {
   );
 }
 
-function Secao({ titulo, count, children, cols = "sm:grid-cols-2" }: { titulo: string; count: number; children: React.ReactNode; cols?: string }) {
+function CatalogoSection({ titulo, count, children, cols = "sm:grid-cols-2" }: { titulo: string; count: number; children: React.ReactNode; cols?: string }) {
   return (
-    <motion.section variants={fadeUp} className="mb-12">
-      <div className="mb-5 flex items-center gap-3">
-        <h2 className="text-sm font-bold tracking-[0.18em] uppercase text-[var(--c-muted)]">{titulo}</h2>
-        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--c-accent)]/12 px-1.5 text-[11px] font-bold tabular-nums text-[var(--c-accent)]">{count}</span>
-        <div className="h-px flex-1 rounded-full bg-gradient-to-r from-[var(--c-border)] to-transparent" />
-      </div>
-      <div className={`grid gap-5 ${cols}`}>{children}</div>
-    </motion.section>
+    <motion.details variants={fadeUp} className="group mb-5 rounded-2xl border border-[var(--c-border)] bg-[var(--c-surface)]/60 px-5 py-1 shadow-[0_12px_32px_-26px_rgba(58,42,31,0.55)]">
+      <summary className="flex cursor-pointer list-none items-center gap-3 py-4 marker:content-none">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--c-accent)]/10 text-sm font-bold text-[var(--c-accent)]">{count}</span>
+        <span className="flex-1 font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{titulo}</span>
+        <ChevronDown size={18} className="text-[var(--c-muted)] transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
+      </summary>
+      <div className={`grid gap-5 border-t border-[var(--c-border)] py-5 ${cols}`}>{children}</div>
+    </motion.details>
   );
 }
 
@@ -158,46 +158,74 @@ export default function PacienteHub() {
       </header>
 
       <main id="main" className="relative z-10 min-h-screen px-6 pb-24 pt-28">
-        <div className="mx-auto max-w-3xl">
+        <div className="mx-auto max-w-4xl">
           <motion.div variants={stagger.container} initial="hidden" animate="visible">
 
-            <motion.div variants={fadeUp} className="mb-14 text-center">
-              <motion.div
-                className="relative mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full"
-                style={{ background: "var(--c-warm-lt)", border: "1px solid var(--c-border)", boxShadow: "0 18px 46px -14px var(--c-accent)" }}
-                initial={{ scale: 0, rotate: -12 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", delay: 0.15, stiffness: 200 }}
-              >
-                <img src="/img/simbolo-estendido.png" alt="Simbolo Bruno de Souza Gonçalves" className="h-16 w-16 object-contain" style={{ mixBlendMode: "multiply" }} draggable={false} />
-                <motion.span
-                  className="absolute inset-0 rounded-full ring-2 ring-[var(--c-accent)]/40"
-                  animate={{ scale: [1, 1.16, 1], opacity: [0.55, 0, 0.55] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  aria-hidden="true"
-                />
-              </motion.div>
-              <h1 className="mb-4 text-4xl font-semibold md:text-5xl" style={{ fontFamily: "var(--font-heading)", color: "var(--c-accent)" }}>
-                Area do Paciente
-              </h1>
-              <p className="mx-auto max-w-lg leading-relaxed text-[var(--c-muted)]">
-                Ferramentas de autoavaliacao indicadas pelo seu psicologo. Escolha um questionario para comecar.
-              </p>
-            </motion.div>
+            <motion.section variants={fadeUp} className="mb-10 overflow-hidden rounded-[2rem] border border-[var(--c-border)] bg-[var(--c-surface)]/80 shadow-[0_24px_70px_-42px_rgba(58,42,31,0.55)]">
+              <div className="grid gap-8 p-7 sm:p-10 md:grid-cols-[1fr_auto] md:items-center">
+                <div>
+                  <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-[var(--c-accent)]">Seu espaço de cuidado</p>
+                  <h1 className="mb-4 text-4xl font-semibold leading-[1.05] text-[var(--c-text)] sm:text-5xl" style={{ fontFamily: "var(--font-heading)" }}>
+                    Vamos por partes.
+                  </h1>
+                  <p className="max-w-xl text-base leading-relaxed text-[var(--c-muted)]">
+                    Use as ferramentas combinadas com seu psicologo. Elas ajudam a organizar o que voce vem sentindo — nao substituem uma conversa em sessao.
+                  </p>
+                </div>
+                <div className="hidden h-28 w-28 items-center justify-center rounded-full border border-[var(--c-border)] bg-[var(--c-warm-lt)]/55 md:flex">
+                  <img src="/img/simbolo-estendido.png" alt="" className="h-16 w-16 object-contain" style={{ mixBlendMode: "multiply" }} draggable={false} />
+                </div>
+              </div>
+              <div className="grid border-t border-[var(--c-border)] bg-[var(--c-bg)]/55 sm:grid-cols-3">
+                {[
+                  ["1", "Escolha", "o questionario indicado"],
+                  ["2", "Responda", "no seu ritmo e com sinceridade"],
+                  ["3", "Converse", "sobre isso na proxima sessao"],
+                ].map(([numero, titulo, texto]) => (
+                  <div key={numero} className="flex items-center gap-3 border-b border-[var(--c-border)] px-6 py-4 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
+                    <span className="text-sm font-bold text-[var(--c-accent)]">{numero}</span>
+                    <p className="text-xs leading-relaxed text-[var(--c-muted)]"><strong className="text-[var(--c-text)]">{titulo}.</strong> {texto}</p>
+                  </div>
+                ))}
+              </div>
+            </motion.section>
 
-            <Secao titulo="Rastreio Rapido" count={ferramentasRastreio.length}>
-              {ferramentasRastreio.map((f) => <FerramentaCard key={f.id} f={f} featured />)}
-            </Secao>
+            <motion.section variants={fadeUp} className="mb-12">
+              <div className="mb-5 flex items-end justify-between gap-4">
+                <div>
+                  <p className="mb-1 text-xs font-bold uppercase tracking-[0.18em] text-[var(--c-accent)]">Para começar</p>
+                  <h2 className="text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Rastreios rápidos</h2>
+                </div>
+                <span className="hidden items-center gap-1.5 text-xs text-[var(--c-muted)] sm:flex"><CircleCheck size={14} className="text-[var(--c-accent)]" /> leva poucos minutos</span>
+              </div>
+              <div className="grid gap-5 sm:grid-cols-2">
+                {ferramentasRastreio.map((f) => <FerramentaCard key={f.id} f={f} featured />)}
+              </div>
+            </motion.section>
 
-            <Secao titulo="Acesso Rapido" count={acessosRapidos.length}>
-              {acessosRapidos.map((item) => <AcessoRapidoCard key={item.id} item={item} />)}
-            </Secao>
+            <motion.section variants={fadeUp} className="mb-12">
+              <div className="mb-5">
+                <p className="mb-1 text-xs font-bold uppercase tracking-[0.18em] text-[var(--c-accent)]">Entre sessões</p>
+                <h2 className="text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Continue o cuidado</h2>
+              </div>
+              <div className="grid gap-5 sm:grid-cols-2">
+                {acessosRapidos.map((item) => <AcessoRapidoCard key={item.id} item={item} />)}
+              </div>
+            </motion.section>
 
-            <Secao titulo="Escalas Gerais" count={ferramentasGeraisPublicas.length} cols="sm:grid-cols-2 lg:grid-cols-3">
-              {ferramentasGeraisPublicas.map((f) => <FerramentaCard key={f.id} f={f} />)}
-            </Secao>
-
-            <Secao titulo="Escalas de Esquemas" count={ferramentasEsquemas.length}>
-              {ferramentasEsquemas.map((f) => <FerramentaCard key={f.id} f={f} />)}
-            </Secao>
+            <motion.section variants={fadeUp} className="mb-12">
+              <div className="mb-5">
+                <p className="mb-1 text-xs font-bold uppercase tracking-[0.18em] text-[var(--c-accent)]">Quando indicado</p>
+                <h2 className="text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Outras escalas</h2>
+                <p className="mt-2 text-sm leading-relaxed text-[var(--c-muted)]">Abra apenas a categoria que seu psicologo recomendou.</p>
+              </div>
+              <CatalogoSection titulo="Escalas gerais" count={ferramentasGeraisPublicas.length} cols="sm:grid-cols-2 lg:grid-cols-3">
+                {ferramentasGeraisPublicas.map((f) => <FerramentaCard key={f.id} f={f} />)}
+              </CatalogoSection>
+              <CatalogoSection titulo="Escalas de esquemas" count={ferramentasEsquemas.length}>
+                {ferramentasEsquemas.map((f) => <FerramentaCard key={f.id} f={f} />)}
+              </CatalogoSection>
+            </motion.section>
 
             <motion.div variants={fadeUp} className="glass-card rounded-2xl p-6">
               <div className="flex items-start gap-3">
