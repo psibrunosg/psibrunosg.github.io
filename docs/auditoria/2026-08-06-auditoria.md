@@ -28,6 +28,62 @@ Nenhum arquivo de código foi alterado. Toda afirmação carrega âncora `arquiv
 
 ---
 
+---
+
+## Revalidação — 2026-08-06, contra `d14ee4b` + `7f29a90`
+
+A auditoria original foi feita contra `62024b5`. Depois dela houve trabalho em paralelo no repositório, e as âncoras `arquivo:linha` abaixo do sumário executivo referem-se à árvore antiga — **muitas não batem mais e vários achados já estão fechados.** Esta seção é o estado verificado por conteúdo na árvore atual. Onde ela contradiz o corpo do relatório, ela prevalece.
+
+Portões na árvore revalidada: `npm run build` ✅ · 65/65 testes ✅ · `check:neuro-models` ✅ · `npm run lint` ✖ 65 erros (não-bloqueante no CI, por decisão explícita).
+
+### Fechados — 16 dos 35 P0/P1
+
+| # | Achado | Onde está fechado agora |
+|---|---|---|
+| 1 | C-SSRS não dispara triagem | `scoring.ts` — ramo `r.tipo === "cssrs"` chama `classificarCssrs`, dispara em `critico`/`alto` |
+| 2 | Exclusão LGPD apagava 1 de 7 origens | `Painel.tsx` `excluirPaciente` — commit `7f29a90` |
+| 3 | Gravação de exercício em silêncio | `save-session` regex `/^\d{5}(\d{3})?$/` + migração `varchar(8)` em `c893aa0` |
+| 5 | `jwtDecode` sem verificar assinatura | `unlock-restricted` e `patient-progress` usam `auth.getUser` + `THERAPIST_USER_ID` |
+| 6 | `conceituacao-chat` sem auth | gate de terapeuta no topo do handler |
+| 7 | `psicoed-personalizada` como oráculo | regex de formato, rate-limit via `validation_attempts`, negativas colapsadas |
+| 9 | PII no rascunho de localStorage | grava só `respostas, atual, etapa` |
+| 10 | `salvarResposta` aparentava sucesso | devolve erro real com cliente nulo |
+| 11 | Contraste do botão primário | tokens `--c-on-accent`/`--c-on-warm` + varredura completa — commit `7f29a90` |
+| 14 | CI sem portões | lint (aviso), test e `check:neuro-models` no workflow |
+| 17 | Farm de XP por clique | `complete()` idempotente por slug/dia |
+| 18 | Psicoeducação inflava XP e streak | `useTrilha` filtra slugs `psicoed:` |
+| 19 | `save()` sem debounce | debounce de 500 ms com `timerRef` |
+| 21 | Delete em massa sem confirmação | `confirm` com contagem |
+| 23 | Abrir histórico apagava a síntese | limpa só quando `chavePaciente` muda |
+| 24 | "Excluir código" que não excluía | renomeado para "Desativar", confirmação honesta |
+
+### Abertos — confirmados nesta árvore
+
+| # | Sev | Achado | Âncora atual |
+|---|-----|--------|--------------|
+| 4 | P0 | **Leitura de sessão do banco nunca implementada.** Zero referência a `patient-progress` ou fetch no caminho de load | `useExerciseSession.ts:20-50` |
+| 8 | P0 | **Conteúdo restrito liberado por localStorage** editável no devtools | `ExerciciosRestritos.tsx:113` |
+| 12 | P1 | **`ChuvaPreocupacoes` só jogável arrastando** — zero `aria-label`, `role`, `tabIndex` ou `onKeyDown` no arquivo inteiro | `ChuvaPreocupacoes.tsx` |
+| 13 | P1 | **Zero code splitting** — nenhum `React.lazy` em `App.tsx` | `App.tsx` |
+| 16 | P1 | **8 exercícios continuam sem chamar `save()`** — verificado um a um: Acerte, Pares, CacaFatos, Chuva, SeparandoTudo, Balões, Balança, Roleta | `src/components/exercicios/` |
+| 22 | P1 | **Erro do fetch descartado** — `const { data } =` sem ler `error`; falha de rede vira "Nenhuma resposta" | `Painel.tsx:842` |
+| 25 | P1 | **`select("*")`** traz PII de toda a base a cada load, sem colunas nem paginação | `Painel.tsx:842` |
+| 33 | P1 | **Chave de API de LLM em localStorage** | `useConceituacaoIA.ts` |
+| 34 | P1 | **`showContext` default `true`** — córtex entra no primeiro paint do 3D | `Neuroanatomia3D.tsx:117` |
+| 35 | P1 | **Quiz do 3D não persiste** — zero `useProgresso` no arquivo, então o território nunca acende no mapa | `Neuroanatomia3D.tsx` |
+
+### Provavelmente fechado, confirmar manualmente
+
+| # | Achado | Sinal |
+|---|---|---|
+| 20 | `MuralhaEvidencias` sem estado de fim | Agora há 4 ocorrências de `"fim"`/`setFase` no arquivo — precisa de teste de uso para confirmar |
+
+### Não verificável sem acesso ao banco
+
+Os achados **26 a 32** — INSERT anônimo com `patient_code` arbitrário, schema drift, RLS `using(true)` em seis tabelas, `exercise_sessions` SELECT `to public` sem posse, redação parcial de anexos, prompt injection e transferência a provedores de LLM — dependem de ler o schema e as policies reais. O connector do Supabase desta sessão aponta para outra organização (`zgnjcjxqeoytwhgrhlua`), não para o projeto `hpyarwrgcdbulekfyozs` do site. **Permanecem em aberto por falta de verificação, não por evidência de correção.**
+
+---
+
 ## Sumário executivo
 
 O site é quatro produtos empilhados que cresceram por acréscimo: painel do terapeuta, escalas psicométricas, 35+ exercícios e uma camada de psicoeducação com laboratório 3D. Cada frente trouxe seu próprio padrão de layout, persistência, progresso e identidade de paciente — e nenhuma conversa com as outras.
