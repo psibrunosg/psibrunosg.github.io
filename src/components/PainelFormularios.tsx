@@ -73,7 +73,7 @@ export function PainelFormularios() {
   }
 
   function addCampo(tipo: FormCampo["tipo"]) {
-    const novo: FormCampo = { id: Math.random().toString(36).substring(7), tipo, pergunta: "" };
+    const novo: FormCampo = { id: Math.random().toString(36).substring(7), tipo, pergunta: "", obrigatorio: true };
     setEditando(prev => ({ ...prev, campos: [...(prev.campos || []), novo] }));
   }
 
@@ -81,10 +81,10 @@ export function PainelFormularios() {
     setEditando(prev => ({ ...prev, campos: (prev.campos || []).filter(c => c.id !== id) }));
   }
 
-  function updateCampo(id: string, texto: string) {
+  function updateCampo(id: string, updates: Partial<FormCampo>) {
     setEditando(prev => ({
       ...prev,
-      campos: (prev.campos || []).map(c => c.id === id ? { ...c, pergunta: texto } : c)
+      campos: (prev.campos || []).map(c => c.id === id ? { ...c, ...updates } : c)
     }));
   }
 
@@ -127,28 +127,40 @@ export function PainelFormularios() {
             
             <div className="space-y-3">
               {(editando.campos || []).map((c, i) => (
-                <div key={c.id} className="flex items-start gap-3 rounded-xl border border-[var(--c-border)] bg-[var(--c-surface)]/30 p-3">
+                <div key={c.id} className="flex flex-col gap-2 rounded-xl border border-[var(--c-border)] bg-[var(--c-surface)]/30 p-3 sm:flex-row sm:items-start">
                   <div className="mt-2 text-xs font-bold text-[var(--c-accent)]">{i + 1}.</div>
-                  <div className="flex-1">
+                  <div className="flex-1 space-y-2">
                     <input 
                       value={c.pergunta} 
-                      onChange={e => updateCampo(c.id, e.target.value)} 
+                      onChange={e => updateCampo(c.id, { pergunta: e.target.value })} 
                       placeholder="Digite a pergunta..."
                       className="w-full rounded bg-transparent px-2 py-1 text-sm focus:bg-[var(--c-bg)] focus:outline-none"
                     />
-                    <div className="mt-1 px-2 text-[10px] uppercase text-[var(--c-muted)]">
-                      Tipo: {c.tipo.replace("_", " ")}
+                    <div className="flex items-center justify-between px-2">
+                      <div className="text-[10px] uppercase text-[var(--c-muted)]">
+                        Tipo: {c.tipo.replace(/_/g, " ")}
+                      </div>
+                      <label className="flex cursor-pointer items-center gap-1.5 text-xs text-[var(--c-text)]">
+                        <input 
+                          type="checkbox" 
+                          checked={c.obrigatorio !== false} 
+                          onChange={e => updateCampo(c.id, { obrigatorio: e.target.checked })} 
+                        />
+                        Obrigatório
+                      </label>
                     </div>
                   </div>
-                  <button onClick={() => removerCampo(c.id)} className="p-2 text-[var(--c-danger)] hover:bg-[var(--c-danger)]/10 rounded-lg"><Trash2 size={16} /></button>
+                  <button onClick={() => removerCampo(c.id)} className="self-end rounded-lg p-2 text-[var(--c-danger)] hover:bg-[var(--c-danger)]/10 sm:self-start"><Trash2 size={16} /></button>
                 </div>
               ))}
             </div>
 
-            <div className="mt-4 flex gap-2">
+            <div className="mt-4 flex flex-wrap gap-2">
               <button onClick={() => addCampo("texto_curto")} className="rounded-lg bg-[var(--c-surface)] px-3 py-1.5 text-xs font-semibold hover:bg-[var(--c-accent)]/10 hover:text-[var(--c-accent)]">+ Texto Curto</button>
               <button onClick={() => addCampo("texto_longo")} className="rounded-lg bg-[var(--c-surface)] px-3 py-1.5 text-xs font-semibold hover:bg-[var(--c-accent)]/10 hover:text-[var(--c-accent)]">+ Texto Longo</button>
               <button onClick={() => addCampo("escala_1_5")} className="rounded-lg bg-[var(--c-surface)] px-3 py-1.5 text-xs font-semibold hover:bg-[var(--c-accent)]/10 hover:text-[var(--c-accent)]">+ Escala 1 a 5</button>
+              <button onClick={() => addCampo("escala_1_10")} className="rounded-lg bg-[var(--c-surface)] px-3 py-1.5 text-xs font-semibold hover:bg-[var(--c-accent)]/10 hover:text-[var(--c-accent)]">+ Escala 1 a 10</button>
+              <button onClick={() => addCampo("selecao_modos")} className="rounded-lg bg-[var(--c-surface)] px-3 py-1.5 text-xs font-semibold hover:bg-[var(--c-accent)]/10 hover:text-[var(--c-accent)]">+ Modos Esquemáticos</button>
             </div>
           </div>
 

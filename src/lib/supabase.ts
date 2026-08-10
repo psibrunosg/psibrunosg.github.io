@@ -108,8 +108,9 @@ export async function deletarPostBlog(id: number) {
 
 export interface FormCampo {
   id: string;
-  tipo: "texto_curto" | "texto_longo" | "escala_1_5";
+  tipo: "texto_curto" | "texto_longo" | "escala_1_5" | "escala_1_10" | "selecao_modos";
   pergunta: string;
+  obrigatorio?: boolean;
 }
 
 export interface FormularioAnonimoDB {
