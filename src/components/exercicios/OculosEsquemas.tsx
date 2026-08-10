@@ -99,7 +99,7 @@ export default function OculosEsquemas() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setFase("jogo")}
-            className="mt-6 w-full py-2.5 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm"
+            className="mt-6 w-full py-2.5 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm"
           >
             Começar →
           </motion.button>

@@ -73,6 +73,7 @@ import TcleOnline from "./pages/documentos/TcleOnline";
 import TclePresencial from "./pages/documentos/TclePresencial";
 import Contrato from "./pages/documentos/Contrato";
 import Guia from "./pages/documentos/Guia";
+import PesquisaPublica from "./pages/PesquisaPublica";
 
 export default function App() {
   return (
@@ -156,6 +157,7 @@ export default function App() {
         <Route path="/documentos/tcle-presencial" element={<TclePresencial />} />
         <Route path="/documentos/contrato" element={<Contrato />} />
         <Route path="/documentos/guia" element={<Guia />} />
+        <Route path="/pesquisa/:id" element={<PesquisaPublica />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

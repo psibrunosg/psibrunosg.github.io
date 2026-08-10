@@ -60,7 +60,7 @@ export default function MaquinaDoTempo() {
             whileTap={{ scale: 0.98 }}
             onClick={handleIniciar}
             disabled={!preocupacao.trim()}
-            className="mt-3 w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm disabled:opacity-50"
+            className="mt-3 w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm disabled:opacity-50"
           >
             Viajar no tempo →
           </motion.button>
@@ -122,7 +122,7 @@ export default function MaquinaDoTempo() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleProximaParada}
-            className="mt-4 w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm flex items-center justify-center gap-1"
+            className="mt-4 w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm flex items-center justify-center gap-1"
           >
             {paradaIdx < PARADAS.length - 1 ? "Próxima parada" : "Ver resultado"} <ChevronRight size={14} />
           </motion.button>

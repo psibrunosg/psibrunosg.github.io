@@ -159,7 +159,7 @@ export default function JanelaTolerancia() {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => setEtapa("simulador")}
-              className="px-6 py-3 rounded-full bg-[var(--c-accent)] text-white font-semibold text-sm"
+              className="px-6 py-3 rounded-full bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm"
             >
               Começar
             </motion.button>
@@ -175,7 +175,7 @@ export default function JanelaTolerancia() {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setEtapa("expansao")}
-                className="mt-6 px-6 py-3 rounded-full bg-[var(--c-accent)] text-white font-semibold text-sm"
+                className="mt-6 px-6 py-3 rounded-full bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm"
               >
                 Continuar
               </motion.button>
@@ -204,7 +204,7 @@ export default function JanelaTolerancia() {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setEtapa("quiz")}
-                className="mt-6 px-6 py-3 rounded-full bg-[var(--c-accent)] text-white font-semibold text-sm"
+                className="mt-6 px-6 py-3 rounded-full bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm"
               >
                 Continuar para o quiz
               </motion.button>
@@ -230,7 +230,7 @@ export default function JanelaTolerancia() {
                 </button>
                 <Link
                   to="/psicoeducacao"
-                  className="flex-1 text-center px-5 py-2.5 rounded-full bg-[var(--c-accent)] text-white font-semibold text-sm"
+                  className="flex-1 text-center px-5 py-2.5 rounded-full bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm"
                 >
                   Voltar ao mapa
                 </Link>

@@ -71,7 +71,7 @@ export default function TecnicaTedio() {
                 onClick={() => setTempoMeta(t)}
                 className={`px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
                   tempoMeta === t
-                    ? "bg-[var(--c-accent)] text-white"
+                    ? "bg-[var(--c-accent)] text-[var(--c-on-accent)]"
                     : "bg-[var(--c-surface)] text-[var(--c-text)] border border-[var(--c-border)]"
                 }`}
               >
@@ -89,7 +89,7 @@ export default function TecnicaTedio() {
             whileTap={{ scale: 0.98 }}
             onClick={handleIniciar}
             disabled={!sensacao.trim()}
-            className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm disabled:opacity-50"
+            className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm disabled:opacity-50"
           >
             Iniciar observação →
           </motion.button>
@@ -157,7 +157,7 @@ export default function TecnicaTedio() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleContinuar}
-                  className="py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm"
+                  className="py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm"
                 >
                   Continuar
                 </motion.button>

@@ -148,7 +148,7 @@ export interface RespostaRegistro {
 }
 
 export interface RiscoClinico {
-  tipo: "phq9_item9" | "bhs_grave";
+  tipo: "phq9_item9" | "bhs_grave" | "cssrs_risco";
   mensagem: string;
   nivel: "alto" | "critico";
   respostaId: number;
@@ -177,6 +177,19 @@ export function detectarRiscos(respostas: RespostaRegistro[]): RiscoClinico[] {
         respostaId: r.id,
         nome: identificacao,
       });
+    }
+    if (r.tipo === "cssrs") {
+      // Reusa a classificação já existente (e testada) logo abaixo neste arquivo.
+      const { nivel, descricao } = classificarCssrs(r.respostas);
+      if (nivel === "critico" || nivel === "alto") {
+        riscos.push({
+          tipo: "cssrs_risco",
+          mensagem: `${identificacao} — C-SSRS risco ${nivel} (rastreio de ideacao suicida): ${descricao.replace(/\.$/, "")} em ${new Date(r.criado_em).toLocaleDateString("pt-BR")}`,
+          nivel,
+          respostaId: r.id,
+          nome: identificacao,
+        });
+      }
     }
   }
   return riscos;

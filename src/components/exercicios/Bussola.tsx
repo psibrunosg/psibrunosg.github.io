@@ -70,7 +70,7 @@ export default function Bussola() {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={handleFinalizar}
-          className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm mt-6"
+          className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm mt-6"
         >
           Ver alinhamento
         </motion.button>

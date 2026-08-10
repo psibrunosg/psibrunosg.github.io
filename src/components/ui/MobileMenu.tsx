@@ -110,7 +110,7 @@ export function MobileMenu({ items, crp, whatsappLink }: Props) {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setOpen(false)}
-                className="block w-full text-center py-2 rounded-full bg-[var(--c-accent)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+                className="block w-full text-center py-2 rounded-full bg-[var(--c-accent)] text-[var(--c-on-accent)] text-sm font-medium hover:opacity-90 transition-opacity"
               >
                 Agendar conversa
               </a>

@@ -68,7 +68,7 @@ export default function SeparandoTudo() {
         <p className="text-sm text-[var(--c-text)] italic">
           O fato é o que uma câmera filmaria. O pensamento é a explicação que a cabeça inventa. E o sentimento vem do pensamento — não do fato em si!
         </p>
-        <button onClick={reiniciar} className="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-[var(--c-accent)] text-white font-semibold">
+        <button onClick={reiniciar} className="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold">
           <RotateCcw size={16} aria-hidden /> Jogar de novo
         </button>
       </motion.div>
@@ -113,7 +113,7 @@ export default function SeparandoTudo() {
                 <p className={`text-sm font-semibold ${feedback ? "text-[var(--c-moss-dk)]" : "text-[var(--c-accent)]"}`}>
                   {feedback ? "✓ Isso mesmo!" : "✗ Quase — era outra caixa."}
                 </p>
-                <button onClick={proxima} className="w-full py-3 rounded-lg bg-[var(--c-accent)] text-white font-semibold">
+                <button onClick={proxima} className="w-full py-3 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold">
                   {cartaIdx + 1 >= cena.cartas.length && cenaIdx + 1 >= cenasSeparando.length ? "Ver resultado" : "Próxima carta"}
                 </button>
               </motion.div>

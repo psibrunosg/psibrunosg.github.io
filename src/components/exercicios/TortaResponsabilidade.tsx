@@ -59,7 +59,7 @@ export default function TortaResponsabilidade() {
             whileTap={{ scale: 0.98 }}
             onClick={handleIniciar}
             disabled={!evento.trim()}
-            className="mt-3 w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm disabled:opacity-50"
+            className="mt-3 w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm disabled:opacity-50"
           >
             Distribuir responsabilidade →
           </motion.button>
@@ -139,7 +139,7 @@ export default function TortaResponsabilidade() {
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         onClick={handleFinalizar}
-        className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm"
+        className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm"
       >
         Finalizar
       </motion.button>

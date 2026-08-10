@@ -50,7 +50,7 @@ export function Navbar({ items, whatsappLink, brand = "Clínica Bruno de Souza G
             href={whatsappLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-shrink-0 px-4 py-2 rounded-full bg-[var(--c-accent)] text-white text-sm font-medium hover:opacity-90 transition-opacity focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="flex-shrink-0 px-4 py-2 rounded-full bg-[var(--c-accent)] text-[var(--c-on-accent)] text-sm font-medium hover:opacity-90 transition-opacity focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             Agendar
           </a>

@@ -101,7 +101,7 @@ export default function BalaoPensamentos() {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={handleSoltar}
-          className="w-full py-3 rounded-lg bg-[var(--c-accent)] text-white font-semibold flex items-center justify-center gap-2"
+          className="w-full py-3 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold flex items-center justify-center gap-2"
         >
           <Wind size={16} /> Soltar (observe desaparecer)
         </motion.button>

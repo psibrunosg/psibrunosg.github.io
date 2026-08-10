@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 export interface ExerciseSessionState {
@@ -8,149 +8,122 @@ export interface ExerciseSessionState {
   completedAt?: string;
 }
 
+const SAVE_DEBOUNCE_MS = 500;
+
+async function postSession(slug: string, body: Record<string, unknown>) {
+  const code = localStorage.getItem("exercise_patient_code");
+  if (!code || !supabase) return;
+  try {
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/save-session`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Patient-Code": code },
+      body: JSON.stringify({ exercise_slug: slug, ...body }),
+    });
+    if (!response.ok) {
+      console.warn("save-session failed:", await response.text());
+    }
+  } catch (e) {
+    console.error("save-session error:", e);
+  }
+}
+
+// Rega o Jardim da Mente: no máximo UMA por slug por dia.
+// Vários exercícios chamam complete() a cada balão solto / replay / revisão;
+// sem esse guarda, XP, streak e jardim medem clique em vez de prática.
+function regarUmaVezPorDia(slug: string) {
+  const agora = new Date();
+  try {
+    const regas = JSON.parse(localStorage.getItem("jardim_regas") || "[]") as Array<{ slug: string; data: string }>;
+    const hoje = agora.toDateString();
+    if (regas.some((r) => r.slug === slug && new Date(r.data).toDateString() === hoje)) return;
+    regas.push({ slug, data: agora.toISOString() });
+    localStorage.setItem("jardim_regas", JSON.stringify(regas));
+  } catch {
+    localStorage.setItem("jardim_regas", JSON.stringify([{ slug, data: agora.toISOString() }]));
+  }
+}
 
 export function useExerciseSession(slug: string) {
   const [state, setState] = useState<ExerciseSessionState>({ payload: {}, partial: true });
   const [loading, setLoading] = useState(true);
+  // stateRef é a fonte da verdade para as escritas: setState é assíncrono e
+  // o save com debounce precisa gravar o payload mais recente, não o do render.
+  const stateRef = useRef<ExerciseSessionState>(state);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Carrega estado salvo (DB se logado, localStorage local)
+  const apply = useCallback((next: ExerciseSessionState) => {
+    stateRef.current = next;
+    setState(next);
+  }, []);
+
+  // Carrega estado salvo do localStorage.
+  // ponytail: leitura do DB (exercise_sessions) fica para outra rodada — o save já persiste lá.
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const code = localStorage.getItem("exercise_patient_code");
-
-      if (code) {
-        // Fetch from DB via save-session endpoint (GET não existe, usar patient-progress?)
-        // Por enquanto, carrega do localStorage + DB será feito no save
-        const localKey = `exercise_${slug}`;
-        const local = localStorage.getItem(localKey);
-        if (local) {
-          try {
-            setState(JSON.parse(local));
-          } catch {
-            // Fallback
-          }
-        }
-      } else {
-        // Anônimo: localStorage local
-        const localKey = `exercise_${slug}`;
-        const local = localStorage.getItem(localKey);
-        if (local) {
-          try {
-            setState(JSON.parse(local));
-          } catch {
-            // Fallback
-          }
+      const local = localStorage.getItem(`exercise_${slug}`);
+      if (local) {
+        try {
+          apply(JSON.parse(local));
+        } catch {
+          // Fallback
         }
       }
       setLoading(false);
     })();
-  }, [slug]);
+  }, [slug, apply]);
 
-  // Save com debounce — payload é MESCLADO ao anterior (saves parciais não apagam campos já salvos)
+  // Limpa o timer no unmount: nada de gravar depois de desmontado.
+  useEffect(() => () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+  }, []);
+
+  // Save com debounce de 500ms — payload é MESCLADO ao anterior (saves parciais
+  // não apagam campos já salvos). O estado em memória atualiza na hora; só as
+  // escritas (localStorage + POST) esperam, senão um arrasto de slider gera dezenas.
   const save = useCallback(
     (newPayload: Record<string, unknown>, options?: { partial?: boolean }) => {
-      setState((prev) => {
-        const mergedPayload = { ...prev.payload, ...newPayload };
-        const updated = {
-          ...prev,
-          payload: mergedPayload,
-          partial: options?.partial !== false,
-        };
-
-        // Salva localmente sempre
-        localStorage.setItem(`exercise_${slug}`, JSON.stringify(updated));
-
-        // Se tem código, envia pra DB
-        const code = localStorage.getItem("exercise_patient_code");
-        if (code && supabase) {
-          (async () => {
-            try {
-              const response = await fetch(
-                `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/save-session`,
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    "X-Patient-Code": code,
-                  },
-                  body: JSON.stringify({
-                    exercise_slug: slug,
-                    payload: mergedPayload,
-                    partial: options?.partial !== false,
-                  }),
-                }
-              );
-              if (!response.ok) {
-                console.warn("save-session failed:", await response.text());
-              }
-            } catch (e) {
-              console.error("save-session error:", e);
-            }
-          })();
-        }
-
-        return updated;
+      const prev = stateRef.current;
+      apply({
+        ...prev,
+        payload: { ...prev.payload, ...newPayload },
+        partial: options?.partial !== false,
       });
+
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
+        timerRef.current = null;
+        const atual = stateRef.current;
+        localStorage.setItem(`exercise_${slug}`, JSON.stringify(atual));
+        postSession(slug, { payload: atual.payload, partial: atual.partial });
+      }, SAVE_DEBOUNCE_MS);
     },
-    [slug]
+    [slug, apply]
   );
 
-  // Complete (marca completo, envia score)
+  // Complete (marca completo, envia score) — imediato, sem debounce.
   const complete = useCallback(
     (score: number) => {
-      // Rega o Jardim da Mente: log local de sessões concluídas (por slug + data)
-      try {
-        const regas = JSON.parse(localStorage.getItem("jardim_regas") || "[]") as Array<{ slug: string; data: string }>;
-        regas.push({ slug, data: new Date().toISOString() });
-        localStorage.setItem("jardim_regas", JSON.stringify(regas));
-      } catch {
-        localStorage.setItem("jardim_regas", JSON.stringify([{ slug, data: new Date().toISOString() }]));
+      // Cancela o save pendente: a gravação abaixo já leva o payload mais recente,
+      // e um POST partial:true chegando depois marcaria a sessão como incompleta.
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
       }
 
-      setState((prev) => {
-        const updated = {
-          ...prev,
-          score,
-          partial: false,
-          completedAt: new Date().toISOString(),
-        };
-        localStorage.setItem(`exercise_${slug}`, JSON.stringify(updated));
+      regarUmaVezPorDia(slug);
 
-        // DB com partial: false
-        const code = localStorage.getItem("exercise_patient_code");
-        if (code && supabase) {
-          (async () => {
-            try {
-              const response = await fetch(
-                `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/save-session`,
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    "X-Patient-Code": code,
-                  },
-                  body: JSON.stringify({
-                    exercise_slug: slug,
-                    payload: prev.payload,
-                    score,
-                    partial: false,
-                  }),
-                }
-              );
-              if (!response.ok) {
-                console.warn("save-session (complete) failed:", await response.text());
-              }
-            } catch (e) {
-              console.error("save-session (complete) error:", e);
-            }
-          })();
-        }
-
-        return updated;
-      });
+      const updated: ExerciseSessionState = {
+        ...stateRef.current,
+        score,
+        partial: false,
+        completedAt: new Date().toISOString(),
+      };
+      apply(updated);
+      localStorage.setItem(`exercise_${slug}`, JSON.stringify(updated));
+      postSession(slug, { payload: updated.payload, score, partial: false });
     },
-    [slug]
+    [slug, apply]
   );
 
   return { state, loading, save, complete };

@@ -46,7 +46,7 @@ export default function FantasiaTemida() {
             whileTap={{ scale: 0.98 }}
             onClick={handleIniciar}
             disabled={!situacao.trim()}
-            className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm disabled:opacity-50"
+            className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm disabled:opacity-50"
           >
             Escrever cenários →
           </motion.button>
@@ -119,7 +119,7 @@ export default function FantasiaTemida() {
           whileTap={{ scale: 0.98 }}
           onClick={handleFinalizar}
           disabled={!pior.trim() || !melhor.trim() || !realista.trim()}
-          className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm disabled:opacity-50"
+          className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm disabled:opacity-50"
         >
           Finalizar e revisar
         </motion.button>

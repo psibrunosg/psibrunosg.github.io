@@ -26,9 +26,30 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
+
+      # Portoes de qualidade. Antes destes steps o unico portao era o `tsc -b`
+      # dentro do build, entao lint e testes nunca barravam deploy.
+      #
+      # Lint roda como AVISO, nao como portao: existem 63 erros pre-existentes
+      # (19 no-explicit-any, 15 set-state-in-effect, 8 refs, ...). Torna-lo
+      # bloqueante agora derrubaria o deploy no proximo push sem corrigir nada.
+      # Zerada essa divida, troque para bloqueante removendo o continue-on-error.
+      - name: Lint (aviso)
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Test
+        run: npm test
+
+      # Valida que os caminhos .obj referenciados por neuroanatomia.ts existem em
+      # disco e que o cortex nao estourou o teto de peso. Um arquivo renomeado
+      # quebra o laboratorio 3D em producao sem nenhum outro sinal.
+      - name: Check neuro models
+        run: npm run check:neuro-models
 
       - name: Build
         run: npm run build

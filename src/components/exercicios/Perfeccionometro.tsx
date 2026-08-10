@@ -56,7 +56,7 @@ export default function Perfeccionometro() {
           whileTap={{ scale: 0.98 }}
           onClick={handleFinalizar}
           disabled={!todasAvaliadasCheck}
-          className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm disabled:opacity-50 mt-6"
+          className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm disabled:opacity-50 mt-6"
         >
           Ver radar
         </motion.button>

@@ -59,7 +59,7 @@ export default function ConecteABC() {
             whileTap={{ scale: 0.98 }}
             onClick={handleIniciar}
             disabled={!cadeia.evento.trim()}
-            className="mt-3 w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm disabled:opacity-50"
+            className="mt-3 w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm disabled:opacity-50"
           >
             Mapear cadeia →
           </motion.button>
@@ -128,7 +128,7 @@ export default function ConecteABC() {
           whileTap={{ scale: 0.98 }}
           onClick={handleFinalizar}
           disabled={!cadeia.pensamento || !cadeia.emocao || !cadeia.comportamento}
-          className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm disabled:opacity-50"
+          className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm disabled:opacity-50"
         >
           Finalizar mapa
         </motion.button>

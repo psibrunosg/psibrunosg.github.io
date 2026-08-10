@@ -103,7 +103,7 @@ export default function ChuvaPreocupacoes() {
               setPerdidas(0);
               setPreocupacoes([]);
             }}
-            className="px-3 py-1 rounded-full bg-[var(--c-accent)] text-white text-xs font-semibold"
+            className="px-3 py-1 rounded-full bg-[var(--c-accent)] text-[var(--c-on-accent)] text-xs font-semibold"
           >
             Começar
           </motion.button>
@@ -132,7 +132,7 @@ export default function ChuvaPreocupacoes() {
                 animate={{ y: 280 }}
                 transition={{ duration: 3, ease: "linear" }}
                 exit={{ opacity: 0 }}
-                className="absolute w-32 px-2 py-2 rounded-lg bg-[var(--c-accent)]/80 text-white text-[11px] font-semibold text-center cursor-grab active:cursor-grabbing"
+                className="absolute w-32 px-2 py-2 rounded-lg bg-[var(--c-accent)]/80 text-[var(--c-on-accent)] text-[11px] font-semibold text-center cursor-grab active:cursor-grabbing"
                 style={{ left: `${preoc.posX}%` }}
               >
                 {preoc.texto}
@@ -156,7 +156,7 @@ export default function ChuvaPreocupacoes() {
                 setPreocupacoes([]);
                 setPerdidas(0);
               }}
-              className="px-4 py-2 rounded-full bg-[var(--c-accent)] text-white font-semibold text-sm"
+              className="px-4 py-2 rounded-full bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm"
             >
               Novamente
             </motion.button>

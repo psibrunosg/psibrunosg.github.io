@@ -50,7 +50,7 @@ export default function ReformulacaoHistoria() {
             whileTap={{ scale: 0.98 }}
             onClick={handleIniciar}
             disabled={!historia.original.trim()}
-            className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm disabled:opacity-50"
+            className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm disabled:opacity-50"
           >
             Reformular →
           </motion.button>
@@ -103,7 +103,7 @@ export default function ReformulacaoHistoria() {
           whileTap={{ scale: 0.98 }}
           onClick={handleFinalizar}
           disabled={!historia.crenca.trim() || !historia.reformulada.trim()}
-          className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm disabled:opacity-50"
+          className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm disabled:opacity-50"
         >
           Finalizar reformulação
         </motion.button>

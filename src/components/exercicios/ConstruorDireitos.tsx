@@ -82,7 +82,7 @@ export default function ConstruorDireitos() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleFinalizar}
-            className="py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-xs"
+            className="py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-xs"
           >
             Finalizar
           </motion.button>

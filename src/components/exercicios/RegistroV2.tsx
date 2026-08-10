@@ -126,7 +126,7 @@ export default function RegistroV2() {
           whileTap={{ scale: 0.98 }}
           onClick={() => setFase("chat")}
           disabled={!checkin}
-          className="w-full py-3 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm disabled:opacity-50"
+          className="w-full py-3 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm disabled:opacity-50"
         >
           Começar
         </motion.button>
@@ -227,7 +227,7 @@ export default function RegistroV2() {
                 whileTap={{ scale: 0.98 }}
                 onClick={avancar}
                 disabled={!respostaAtual.trim()}
-                className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-xs disabled:opacity-50"
+                className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-xs disabled:opacity-50"
               >
                 Próximo →
               </motion.button>

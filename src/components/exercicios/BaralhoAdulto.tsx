@@ -85,7 +85,7 @@ export default function BaralhoAdulto() {
           onClick={() => setModo("explorar")}
           className={`px-4 py-2 rounded-full font-semibold text-sm transition-all ${
             modo === "explorar"
-              ? "bg-[var(--c-accent)] text-white"
+              ? "bg-[var(--c-accent)] text-[var(--c-on-accent)]"
               : "bg-[var(--c-border)] text-[var(--c-text)] hover:bg-[var(--c-accent)]/20"
           }`}
         >
@@ -95,7 +95,7 @@ export default function BaralhoAdulto() {
           onClick={iniciarJogo}
           className={`px-4 py-2 rounded-full font-semibold text-sm transition-all ${
             modo === "jogo"
-              ? "bg-[var(--c-accent)] text-white"
+              ? "bg-[var(--c-accent)] text-[var(--c-on-accent)]"
               : "bg-[var(--c-border)] text-[var(--c-text)] hover:bg-[var(--c-accent)]/20"
           }`}
         >
@@ -208,7 +208,7 @@ export default function BaralhoAdulto() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={iniciarJogo}
-            className="px-4 py-2.5 rounded-full bg-[var(--c-accent)] text-white font-semibold text-sm"
+            className="px-4 py-2.5 rounded-full bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm"
           >
             Jogar de novo
           </motion.button>

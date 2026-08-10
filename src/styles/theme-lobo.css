@@ -16,6 +16,12 @@
   --c-surface:  #FFFDFA;
   --c-border:   #E5DDD1;
 
+  /* Cor do texto SOBRE fundo accent/warm. Nunca use text-white nesses botoes:
+     no tema claro branco passa (6.07:1 sobre accent), mas em dark cai para
+     1.95:1 e em noturno para 2.19:1 — botao primario ilegivel. */
+  --c-on-accent:#FFFFFF;
+  --c-on-warm:  #1A1A1A;
+
   /* Tokens semanticos (badges/alertas) — usados no Painel do psicologo para
      substituir classes Tailwind fixas (bg-green-100 etc) que nao se adaptam ao dark. */
   --c-danger:      #dc2626;
@@ -51,6 +57,9 @@
   --c-surface:  #1C2B23;
   --c-border:   #2A3A32;
 
+  --c-on-accent:#0F1813;
+  --c-on-warm:  #0F1813;
+
   --c-danger:      #f87171;
   --c-danger-bg:   rgba(248, 113, 113, 0.16);
   --c-success:     #4ade80;
@@ -78,6 +87,9 @@
   --c-muted:    #94A0B8;
   --c-surface:  #212940;
   --c-border:   #2E3850;
+
+  --c-on-accent:#171D2B;
+  --c-on-warm:  #171D2B;
 
   --c-danger:      #f87171;
   --c-danger-bg:   rgba(248, 113, 113, 0.16);

@@ -17,7 +17,7 @@ serve(async (req) => {
 
   try {
     const code = req.headers.get("X-Patient-Code");
-    if (!code || !/^\d{5}$/.test(code)) {
+    if (!code || !/^\d{5}(\d{3})?$/.test(code)) {
       return new Response(JSON.stringify({ error: "Invalid code" }), { status: 400, headers: jsonHeaders });
     }
 

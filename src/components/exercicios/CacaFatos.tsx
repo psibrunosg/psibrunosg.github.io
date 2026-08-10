@@ -108,7 +108,7 @@ export default function CacaFatos() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             onClick={reiniciar}
-            className="px-4 py-2 rounded-full bg-[var(--c-accent)] text-white font-semibold text-sm"
+            className="px-4 py-2 rounded-full bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm"
           >
             <RotateCcw size={14} className="inline mr-1" aria-hidden="true" /> Tentar de novo
           </motion.button>
@@ -164,7 +164,7 @@ export default function CacaFatos() {
                 setTimeLeft(120);
                 setTempoEsgotado(false);
               }}
-              className="px-4 py-2 rounded-full bg-[var(--c-accent)] text-white font-semibold text-sm"
+              className="px-4 py-2 rounded-full bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm"
             >
               Próximo cenário →
             </motion.button>
@@ -173,7 +173,7 @@ export default function CacaFatos() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               onClick={reiniciar}
-              className="px-4 py-2 rounded-full bg-[var(--c-accent)] text-white font-semibold text-sm"
+              className="px-4 py-2 rounded-full bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm"
             >
               <RotateCcw size={14} className="inline mr-1" aria-hidden="true" /> Recomeçar
             </motion.button>

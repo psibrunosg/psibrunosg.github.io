@@ -103,7 +103,7 @@ export default function ParesMente() {
               carta.acertada
                 ? "bg-green-500/20 text-green-700 cursor-default"
                 : selecionadas.includes(carta.id)
-                  ? "bg-[var(--c-accent)] text-white"
+                  ? "bg-[var(--c-accent)] text-[var(--c-on-accent)]"
                   : "bg-[var(--c-border)] text-[var(--c-muted)] hover:bg-[var(--c-accent)]/30"
             }`}
             disabled={carta.acertada || completado}
@@ -125,7 +125,7 @@ export default function ParesMente() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             onClick={iniciarJogo}
-            className="px-4 py-2 rounded-full bg-[var(--c-accent)] text-white font-semibold text-sm"
+            className="px-4 py-2 rounded-full bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm"
           >
             <RotateCcw size={14} className="inline mr-1" /> Novamente
           </motion.button>

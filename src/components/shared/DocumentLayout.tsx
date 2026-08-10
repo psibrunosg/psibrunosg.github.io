@@ -87,7 +87,7 @@ export function DocumentLayout({ eyebrow, titulo, subtitulo, children, pdfHref }
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="inline-flex items-center gap-2 rounded-full bg-[var(--c-accent)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--c-accent-lt)] transition-colors"
+                className="inline-flex items-center gap-2 rounded-full bg-[var(--c-accent)] px-4 py-2 text-sm font-medium text-[var(--c-on-accent)] hover:bg-[var(--c-accent-lt)] transition-colors"
               >
                 <Printer size={16} aria-hidden="true" />
                 Salvar / Imprimir

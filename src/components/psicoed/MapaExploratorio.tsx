@@ -49,7 +49,7 @@ function TerritorioNo({ territorio, concluido }: { territorio: Territorio; concl
       >
         <Icone size={28} className={emBreve ? "text-[var(--c-muted)]" : "text-[var(--c-accent)]"} />
         {concluido && !emBreve && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[var(--c-accent)] text-white flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[var(--c-accent)] text-[var(--c-on-accent)] flex items-center justify-center">
             <Sparkles size={11} />
           </span>
         )}

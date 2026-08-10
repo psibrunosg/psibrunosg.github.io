@@ -29,7 +29,9 @@ export interface TrilhaProgresso {
 function lerRegas(): Rega[] {
   try {
     const raw = JSON.parse(localStorage.getItem("jardim_regas") || "[]");
-    return Array.isArray(raw) ? raw : [];
+    // useProgresso grava leitura de psicoeducação no mesmo store com slug "psicoed:*".
+    // Ler um módulo não é praticar a trilha: fora do XP e do streak.
+    return Array.isArray(raw) ? raw.filter((r: Rega) => !(r?.slug ?? "").startsWith("psicoed:")) : [];
   } catch {
     return [];
   }

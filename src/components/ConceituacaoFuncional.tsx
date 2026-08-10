@@ -20,7 +20,7 @@ export function ConceituacaoFuncional({ respostas }: { respostas: Resposta[] }) 
           <h2 className="text-lg font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{FERRAMENTA.titulo}</h2>
         </div>
         <button onClick={ia.exportarPDF}
-          className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white"
+          className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-[var(--c-on-accent)]"
           style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
           <Download size={14} /> Salvar PDF
         </button>

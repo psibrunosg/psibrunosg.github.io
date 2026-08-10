@@ -102,7 +102,7 @@ export default function AcerteDistorcao() {
               setScore(0);
               setPensamentos([]);
             }}
-            className="px-4 py-2 rounded-full bg-[var(--c-accent)] text-white font-semibold text-xs"
+            className="px-4 py-2 rounded-full bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-xs"
           >
             Começar
           </motion.button>
@@ -127,7 +127,7 @@ export default function AcerteDistorcao() {
                   ? p.acertou
                     ? "bg-green-500 text-white"
                     : "bg-red-500 text-white"
-                  : "bg-[var(--c-accent)]/85 text-white hover:bg-[var(--c-accent)]"
+                  : "bg-[var(--c-accent)]/85 text-[var(--c-on-accent)] hover:bg-[var(--c-accent)]"
               }`}
               style={{ left: `${p.pos.x}%`, top: `${p.pos.y}%` }}
             >
@@ -153,7 +153,7 @@ export default function AcerteDistorcao() {
                 setGameState("ready");
                 setPensamentos([]);
               }}
-              className="px-4 py-2 rounded-full bg-[var(--c-accent)] text-white font-semibold text-xs"
+              className="px-4 py-2 rounded-full bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-xs"
             >
               <RotateCcw size={14} className="inline mr-1" /> Novamente
             </motion.button>

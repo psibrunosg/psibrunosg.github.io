@@ -29,6 +29,15 @@ const supabase = createClient(
 
 const LIMIAR_ATIVACAO = 3.5; // igual ao frontend (interpret.ts)
 
+const RATE_LIMIT_WINDOW_MINUTES = 15;
+const RATE_LIMIT_MAX_ATTEMPTS = 20;
+
+// Endpoint anônimo: qualquer negativa (código inexistente, não liberado, sem YSQ)
+// devolve exatamente isto — distinguir os casos permite enumerar códigos válidos.
+function semPersonalizacao() {
+  return new Response(JSON.stringify({ liberado: false, esquemas: [] }), { status: 200, headers: jsonHeaders });
+}
+
 // Mapa esquema -> itens (1-indexados) do YSQ, espelhado de src/content/escalas.ts.
 // Deno não compartilha bundler com o Vite, então este mapa é duplicado de propósito.
 const YSQ_ESQUEMAS: { id: string; itens: number[] }[] = [
@@ -65,7 +74,32 @@ serve(async (req) => {
   try {
     const body = await req.json();
     const codigo: string = typeof body?.codigo === "string" ? body.codigo.trim() : "";
-    if (!codigo) return new Response(JSON.stringify({ error: "Código não informado" }), { status: 400, headers: jsonHeaders });
+    if (!codigo || !/^\d{5}(\d{3})?$/.test(codigo)) {
+      return new Response(JSON.stringify({ error: "Código não informado" }), { status: 400, headers: jsonHeaders });
+    }
+
+    // Rate limiting por IP, mesma janela deslizante de validate-code
+    // (edge functions são stateless, então o contador vive no Postgres).
+    const forwardedFor = req.headers.get("x-forwarded-for");
+    const clientIp = forwardedFor ? forwardedFor.split(",")[0].trim() : "unknown";
+
+    const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MINUTES * 60 * 1000).toISOString();
+    const { count: attemptCount, error: countError } = await supabase
+      .from("validation_attempts")
+      .select("id", { count: "exact", head: true })
+      .eq("ip", clientIp)
+      .gte("attempted_at", windowStart);
+
+    if (countError) {
+      console.error("psicoed-personalizada rate limit check error:", countError);
+    } else if ((attemptCount ?? 0) >= RATE_LIMIT_MAX_ATTEMPTS) {
+      return new Response(
+        JSON.stringify({ error: "Muitas tentativas. Tente novamente mais tarde." }),
+        { status: 429, headers: jsonHeaders }
+      );
+    }
+
+    await supabase.from("validation_attempts").insert({ ip: clientIp });
 
     // Paciente pelo código.
     const { data: paciente } = await supabase
@@ -74,10 +108,7 @@ serve(async (req) => {
       .eq("patient_code", codigo)
       .maybeSingle();
 
-    if (!paciente) {
-      // Sem paciente cadastrado → personalização não configurada.
-      return new Response(JSON.stringify({ liberado: false, motivo: "sem-paciente" }), { status: 200, headers: jsonHeaders });
-    }
+    if (!paciente) return semPersonalizacao();
 
     // Estado de liberação (interruptor mestre do terapeuta).
     const { data: estado } = await supabase
@@ -86,9 +117,7 @@ serve(async (req) => {
       .eq("paciente_id", paciente.id)
       .maybeSingle();
 
-    if (!estado || !estado.liberado) {
-      return new Response(JSON.stringify({ liberado: false, motivo: "nao-liberado" }), { status: 200, headers: jsonHeaders });
-    }
+    if (!estado || !estado.liberado) return semPersonalizacao();
 
     // Resposta YSQ mais recente.
     const { data: ysq } = await supabase
@@ -100,10 +129,7 @@ serve(async (req) => {
       .limit(1)
       .maybeSingle();
 
-    if (!ysq || !Array.isArray(ysq.respostas)) {
-      // Liberado, mas ainda não respondeu o YSQ → nada a personalizar.
-      return new Response(JSON.stringify({ liberado: true, semYsq: true, esquemas: [] }), { status: 200, headers: jsonHeaders });
-    }
+    if (!ysq || !Array.isArray(ysq.respostas)) return semPersonalizacao();
 
     const respostas: number[] = ysq.respostas;
     const revelar = !!estado.revelar_escore;

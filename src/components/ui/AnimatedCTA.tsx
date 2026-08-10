@@ -49,7 +49,7 @@ export function AnimatedCTA({ href, label, sublabel, sublabelClassName, classNam
         whileTap={{ scale: 0.97 }}
         className={cn(
           "relative overflow-hidden px-8 py-4 rounded-full font-medium text-lg",
-          "bg-[var(--c-accent)] text-white shadow-lg",
+          "bg-[var(--c-accent)] text-[var(--c-on-accent)] shadow-lg",
           "focus-visible:ring-2 focus-visible:ring-[var(--c-accent)] focus-visible:ring-offset-2"
         )}
         aria-label={label}

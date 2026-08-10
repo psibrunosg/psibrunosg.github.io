@@ -138,7 +138,7 @@ export default function InundacaoIncertezas() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleProxima}
-            className="mt-4 w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm"
+            className="mt-4 w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm"
           >
             {incertezaIdx < incertezas.length - 1 ? "Próxima incerteza" : "Ver padrão"}
           </motion.button>

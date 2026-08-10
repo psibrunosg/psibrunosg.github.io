@@ -47,7 +47,7 @@ export default function DiarioLapsos() {
             whileTap={{ scale: 0.98 }}
             onClick={handleIniciar}
             disabled={!lapso.situacao.trim()}
-            className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm disabled:opacity-50"
+            className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm disabled:opacity-50"
           >
             Analisar cadeia →
           </motion.button>
@@ -115,7 +115,7 @@ export default function DiarioLapsos() {
           whileTap={{ scale: 0.98 }}
           onClick={handleFinalizar}
           disabled={!lapso.disparador.trim() || !lapso.reacao.trim() || !lapso.licao.trim()}
-          className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm disabled:opacity-50"
+          className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm disabled:opacity-50"
         >
           Finalizar análise
         </motion.button>

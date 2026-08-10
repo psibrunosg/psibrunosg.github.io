@@ -160,7 +160,7 @@ export default function GPSDecisoes() {
                 whileTap={{ scale: 0.98 }}
                 onClick={() => handleResposta(nodo.proxNodo ?? "fim")}
                 disabled={!respostaAtual.trim()}
-                className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-xs disabled:opacity-50 flex items-center justify-center gap-1"
+                className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-xs disabled:opacity-50 flex items-center justify-center gap-1"
               >
                 Próximo <ChevronRight size={14} />
               </motion.button>

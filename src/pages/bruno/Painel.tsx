@@ -1,8 +1,9 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Download, Trash2, Lock, FileText, ExternalLink, RefreshCw, Plus, Save, Eye, EyeOff, Edit3, X, Bold, Italic, Heading2, List, RotateCcw, Bell, AlertTriangle, Sun, Moon } from "lucide-react";
 import { PainelPacientes } from "@/components/painelPacientes";
+import { PainelFormularios } from "@/components/PainelFormularios";
 import jsPDF from "jspdf";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -751,7 +752,7 @@ export default function BrunoPainel() {
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [loginLoading, setLoginLoading] = useState(true);
-  const [tab, setTab] = useState<"overview" | "respostas" | "pacientes" | "blog" | "ferramentas">("overview");
+  const [tab, setTab] = useState<"overview" | "respostas" | "pacientes" | "blog" | "ferramentas" | "formularios">("overview");
   const [respView, setRespView] = useState<"lista" | "pacientes">("lista");
   // ponytail: busca/filtros/ordenação da lista de respostas — estado local simples, sem lib de tabela.
   const [busca, setBusca] = useState("");
@@ -953,6 +954,7 @@ export default function BrunoPainel() {
 
   async function deletar() {
     if (!supabase || !selecionados.size) return;
+    if (!confirm(`Excluir ${selecionados.size} resposta${selecionados.size > 1 ? "s" : ""} definitivamente? Não há como desfazer.`)) return;
     await supabase.from("respostas_questionarios").delete().in("id", Array.from(selecionados));
     setSelecionados(new Set()); carregar();
   }
@@ -1071,6 +1073,12 @@ export default function BrunoPainel() {
   }
 
   function abrirDashboard(r: Resposta) {
+    // Trocar de paciente limpa o texto nao salvo; navegar no historico do MESMO
+    // paciente preserva. Dos 6 chamadores, so o do historico (:1517) mantem o
+    // paciente; os outros 5 (visao geral, triagem, timeline, tabela) podem
+    // trocar sem passar por fecharDashboard. Limpar sempre perdia trabalho;
+    // nao limpar nunca vazava a sintese de um paciente para a tela de outro.
+    const mudouPaciente = !respostaAberta || chavePaciente(respostaAberta) !== chavePaciente(r);
     setRespostaAberta(r);
     const hist = respostas.filter((x) => chavePaciente(x) === chavePaciente(r));
     setHistoricoAberto(hist);
@@ -1084,8 +1092,10 @@ export default function BrunoPainel() {
       });
       setParecerTestes([processarTeste(novoTeste), ...outros]);
     }
-    setSintese("");
-    setConsideracoes("");
+    if (mudouPaciente) {
+      setSintese("");
+      setConsideracoes("");
+    }
   }
 
   function abrirParecerAvulso() {
@@ -1145,6 +1155,7 @@ export default function BrunoPainel() {
             <button onClick={() => { setTab("respostas"); fecharDashboard(); }} className={tabBtn("respostas")} style={tab === "respostas" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Respostas</button>
             <button onClick={() => setTab("pacientes")} className={tabBtn("pacientes")} style={tab === "pacientes" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Acessos</button>
             <button onClick={() => { setTab("ferramentas"); setFerramentaAberta(null); }} className={tabBtn("ferramentas")} style={tab === "ferramentas" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Ferramentas</button>
+            <button onClick={() => setTab("formularios")} className={tabBtn("formularios")} style={tab === "formularios" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Treinamentos</button>
             <button onClick={() => setTab("blog")} className={tabBtn("blog")} style={tab === "blog" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Blog</button>
           </div>
         </div>
@@ -1274,6 +1285,8 @@ export default function BrunoPainel() {
                 </>
               );
             })()}
+
+            {tab === "formularios" && <PainelFormularios />}
 
             {tab === "respostas" && !respostaAberta && !parecerAvulso && (() => {
               const riscos = detectarRiscos(respostas);

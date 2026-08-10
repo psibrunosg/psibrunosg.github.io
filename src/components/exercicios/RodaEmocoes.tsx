@@ -68,7 +68,7 @@ export default function RodaEmocoes() {
           whileTap={{ scale: 0.98 }}
           onClick={() => setFase("nomeacao")}
           disabled={!checkin}
-          className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm disabled:opacity-50"
+          className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm disabled:opacity-50"
         >
           Começar
         </motion.button>
@@ -112,7 +112,7 @@ export default function RodaEmocoes() {
                   onClick={() => setNuanceAtual(nuanceAtual === n ? null : n)}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
                     nuanceAtual === n
-                      ? "bg-[var(--c-accent)] text-white"
+                      ? "bg-[var(--c-accent)] text-[var(--c-on-accent)]"
                       : "bg-[var(--c-surface)] text-[var(--c-text)] border border-[var(--c-border)] hover:border-[var(--c-accent)]"
                   }`}
                 >
@@ -139,7 +139,7 @@ export default function RodaEmocoes() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleRegistrar}
-              className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm"
+              className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm"
             >
               Registrar
             </motion.button>

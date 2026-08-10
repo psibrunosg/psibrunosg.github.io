@@ -677,7 +677,7 @@ export default function Exercicios() {
                   <button
                     ref={codeModalTriggerRef}
                     onClick={() => setShowCodeModal(true)}
-                    className="inline-flex items-center gap-2 rounded-full px-6 py-3 font-bold text-white shadow-md transition-transform hover:scale-[1.03]"
+                    className="inline-flex items-center gap-2 rounded-full px-6 py-3 font-bold text-[var(--c-on-warm)] shadow-md transition-transform hover:scale-[1.03]"
                     style={{ background: "var(--c-warm)" }}
                   >
                     <Lock size={16} />
@@ -691,7 +691,7 @@ export default function Exercicios() {
                 <div className="flex flex-wrap items-center gap-3">
                   <Link
                     to="/exercicios/restritos"
-                    className="inline-flex items-center gap-2 rounded-full px-6 py-3 font-bold text-white shadow-md transition-transform hover:scale-[1.03]"
+                    className="inline-flex items-center gap-2 rounded-full px-6 py-3 font-bold text-[var(--c-on-warm)] shadow-md transition-transform hover:scale-[1.03]"
                     style={{ background: "var(--c-warm)" }}
                   >
                     Entrar na trilha guiada
@@ -767,7 +767,7 @@ export default function Exercicios() {
               <button
                 onClick={handleValidateCode}
                 disabled={codeInput.length !== 5 || codeSaving}
-                className="w-full rounded-full px-4 py-3 font-bold text-white disabled:opacity-50 transition-opacity"
+                className="w-full rounded-full px-4 py-3 font-bold text-[var(--c-on-accent)] disabled:opacity-50 transition-opacity"
                 style={{ background: "var(--c-accent)" }}
               >
                 {codeSaving ? "Validando..." : "Confirmar"}

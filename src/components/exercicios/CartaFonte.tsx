@@ -50,7 +50,7 @@ export default function CartaFonte() {
             whileTap={{ scale: 0.98 }}
             onClick={handleIniciar}
             disabled={!carta.figura.trim()}
-            className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm disabled:opacity-50"
+            className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm disabled:opacity-50"
           >
             Escrever carta →
           </motion.button>
@@ -103,7 +103,7 @@ export default function CartaFonte() {
           whileTap={{ scale: 0.98 }}
           onClick={handleFinalizar}
           disabled={!carta.conteudo.trim() || !carta.aprendizado.trim()}
-          className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm disabled:opacity-50"
+          className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm disabled:opacity-50"
         >
           Finalizar carta
         </motion.button>

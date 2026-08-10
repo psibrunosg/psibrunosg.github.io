@@ -76,7 +76,7 @@ export default function Blog() {
             {/* filtro por area */}
             <motion.div variants={fadeUp} className="mb-10 flex flex-wrap gap-2.5">
               <button onClick={() => setAreaFiltro("todos")}
-                className={"rounded-full px-3 py-1.5 text-xs font-semibold transition-all " + (areaFiltro === "todos" ? "bg-[var(--c-accent)] text-white" : "border border-[var(--c-border)] text-[var(--c-muted)] hover:text-[var(--c-text)]")}>
+                className={"rounded-full px-3 py-1.5 text-xs font-semibold transition-all " + (areaFiltro === "todos" ? "bg-[var(--c-accent)] text-[var(--c-on-accent)]" : "border border-[var(--c-border)] text-[var(--c-muted)] hover:text-[var(--c-text)]")}>
                 Todas
               </button>
               {areasLista.map((a) => {

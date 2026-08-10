@@ -48,9 +48,11 @@ export interface QuestionnaireResponse {
 }
 
 export async function salvarResposta(data: QuestionnaireResponse) {
+  // Sem cliente (env var ausente) NADA é gravado — devolver {error:null} faria a
+  // escala mostrar "enviado" e o psicólogo nunca receber a resposta.
   if (!supabase) {
     console.warn("Supabase nao configurado — resposta nao salva.");
-    return { error: null };
+    return { error: { message: "Conexão com o servidor indisponível. Suas respostas não foram enviadas." } };
   }
   return supabase.from("respostas_questionarios").insert(data);
 }
@@ -98,4 +100,68 @@ export async function atualizarPostBlog(id: number, post: Partial<BlogPostDB>) {
 export async function deletarPostBlog(id: number) {
   if (!supabase) return { error: { message: "Supabase nao configurado" } };
   return supabase.from("blog_posts").delete().eq("id", id);
+}
+
+// ==========================================
+// FORMULÁRIOS ANÔNIMOS (TREINAMENTOS)
+// ==========================================
+
+export interface FormCampo {
+  id: string;
+  tipo: "texto_curto" | "texto_longo" | "escala_1_5";
+  pergunta: string;
+}
+
+export interface FormularioAnonimoDB {
+  id?: string;
+  titulo: string;
+  descricao?: string;
+  campos: FormCampo[];
+  ativo: boolean;
+  criado_em?: string;
+  atualizado_em?: string;
+}
+
+export interface RespostaFormularioAnonimoDB {
+  id?: string;
+  formulario_id: string;
+  respostas: Record<string, string | number>;
+  criado_em?: string;
+}
+
+export async function listarFormulariosAnonimos() {
+  if (!supabase) return [];
+  const { data } = await supabase.from("formularios_anonimos").select("*").order("criado_em", { ascending: false });
+  return (data as FormularioAnonimoDB[]) ?? [];
+}
+
+export async function criarFormularioAnonimo(form: Omit<FormularioAnonimoDB, "id" | "criado_em" | "atualizado_em">) {
+  if (!supabase) return { error: { message: "Supabase nao configurado" }, data: null };
+  return supabase.from("formularios_anonimos").insert({ ...form }).select().single();
+}
+
+export async function atualizarFormularioAnonimo(id: string, form: Partial<FormularioAnonimoDB>) {
+  if (!supabase) return { error: { message: "Supabase nao configurado" } };
+  return supabase.from("formularios_anonimos").update({ ...form, atualizado_em: new Date().toISOString() }).eq("id", id);
+}
+
+export async function deletarFormularioAnonimo(id: string) {
+  if (!supabase) return { error: { message: "Supabase nao configurado" } };
+  return supabase.from("formularios_anonimos").delete().eq("id", id);
+}
+
+export async function getFormularioAnonimo(id: string) {
+  if (!supabase) return { error: { message: "Supabase nao configurado" }, data: null };
+  return supabase.from("formularios_anonimos").select("*").eq("id", id).single();
+}
+
+export async function enviarRespostaFormularioAnonimo(resposta: Omit<RespostaFormularioAnonimoDB, "id" | "criado_em">) {
+  if (!supabase) return { error: { message: "Supabase nao configurado" }, data: null };
+  return supabase.from("respostas_formularios_anonimos").insert(resposta);
+}
+
+export async function listarRespostasFormularioAnonimo(formularioId: string) {
+  if (!supabase) return [];
+  const { data } = await supabase.from("respostas_formularios_anonimos").select("*").eq("formulario_id", formularioId).order("criado_em", { ascending: false });
+  return (data as RespostaFormularioAnonimoDB[]) ?? [];
 }

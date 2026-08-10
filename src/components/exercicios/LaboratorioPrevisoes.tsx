@@ -76,7 +76,7 @@ export default function LaboratorioPrevisoes() {
             onClick={() => setModo(m)}
             className={`px-4 py-2 rounded-full font-semibold text-sm transition-all ${
               modo === m
-                ? "bg-[var(--c-accent)] text-white"
+                ? "bg-[var(--c-accent)] text-[var(--c-on-accent)]"
                 : "bg-[var(--c-border)] text-[var(--c-text)]"
             }`}
           >
@@ -109,7 +109,7 @@ export default function LaboratorioPrevisoes() {
             whileTap={{ scale: 0.98 }}
             onClick={handleRegistrar}
             disabled={!novaPrevisao.trim() || !dataPrazo}
-            className="mt-4 w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+            className="mt-4 w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
           >
             <Plus size={14} /> Registrar Previsão
           </motion.button>

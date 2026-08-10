@@ -120,7 +120,7 @@ export default function Documentos() {
                   <div className="flex flex-shrink-0 items-center gap-3 sm:flex-col sm:items-stretch sm:gap-2">
                     <Link
                       to={doc.href}
-                      className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--c-accent)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--c-accent-lt)] transition-colors"
+                      className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--c-accent)] px-4 py-2 text-sm font-medium text-[var(--c-on-accent)] hover:bg-[var(--c-accent-lt)] transition-colors"
                     >
                       Ler online
                       <ArrowRight size={14} aria-hidden="true" />

@@ -55,7 +55,7 @@ export default function BaloesDoClima() {
         <p className="text-sm text-[var(--c-text)] italic">
           Cada pensamento traz um "clima" diferente pro nosso corpo. Pensamentos gostosos trazem sol; pensamentos assustadores trazem chuva.
         </p>
-        <button onClick={reiniciar} className="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-[var(--c-accent)] text-white font-semibold">
+        <button onClick={reiniciar} className="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold">
           <RotateCcw size={16} aria-hidden /> Soltar outros balões
         </button>
       </motion.div>
@@ -116,7 +116,7 @@ export default function BaloesDoClima() {
           </button>
         </div>
       ) : (
-        <button onClick={proximo} className="w-full py-3 rounded-lg bg-[var(--c-accent)] text-white font-semibold">
+        <button onClick={proximo} className="w-full py-3 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold">
           {idx + 1 >= baloesClima.length ? "Ver resultado" : "Próximo balão"}
         </button>
       )}

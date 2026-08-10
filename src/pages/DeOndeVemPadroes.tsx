@@ -131,7 +131,7 @@ export default function DeOndeVemPadroes() {
                 <button
                   onClick={() => void personalizar(codigo)}
                   disabled={buscando || !codigo.trim()}
-                  className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+                  className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-[var(--c-on-accent)] disabled:opacity-60"
                   style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}
                 >
                   {buscando ? <Loader2 size={14} className="animate-spin" /> : "Ajustar"}

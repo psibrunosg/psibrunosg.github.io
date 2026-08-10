@@ -1,0 +1,737 @@
+[2026-07-23T19:47:44.722Z] [INFO] Scheduled map (interval: 900s, first run in 0s)
+[2026-07-23T19:47:44.722Z] [INFO] Scheduled audit (interval: 600s, first run in 120s)
+[2026-07-23T19:47:44.723Z] [INFO] Scheduled optimize (interval: 900s, first run in 240s)
+[2026-07-23T19:47:44.723Z] [INFO] Scheduled consolidate (interval: 1800s, first run in 360s)
+[2026-07-23T19:47:44.723Z] [INFO] Scheduled testgaps (interval: 1200s, first run in 480s)
+[2026-07-23T19:47:44.724Z] [INFO] Scheduled backup (interval: 86400s, first run in 600s)
+[2026-07-23T19:47:44.724Z] [INFO] Scheduled harness (interval: 21600s, first run in 720s)
+[2026-07-23T19:47:44.725Z] [INFO] Lifecycle monitor active (ttl=43200s)
+[2026-07-23T19:47:44.728Z] [INFO] Daemon started (PID: 37656, CPUs: 8, workers: 7, maxCpuLoad: 6.4, minFreeMemoryPercent: 10%)
+[2026-07-23T19:47:44.729Z] [INFO] Claude Code headless mode available - AI workers enabled
+[2026-07-23T19:47:44.732Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-23T19:47:44.735Z] [INFO] Worker map completed in 5ms
+[2026-07-23T19:49:44.747Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-23T19:49:44.748Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-23T19:49:59.245Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T19:49:59.247Z] [INFO] Worker audit completed in 14503ms
+[2026-07-23T19:50:25.275Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-23T19:50:25.300Z] [INFO] Worker map completed in 27ms
+[2026-07-23T19:51:44.734Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-23T19:51:44.737Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-23T19:51:57.303Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T19:51:57.306Z] [INFO] Worker optimize completed in 12575ms
+[2026-07-23T19:53:02.855Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-23T19:53:02.855Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-23T19:53:16.572Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T19:53:16.574Z] [INFO] Worker audit completed in 13722ms
+[2026-07-23T19:53:44.748Z] [INFO] Starting worker: consolidate (1/2 concurrent)
+[2026-07-23T19:53:44.751Z] [INFO] Consolidate worker: distillation skipped (no-db)
+[2026-07-23T19:53:44.753Z] [INFO] Worker consolidate completed in 7ms
+[2026-07-23T19:55:44.756Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-23T19:55:44.756Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-23T19:55:59.438Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T19:55:59.440Z] [INFO] Worker testgaps completed in 14686ms
+[2026-07-23T19:56:21.211Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-23T19:56:21.212Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-23T19:56:32.526Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T19:56:32.527Z] [INFO] Worker testgaps completed in 11318ms
+[2026-07-23T19:57:44.748Z] [INFO] Starting worker: backup (1/2 concurrent)
+[2026-07-23T19:57:44.754Z] [INFO] Worker backup completed in 6ms
+[2026-07-23T19:58:32.282Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-23T19:58:32.283Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-23T19:58:47.533Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T19:58:47.534Z] [INFO] Worker optimize completed in 15254ms
+[2026-07-23T19:59:44.741Z] [INFO] Starting worker: harness (1/2 concurrent)
+[2026-07-23T19:59:44.826Z] [INFO] Worker harness completed in 89ms
+[2026-07-23T19:59:59.261Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-23T19:59:59.261Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-23T20:00:11.513Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:00:11.514Z] [INFO] Worker audit completed in 12256ms
+[2026-07-23T20:02:44.767Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-23T20:02:44.770Z] [INFO] Worker map completed in 10ms
+[2026-07-23T20:03:16.588Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-23T20:03:16.589Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-23T20:03:26.748Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:03:26.749Z] [INFO] Worker audit completed in 10163ms
+[2026-07-23T20:05:25.314Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-23T20:05:25.317Z] [INFO] Worker map completed in 6ms
+[2026-07-23T20:06:57.325Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-23T20:06:57.325Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-23T20:07:02.812Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:07:02.813Z] [INFO] Worker optimize completed in 5492ms
+[2026-07-23T20:10:11.529Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-23T20:10:11.530Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-23T20:10:25.612Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:10:25.614Z] [INFO] Worker audit completed in 14088ms
+[2026-07-23T20:11:25.024Z] [INFO] Starting worker: consolidate (1/2 concurrent)
+[2026-07-23T20:11:25.025Z] [INFO] Consolidate worker: distillation skipped (no-db)
+[2026-07-23T20:11:25.027Z] [INFO] Worker consolidate completed in 10ms
+[2026-07-23T20:13:26.759Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-23T20:13:26.759Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-23T20:13:33.245Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:13:33.247Z] [INFO] Worker audit completed in 6491ms
+[2026-07-23T20:13:47.542Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-23T20:13:47.543Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-23T20:13:53.965Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:13:53.966Z] [INFO] Worker optimize completed in 6425ms
+[2026-07-23T20:15:59.459Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-23T20:15:59.459Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-23T20:16:07.384Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:16:07.386Z] [INFO] Worker testgaps completed in 7930ms
+[2026-07-23T20:16:32.554Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-23T20:16:32.555Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-23T20:16:46.614Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:16:46.615Z] [INFO] Worker testgaps completed in 14067ms
+[2026-07-23T20:17:44.805Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-23T20:17:44.806Z] [INFO] Worker map completed in 3ms
+[2026-07-23T20:20:25.327Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-23T20:20:25.329Z] [INFO] Worker map completed in 4ms
+[2026-07-23T20:20:25.621Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-23T20:20:25.623Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-23T20:20:38.481Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:20:38.484Z] [INFO] Worker audit completed in 12865ms
+[2026-07-23T20:22:02.826Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-23T20:22:02.828Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-23T20:22:08.182Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:22:08.184Z] [INFO] Worker optimize completed in 5364ms
+[2026-07-23T20:23:33.261Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-23T20:23:33.262Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-23T20:23:44.785Z] [INFO] Starting worker: consolidate (1/2 concurrent)
+[2026-07-23T20:23:44.786Z] [INFO] Consolidate worker: distillation skipped (no-db)
+[2026-07-23T20:23:44.787Z] [INFO] Worker consolidate completed in 4ms
+[2026-07-23T20:23:48.850Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:23:48.851Z] [INFO] Worker audit completed in 15593ms
+[2026-07-23T20:28:53.980Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-23T20:28:53.980Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-23T20:29:07.189Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:29:07.191Z] [INFO] Worker optimize completed in 13214ms
+[2026-07-23T20:30:38.496Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-23T20:30:38.497Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-23T20:30:44.047Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:30:44.049Z] [INFO] Worker audit completed in 5560ms
+[2026-07-23T20:32:44.836Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-23T20:32:44.838Z] [INFO] Worker map completed in 5ms
+[2026-07-23T20:33:48.865Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-23T20:33:48.866Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-23T20:33:54.411Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:33:54.412Z] [INFO] Worker audit completed in 5552ms
+[2026-07-23T20:35:25.343Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-23T20:35:25.345Z] [INFO] Worker map completed in 4ms
+[2026-07-23T20:36:07.396Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-23T20:36:07.397Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-23T20:36:13.720Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:36:13.722Z] [INFO] Worker testgaps completed in 6327ms
+[2026-07-23T20:36:46.624Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-23T20:36:46.624Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-23T20:36:52.150Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:36:52.151Z] [INFO] Worker testgaps completed in 5532ms
+[2026-07-23T20:37:08.202Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-23T20:37:08.203Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-23T20:37:22.903Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:37:22.904Z] [INFO] Worker optimize completed in 14705ms
+[2026-07-23T20:40:44.060Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-23T20:40:44.061Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-23T20:40:49.857Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:40:49.859Z] [INFO] Worker audit completed in 5800ms
+[2026-07-23T20:41:25.050Z] [INFO] Starting worker: consolidate (1/2 concurrent)
+[2026-07-23T20:41:25.050Z] [INFO] Consolidate worker: distillation skipped (no-db)
+[2026-07-23T20:41:25.051Z] [INFO] Worker consolidate completed in 3ms
+[2026-07-23T20:43:54.425Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-23T20:43:54.425Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-23T20:44:01.045Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:44:01.047Z] [INFO] Worker audit completed in 6624ms
+[2026-07-23T20:44:07.201Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-23T20:44:07.202Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-23T20:44:16.966Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:44:16.968Z] [INFO] Worker optimize completed in 9769ms
+[2026-07-23T20:47:44.846Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-23T20:47:44.847Z] [INFO] Worker map completed in 3ms
+[2026-07-23T20:50:25.358Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-23T20:50:25.359Z] [INFO] Worker map completed in 3ms
+[2026-07-23T20:50:49.869Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-23T20:50:49.870Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-23T20:50:55.486Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:50:55.488Z] [INFO] Worker audit completed in 5621ms
+[2026-07-23T20:52:22.912Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-23T20:52:22.912Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-23T20:52:31.475Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:52:31.476Z] [INFO] Worker optimize completed in 8566ms
+[2026-07-23T20:53:44.805Z] [INFO] Starting worker: consolidate (1/2 concurrent)
+[2026-07-23T20:53:44.806Z] [INFO] Consolidate worker: distillation skipped (no-db)
+[2026-07-23T20:53:44.807Z] [INFO] Worker consolidate completed in 4ms
+[2026-07-23T20:54:01.054Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-23T20:54:01.055Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-23T20:54:06.497Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:54:06.498Z] [INFO] Worker audit completed in 5448ms
+[2026-07-23T20:56:13.735Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-23T20:56:13.735Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-23T20:56:23.636Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:56:23.638Z] [INFO] Worker testgaps completed in 9906ms
+[2026-07-23T20:56:52.159Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-23T20:56:52.159Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-23T20:56:57.696Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:56:57.697Z] [INFO] Worker testgaps completed in 5539ms
+[2026-07-23T20:59:16.984Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-23T20:59:16.984Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-23T20:59:22.853Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T20:59:22.854Z] [INFO] Worker optimize completed in 5872ms
+[2026-07-23T21:00:55.508Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-23T21:00:55.508Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-23T21:01:02.641Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T21:01:02.642Z] [INFO] Worker audit completed in 7137ms
+[2026-07-23T21:02:44.865Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-23T21:02:44.867Z] [INFO] Worker map completed in 4ms
+[2026-07-23T21:04:06.516Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-23T21:04:06.517Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-23T21:04:12.782Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T21:04:12.784Z] [INFO] Worker audit completed in 6273ms
+[2026-07-23T21:05:25.376Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-23T21:05:25.377Z] [INFO] Worker map completed in 3ms
+[2026-07-23T21:07:31.494Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-23T21:07:31.494Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-23T21:07:37.536Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-23T21:07:37.537Z] [INFO] Worker optimize completed in 6045ms
+[2026-07-24T13:24:14.157Z] [INFO] Scheduled map (interval: 900s, first run in 0s)
+[2026-07-24T13:24:14.158Z] [INFO] Scheduled audit (interval: 600s, first run in 120s)
+[2026-07-24T13:24:14.158Z] [INFO] Scheduled optimize (interval: 900s, first run in 240s)
+[2026-07-24T13:24:14.159Z] [INFO] Scheduled consolidate (interval: 1800s, first run in 360s)
+[2026-07-24T13:24:14.159Z] [INFO] Scheduled testgaps (interval: 1200s, first run in 480s)
+[2026-07-24T13:24:14.160Z] [INFO] Scheduled backup (interval: 86400s, first run in 23610.593s)
+[2026-07-24T13:24:14.161Z] [INFO] Scheduled harness (interval: 21600s, first run in 720s)
+[2026-07-24T13:24:14.162Z] [INFO] Lifecycle monitor active (ttl=43200s)
+[2026-07-24T13:24:14.166Z] [INFO] Daemon started (PID: 12524, CPUs: 8, workers: 7, maxCpuLoad: 6.4, minFreeMemoryPercent: 10%)
+[2026-07-24T13:24:14.166Z] [INFO] Claude Code headless mode available - AI workers enabled
+[2026-07-24T13:24:14.169Z] [INFO] Worker map deferred: Memory too low: 5.8% free
+[2026-07-24T13:26:14.178Z] [INFO] Worker audit deferred: Memory too low: 9.8% free
+[2026-07-24T13:28:14.172Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T13:28:14.173Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T13:28:25.500Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T13:28:25.502Z] [INFO] Worker optimize completed in 11333ms
+[2026-07-24T13:28:25.508Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T13:28:25.513Z] [INFO] Worker map completed in 8ms
+[2026-07-24T13:28:25.519Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T13:28:25.520Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T13:28:38.407Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T13:28:38.409Z] [INFO] Worker audit completed in 12893ms
+[2026-07-24T13:30:14.168Z] [INFO] Starting worker: consolidate (1/2 concurrent)
+[2026-07-24T13:30:14.170Z] [INFO] Consolidate worker: distillation skipped (no-db)
+[2026-07-24T13:30:14.171Z] [INFO] Worker consolidate completed in 5ms
+[2026-07-24T13:32:14.172Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-24T13:32:14.172Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-24T13:32:22.612Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T13:32:22.614Z] [INFO] Worker testgaps completed in 8444ms
+[2026-07-24T13:36:14.174Z] [INFO] Starting worker: harness (1/2 concurrent)
+[2026-07-24T13:36:14.231Z] [INFO] Worker harness completed in 59ms
+[2026-07-24T13:36:14.235Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T13:36:14.236Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T13:36:21.779Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T13:36:21.780Z] [INFO] Worker audit completed in 7547ms
+[2026-07-24T13:39:14.180Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T13:39:14.181Z] [INFO] Worker map completed in 6ms
+[2026-07-24T13:43:25.515Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T13:43:25.516Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T13:43:31.603Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T13:43:31.604Z] [INFO] Worker optimize completed in 6092ms
+[2026-07-24T13:46:21.796Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T13:46:21.797Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T13:46:27.339Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T13:46:27.341Z] [INFO] Worker audit completed in 5547ms
+[2026-07-24T13:52:22.623Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-24T13:52:22.624Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-24T13:52:27.903Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T13:52:27.905Z] [INFO] Worker testgaps completed in 5285ms
+[2026-07-24T13:54:14.198Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T13:54:14.201Z] [INFO] Worker map completed in 8ms
+[2026-07-24T13:56:27.360Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T13:56:27.360Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T13:56:34.607Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T13:56:34.609Z] [INFO] Worker audit completed in 7251ms
+[2026-07-24T13:58:31.618Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T13:58:31.618Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T13:58:37.147Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T13:58:37.148Z] [INFO] Worker optimize completed in 5535ms
+[2026-07-24T14:00:14.192Z] [INFO] Starting worker: consolidate (1/2 concurrent)
+[2026-07-24T14:00:14.192Z] [INFO] Consolidate worker: distillation skipped (no-db)
+[2026-07-24T14:00:14.193Z] [INFO] Worker consolidate completed in 3ms
+[2026-07-24T14:06:34.618Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T14:06:34.620Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T14:06:40.029Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T14:06:40.030Z] [INFO] Worker audit completed in 5416ms
+[2026-07-24T14:09:14.205Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T14:09:14.206Z] [INFO] Worker map completed in 2ms
+[2026-07-24T14:12:27.910Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-24T14:12:27.911Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-24T14:12:33.352Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T14:12:33.353Z] [INFO] Worker testgaps completed in 5445ms
+[2026-07-24T14:13:37.167Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T14:13:37.167Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T14:13:42.544Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T14:13:42.545Z] [INFO] Worker optimize completed in 5380ms
+[2026-07-24T14:16:40.047Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T14:16:40.048Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T14:16:45.439Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T14:16:45.440Z] [INFO] Worker audit completed in 5397ms
+[2026-07-24T14:24:14.223Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T14:24:14.224Z] [INFO] Worker map completed in 5ms
+[2026-07-24T14:26:45.452Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T14:26:45.453Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T14:26:51.236Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T14:26:51.237Z] [INFO] Worker audit completed in 5787ms
+[2026-07-24T14:28:42.558Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T14:28:42.558Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T14:28:47.802Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T14:28:47.803Z] [INFO] Worker optimize completed in 5250ms
+[2026-07-24T14:30:14.199Z] [INFO] Starting worker: consolidate (1/2 concurrent)
+[2026-07-24T14:30:14.200Z] [INFO] Consolidate worker: distillation skipped (no-db)
+[2026-07-24T14:30:14.200Z] [INFO] Worker consolidate completed in 3ms
+[2026-07-24T14:32:33.360Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-24T14:32:33.361Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-24T14:32:39.234Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T14:32:39.235Z] [INFO] Worker testgaps completed in 5877ms
+[2026-07-24T14:36:51.250Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T14:36:51.251Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T14:36:57.184Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T14:36:57.185Z] [INFO] Worker audit completed in 5936ms
+[2026-07-24T14:39:14.231Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T14:39:14.233Z] [INFO] Worker map completed in 4ms
+[2026-07-24T14:43:47.809Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T14:43:47.810Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T14:43:58.304Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T14:43:58.306Z] [INFO] Worker optimize completed in 10499ms
+[2026-07-24T14:46:57.196Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T14:46:57.196Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T14:47:05.307Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T14:47:05.309Z] [INFO] Worker audit completed in 8115ms
+[2026-07-24T14:52:39.247Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-24T14:52:39.247Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-24T14:52:49.369Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T14:52:49.371Z] [INFO] Worker testgaps completed in 10127ms
+[2026-07-24T14:54:14.246Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T14:54:14.249Z] [INFO] Worker map completed in 5ms
+[2026-07-24T14:57:05.317Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T14:57:05.317Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T14:57:12.455Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T14:57:12.457Z] [INFO] Worker audit completed in 7143ms
+[2026-07-24T14:58:58.313Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T14:58:58.314Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T14:59:05.381Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T14:59:05.382Z] [INFO] Worker optimize completed in 7071ms
+[2026-07-24T15:00:14.219Z] [INFO] Starting worker: consolidate (1/2 concurrent)
+[2026-07-24T15:00:14.220Z] [INFO] Consolidate worker: distillation skipped (no-db)
+[2026-07-24T15:00:14.221Z] [INFO] Worker consolidate completed in 4ms
+[2026-07-24T15:07:12.470Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T15:07:12.471Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T15:07:26.785Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T15:07:26.786Z] [INFO] Worker audit completed in 14318ms
+[2026-07-24T15:09:14.265Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T15:09:14.267Z] [INFO] Worker map completed in 4ms
+[2026-07-24T15:12:49.382Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-24T15:12:49.383Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-24T15:12:57.238Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T15:12:57.239Z] [INFO] Worker testgaps completed in 7859ms
+[2026-07-24T15:14:05.386Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T15:14:05.387Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T15:14:13.551Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T15:14:13.553Z] [INFO] Worker optimize completed in 8169ms
+[2026-07-24T15:17:26.806Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T15:17:26.807Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T15:17:33.873Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T15:17:33.875Z] [INFO] Worker audit completed in 7075ms
+[2026-07-24T15:24:14.283Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T15:24:14.284Z] [INFO] Worker map completed in 6ms
+[2026-07-24T15:27:33.889Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T15:27:33.890Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T15:27:40.270Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T15:27:40.271Z] [INFO] Worker audit completed in 6386ms
+[2026-07-24T15:29:13.570Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T15:29:13.571Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T15:29:18.848Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T15:29:18.849Z] [INFO] Worker optimize completed in 5285ms
+[2026-07-24T15:30:14.231Z] [INFO] Starting worker: consolidate (1/2 concurrent)
+[2026-07-24T15:30:14.232Z] [INFO] Consolidate worker: distillation skipped (no-db)
+[2026-07-24T15:30:14.233Z] [INFO] Worker consolidate completed in 7ms
+[2026-07-24T15:32:57.258Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-24T15:32:57.259Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-24T15:33:02.783Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T15:33:02.784Z] [INFO] Worker testgaps completed in 5527ms
+[2026-07-24T15:37:40.288Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T15:37:40.288Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T15:37:45.570Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T15:37:45.572Z] [INFO] Worker audit completed in 5289ms
+[2026-07-24T15:39:14.301Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T15:39:14.303Z] [INFO] Worker map completed in 6ms
+[2026-07-24T15:44:18.862Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T15:44:18.863Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T15:44:24.189Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T15:44:24.190Z] [INFO] Worker optimize completed in 5332ms
+[2026-07-24T15:47:45.587Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T15:47:45.587Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T15:47:50.911Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T15:47:50.913Z] [INFO] Worker audit completed in 5328ms
+[2026-07-24T15:53:02.801Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-24T15:53:02.802Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-24T15:53:07.981Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T15:53:07.983Z] [INFO] Worker testgaps completed in 5187ms
+[2026-07-24T15:54:14.317Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T15:54:14.318Z] [INFO] Worker map completed in 6ms
+[2026-07-24T15:57:50.923Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T15:57:50.923Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T15:57:59.963Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T15:57:59.965Z] [INFO] Worker audit completed in 9044ms
+[2026-07-24T15:59:24.199Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T15:59:24.200Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T15:59:29.598Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T15:59:29.599Z] [INFO] Worker optimize completed in 5405ms
+[2026-07-24T16:00:14.249Z] [INFO] Starting worker: consolidate (1/2 concurrent)
+[2026-07-24T16:00:14.250Z] [INFO] Consolidate worker: distillation skipped (no-db)
+[2026-07-24T16:00:14.250Z] [INFO] Worker consolidate completed in 6ms
+[2026-07-24T16:07:59.971Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T16:07:59.972Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T16:08:09.268Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T16:08:09.269Z] [INFO] Worker audit completed in 9300ms
+[2026-07-24T16:09:14.336Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T16:09:14.338Z] [INFO] Worker map completed in 4ms
+[2026-07-24T16:13:07.988Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-24T16:13:07.988Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-24T16:13:15.113Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T16:13:15.115Z] [INFO] Worker testgaps completed in 7129ms
+[2026-07-24T16:14:29.605Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T16:14:29.605Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T16:14:38.312Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T16:14:38.314Z] [INFO] Worker optimize completed in 8711ms
+[2026-07-24T16:18:09.283Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T16:18:09.285Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T16:18:15.682Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T16:18:15.683Z] [INFO] Worker audit completed in 6405ms
+[2026-07-24T16:24:14.347Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T16:24:14.348Z] [INFO] Worker map completed in 3ms
+[2026-07-24T16:28:15.697Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T16:28:15.698Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T16:28:25.058Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T16:28:25.059Z] [INFO] Worker audit completed in 9364ms
+[2026-07-24T16:29:38.319Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T16:29:38.320Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T16:29:47.694Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T16:29:47.695Z] [INFO] Worker optimize completed in 9378ms
+[2026-07-24T16:30:14.272Z] [INFO] Starting worker: consolidate (1/2 concurrent)
+[2026-07-24T16:30:14.274Z] [INFO] Consolidate worker: distillation skipped (no-db)
+[2026-07-24T16:30:14.275Z] [INFO] Worker consolidate completed in 5ms
+[2026-07-24T16:33:15.129Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-24T16:33:15.129Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-24T16:33:22.448Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T16:33:22.451Z] [INFO] Worker testgaps completed in 7325ms
+[2026-07-24T16:38:25.070Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T16:38:25.070Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T16:38:33.380Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T16:38:33.382Z] [INFO] Worker audit completed in 8315ms
+[2026-07-24T16:39:14.360Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T16:39:14.362Z] [INFO] Worker map completed in 5ms
+[2026-07-24T16:44:47.706Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T16:44:47.706Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T16:44:54.185Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T16:44:54.187Z] [INFO] Worker optimize completed in 6484ms
+[2026-07-24T16:48:33.398Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T16:48:33.399Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T16:48:40.434Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T16:48:40.435Z] [INFO] Worker audit completed in 7042ms
+[2026-07-24T16:53:22.456Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-24T16:53:22.456Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-24T16:53:33.357Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T16:53:33.359Z] [INFO] Worker testgaps completed in 10905ms
+[2026-07-24T16:54:14.368Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T16:54:14.370Z] [INFO] Worker map completed in 4ms
+[2026-07-24T16:58:40.452Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T16:58:40.453Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T16:58:47.442Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T16:58:47.443Z] [INFO] Worker audit completed in 6994ms
+[2026-07-24T16:59:54.199Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T16:59:54.199Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T17:00:02.366Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T17:00:02.367Z] [INFO] Worker optimize completed in 8171ms
+[2026-07-24T17:00:14.283Z] [INFO] Starting worker: consolidate (1/2 concurrent)
+[2026-07-24T17:00:14.284Z] [INFO] Consolidate worker: distillation skipped (no-db)
+[2026-07-24T17:00:14.286Z] [INFO] Worker consolidate completed in 5ms
+[2026-07-24T17:08:47.459Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T17:08:47.459Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T17:08:53.164Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T17:08:53.165Z] [INFO] Worker audit completed in 5709ms
+[2026-07-24T17:09:14.381Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T17:09:14.383Z] [INFO] Worker map completed in 4ms
+[2026-07-24T17:13:33.365Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-24T17:13:33.366Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-24T17:13:38.654Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T17:13:38.656Z] [INFO] Worker testgaps completed in 5292ms
+[2026-07-24T17:15:02.384Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T17:15:02.385Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T17:15:07.642Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T17:15:07.643Z] [INFO] Worker optimize completed in 5264ms
+[2026-07-24T17:18:53.173Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T17:18:53.174Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T17:18:59.710Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T17:18:59.712Z] [INFO] Worker audit completed in 6540ms
+[2026-07-24T17:24:14.392Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T17:24:14.394Z] [INFO] Worker map completed in 3ms
+[2026-07-24T17:28:59.731Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T17:28:59.732Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T17:29:05.382Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T17:29:05.383Z] [INFO] Worker audit completed in 5655ms
+[2026-07-24T17:30:07.656Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T17:30:07.658Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T17:30:13.476Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T17:30:13.477Z] [INFO] Worker optimize completed in 5826ms
+[2026-07-24T17:30:14.297Z] [INFO] Starting worker: consolidate (1/2 concurrent)
+[2026-07-24T17:30:14.297Z] [INFO] Consolidate worker: distillation skipped (no-db)
+[2026-07-24T17:30:14.298Z] [INFO] Worker consolidate completed in 3ms
+[2026-07-24T17:33:38.669Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-24T17:33:38.670Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-24T17:33:47.054Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T17:33:47.055Z] [INFO] Worker testgaps completed in 8389ms
+[2026-07-24T17:39:05.391Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T17:39:05.391Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T17:39:11.739Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T17:39:11.740Z] [INFO] Worker audit completed in 6351ms
+[2026-07-24T17:39:14.406Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T17:39:14.409Z] [INFO] Worker map completed in 6ms
+[2026-07-24T17:45:13.491Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T17:45:13.491Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T17:45:19.944Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T17:45:19.945Z] [INFO] Worker optimize completed in 6459ms
+[2026-07-24T17:49:11.746Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T17:49:11.747Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T17:49:18.164Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T17:49:18.165Z] [INFO] Worker audit completed in 6421ms
+[2026-07-24T17:53:47.071Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-24T17:53:47.072Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-24T17:53:55.649Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T17:53:55.651Z] [INFO] Worker testgaps completed in 8582ms
+[2026-07-24T17:54:14.426Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T17:54:14.428Z] [INFO] Worker map completed in 4ms
+[2026-07-24T17:59:18.184Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T17:59:18.185Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T17:59:25.995Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T17:59:25.996Z] [INFO] Worker audit completed in 7818ms
+[2026-07-24T18:00:14.309Z] [INFO] Starting worker: consolidate (1/2 concurrent)
+[2026-07-24T18:00:14.310Z] [INFO] Consolidate worker: distillation skipped (no-db)
+[2026-07-24T18:00:14.311Z] [INFO] Worker consolidate completed in 4ms
+[2026-07-24T18:00:19.966Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T18:00:19.966Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T18:00:26.434Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T18:00:26.435Z] [INFO] Worker optimize completed in 6471ms
+[2026-07-24T18:09:14.445Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T18:09:14.446Z] [INFO] Worker map completed in 3ms
+[2026-07-24T18:09:26.001Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T18:09:26.001Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T18:09:33.731Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T18:09:33.732Z] [INFO] Worker audit completed in 7734ms
+[2026-07-24T18:13:55.661Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-24T18:13:55.661Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-24T18:14:03.311Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T18:14:03.312Z] [INFO] Worker testgaps completed in 7653ms
+[2026-07-24T18:15:26.451Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T18:15:26.451Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T18:15:32.357Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T18:15:32.358Z] [INFO] Worker optimize completed in 5909ms
+[2026-07-24T18:19:33.772Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T18:19:33.773Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T18:19:52.501Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T18:19:52.503Z] [INFO] Worker audit completed in 18734ms
+[2026-07-24T18:24:14.457Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T18:24:14.460Z] [INFO] Worker map completed in 6ms
+[2026-07-24T18:29:52.522Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T18:29:52.522Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T18:30:01.753Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T18:30:01.755Z] [INFO] Worker audit completed in 9235ms
+[2026-07-24T18:30:14.326Z] [INFO] Starting worker: consolidate (1/2 concurrent)
+[2026-07-24T18:30:14.328Z] [INFO] Consolidate worker: distillation skipped (no-db)
+[2026-07-24T18:30:14.329Z] [INFO] Worker consolidate completed in 5ms
+[2026-07-24T18:30:32.376Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T18:30:32.376Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T18:30:39.575Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T18:30:39.577Z] [INFO] Worker optimize completed in 7203ms
+[2026-07-24T18:34:03.329Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-24T18:34:03.330Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-24T18:34:10.722Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T18:34:10.723Z] [INFO] Worker testgaps completed in 7397ms
+[2026-07-24T18:39:14.475Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T18:39:14.478Z] [INFO] Worker map completed in 7ms
+[2026-07-24T18:40:01.768Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T18:40:01.768Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T18:40:12.180Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T18:40:12.181Z] [INFO] Worker audit completed in 10415ms
+[2026-07-24T18:45:39.598Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T18:45:39.599Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T18:45:50.708Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T18:45:50.709Z] [INFO] Worker optimize completed in 11114ms
+[2026-07-24T18:50:12.196Z] [INFO] Worker audit deferred: Memory too low: 6.0% free
+[2026-07-24T18:54:10.729Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-24T18:54:10.731Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-24T18:54:14.494Z] [INFO] Starting worker: map (2/2 concurrent)
+[2026-07-24T18:54:14.497Z] [INFO] Worker map completed in 10ms
+[2026-07-24T18:54:14.511Z] [INFO] Starting worker: audit (2/2 concurrent)
+[2026-07-24T18:54:14.511Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T18:54:28.715Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T18:54:28.717Z] [INFO] Worker testgaps completed in 17992ms
+[2026-07-24T18:54:30.628Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T18:54:30.629Z] [INFO] Worker audit completed in 16121ms
+[2026-07-24T19:00:12.232Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T19:00:12.232Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T19:00:14.353Z] [INFO] Starting worker: consolidate (2/2 concurrent)
+[2026-07-24T19:00:14.355Z] [INFO] Consolidate worker: distillation skipped (no-db)
+[2026-07-24T19:00:14.357Z] [INFO] Worker consolidate completed in 11ms
+[2026-07-24T19:00:28.321Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T19:00:28.323Z] [INFO] Worker audit completed in 16094ms
+[2026-07-24T19:00:50.723Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T19:00:50.725Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T19:00:59.384Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T19:00:59.386Z] [INFO] Worker optimize completed in 8665ms
+[2026-07-24T19:09:14.519Z] [INFO] Worker map deferred: Memory too low: 7.8% free
+[2026-07-24T19:10:28.348Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T19:10:28.349Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T19:10:45.726Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T19:10:45.729Z] [INFO] Worker audit completed in 17385ms
+[2026-07-24T19:10:45.734Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T19:10:45.736Z] [INFO] Worker map completed in 4ms
+[2026-07-24T19:14:28.738Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-24T19:14:28.739Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-24T19:14:48.825Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T19:14:48.826Z] [INFO] Worker testgaps completed in 20091ms
+[2026-07-24T19:15:59.410Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T19:15:59.411Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T19:16:11.911Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T19:16:11.912Z] [INFO] Worker optimize completed in 12504ms
+[2026-07-24T19:20:45.747Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T19:20:45.747Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T19:20:53.011Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T19:20:53.012Z] [INFO] Worker audit completed in 7268ms
+[2026-07-24T19:24:14.534Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T19:24:14.535Z] [INFO] Worker map completed in 3ms
+[2026-07-24T19:30:14.379Z] [INFO] Starting worker: consolidate (1/2 concurrent)
+[2026-07-24T19:30:14.380Z] [INFO] Consolidate worker: distillation skipped (no-db)
+[2026-07-24T19:30:14.381Z] [INFO] Worker consolidate completed in 5ms
+[2026-07-24T19:30:53.019Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T19:30:53.019Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T19:30:59.452Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T19:30:59.453Z] [INFO] Worker audit completed in 6436ms
+[2026-07-24T19:31:11.925Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T19:31:11.927Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T19:31:17.823Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T19:31:17.824Z] [INFO] Worker optimize completed in 5904ms
+[2026-07-24T19:34:48.837Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-24T19:34:48.837Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-24T19:34:55.426Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T19:34:55.428Z] [INFO] Worker testgaps completed in 6593ms
+[2026-07-24T19:36:14.236Z] [INFO] Starting worker: harness (1/2 concurrent)
+[2026-07-24T19:36:14.239Z] [INFO] Worker harness completed in 5ms
+[2026-07-24T19:39:14.553Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T19:39:14.555Z] [INFO] Worker map completed in 4ms
+[2026-07-24T19:40:59.460Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T19:40:59.460Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T19:41:09.906Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T19:41:09.908Z] [INFO] Worker audit completed in 10453ms
+[2026-07-24T19:46:17.831Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T19:46:17.832Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T19:46:34.567Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T19:46:34.568Z] [INFO] Worker optimize completed in 16739ms
+[2026-07-24T19:51:09.922Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T19:51:09.923Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T19:51:23.843Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T19:51:23.845Z] [INFO] Worker audit completed in 13926ms
+[2026-07-24T19:54:14.561Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T19:54:14.563Z] [INFO] Worker map completed in 5ms
+[2026-07-24T19:54:55.451Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-24T19:54:55.454Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-24T19:55:27.306Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T19:55:27.308Z] [INFO] Worker testgaps completed in 31877ms
+[2026-07-24T19:57:44.780Z] [INFO] Starting worker: backup (1/2 concurrent)
+[2026-07-24T19:57:44.796Z] [INFO] Worker backup completed in 23ms
+[2026-07-24T20:00:14.391Z] [INFO] Starting worker: consolidate (1/2 concurrent)
+[2026-07-24T20:00:14.393Z] [INFO] Consolidate worker: distillation skipped (no-db)
+[2026-07-24T20:00:14.395Z] [INFO] Worker consolidate completed in 7ms
+[2026-07-24T20:01:23.938Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T20:01:23.939Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T20:01:34.589Z] [INFO] Starting worker: optimize (2/2 concurrent)
+[2026-07-24T20:01:34.590Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T20:01:37.717Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T20:01:37.718Z] [INFO] Worker audit completed in 13810ms
+[2026-07-24T20:01:48.476Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T20:01:48.479Z] [INFO] Worker optimize completed in 13893ms
+[2026-07-24T20:09:14.581Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T20:09:14.585Z] [INFO] Worker map completed in 7ms
+[2026-07-24T20:11:37.735Z] [INFO] Worker audit deferred: Memory too low: 1.4% free
+[2026-07-24T20:15:27.333Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-24T20:15:27.333Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-24T20:15:52.912Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T20:15:52.916Z] [INFO] Worker testgaps completed in 25588ms
+[2026-07-24T20:15:52.932Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T20:15:52.933Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T20:16:18.311Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T20:16:18.313Z] [INFO] Worker audit completed in 25383ms
+[2026-07-24T20:16:48.491Z] [INFO] Worker optimize deferred: Memory too low: 9.8% free
+[2026-07-24T20:21:37.751Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T20:21:37.752Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T20:21:53.413Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T20:21:53.415Z] [INFO] Worker audit completed in 15667ms
+[2026-07-24T20:21:53.423Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T20:21:53.423Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T20:22:10.922Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T20:22:10.929Z] [INFO] Worker optimize completed in 17509ms
+[2026-07-24T20:24:14.617Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T20:24:14.620Z] [INFO] Worker map completed in 14ms
+[2026-07-24T20:30:14.515Z] [INFO] Worker consolidate deferred: Memory too low: 4.8% free
+[2026-07-24T20:31:48.648Z] [INFO] Worker optimize deferred: Memory too low: 5.8% free
+[2026-07-24T20:31:53.444Z] [INFO] Worker audit deferred: Memory too low: 9.1% free
+[2026-07-24T20:35:52.958Z] [INFO] Worker testgaps deferred: Memory too low: 7.6% free
+[2026-07-24T20:39:14.641Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T20:39:14.647Z] [INFO] Worker map completed in 12ms
+[2026-07-24T20:39:14.655Z] [INFO] Starting worker: consolidate (1/2 concurrent)
+[2026-07-24T20:39:14.664Z] [INFO] Consolidate worker: distillation skipped (no-db)
+[2026-07-24T20:39:14.667Z] [INFO] Worker consolidate completed in 15ms
+[2026-07-24T20:39:14.673Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T20:39:14.673Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T20:39:14.802Z] [INFO] Starting worker: audit (2/2 concurrent)
+[2026-07-24T20:39:14.803Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T20:39:32.462Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T20:39:32.466Z] [INFO] Worker optimize completed in 17793ms
+[2026-07-24T20:39:32.471Z] [INFO] Starting worker: testgaps (2/2 concurrent)
+[2026-07-24T20:39:32.472Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-24T20:39:33.161Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T20:39:33.162Z] [INFO] Worker audit completed in 18366ms
+[2026-07-24T20:39:53.391Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T20:39:53.590Z] [INFO] Worker testgaps completed in 21121ms
+[2026-07-24T20:41:53.455Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T20:41:53.456Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T20:42:06.100Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T20:42:06.103Z] [INFO] Worker audit completed in 12651ms
+[2026-07-24T20:46:48.664Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T20:46:48.664Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T20:47:02.004Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T20:47:02.006Z] [INFO] Worker optimize completed in 13344ms
+[2026-07-24T20:52:06.119Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T20:52:06.120Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T20:52:16.143Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T20:52:16.145Z] [INFO] Worker audit completed in 10028ms
+[2026-07-24T20:54:14.657Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T20:54:14.659Z] [INFO] Worker map completed in 4ms
+[2026-07-24T20:55:52.967Z] [INFO] Starting worker: testgaps (1/2 concurrent)
+[2026-07-24T20:55:52.967Z] [INFO] Running testgaps in headless mode (Claude Code AI)
+[2026-07-24T20:56:04.479Z] [WARN] Headless testgaps returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T20:56:04.482Z] [INFO] Worker testgaps completed in 11517ms
+[2026-07-24T21:00:14.528Z] [INFO] Starting worker: consolidate (1/2 concurrent)
+[2026-07-24T21:00:14.530Z] [INFO] Consolidate worker: distillation skipped (no-db)
+[2026-07-24T21:00:14.531Z] [INFO] Worker consolidate completed in 5ms
+[2026-07-24T21:02:02.014Z] [INFO] Starting worker: optimize (1/2 concurrent)
+[2026-07-24T21:02:02.015Z] [INFO] Running optimize in headless mode (Claude Code AI)
+[2026-07-24T21:02:16.159Z] [INFO] Worker audit deferred: Memory too low: 9.6% free
+[2026-07-24T21:02:17.651Z] [WARN] Headless optimize returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T21:02:17.653Z] [INFO] Worker optimize completed in 15641ms
+[2026-07-24T21:02:17.657Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T21:02:17.658Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T21:02:33.507Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T21:02:33.511Z] [INFO] Worker audit completed in 15856ms
+[2026-07-24T21:09:14.687Z] [INFO] Worker map deferred: Memory too low: 5.3% free
+[2026-07-24T21:12:16.177Z] [INFO] Starting worker: audit (1/2 concurrent)
+[2026-07-24T21:12:16.177Z] [INFO] Running audit in headless mode (Claude Code AI)
+[2026-07-24T21:12:27.142Z] [WARN] Headless audit returned success=false (Process exited with code 1); falling back to local mode
+[2026-07-24T21:12:27.144Z] [INFO] Worker audit completed in 10970ms
+[2026-07-24T21:12:27.151Z] [INFO] Starting worker: map (1/2 concurrent)
+[2026-07-24T21:12:27.154Z] [INFO] Worker map completed in 7ms

@@ -28,11 +28,9 @@ function isBDIItem(item: unknown): item is BDIItem {
 // ===== Merged config lookup =====
 const allConfigs: Record<string, AnyConfig> = { ...escalas, ...escalasGerais };
 
+// ponytail: rascunho guarda só o progresso das respostas — nada de identificação.
+// Dispositivo compartilhado + formulário abandonado deixaria CPF em claro por tempo indefinido.
 type Rascunho = {
-  nascimento: string; email: string; consentimento: boolean;
-  nome: string; cpf: string; telefone: string;
-  contatoEmergenciaNome: string; contatoEmergenciaTelefone: string;
-  responsavelNome: string; responsavelTelefone: string;
   respostas: (number | null)[]; atual: number; etapa: "form" | "dados";
 };
 
@@ -159,7 +157,14 @@ export default function Escala() {
       const raw = localStorage.getItem(storageKey);
       if (raw) {
         const d = JSON.parse(raw);
-        if (Array.isArray(d.respostas) && d.respostas.some((x: number | null) => x !== null)) setRascunho(d as Rascunho);
+        // Rascunhos antigos trazem campos de identificação: descartados aqui, nunca re-hidratados.
+        if (Array.isArray(d.respostas) && d.respostas.some((x: number | null) => x !== null)) {
+          setRascunho({
+            respostas: d.respostas,
+            atual: typeof d.atual === "number" ? d.atual : 0,
+            etapa: d.etapa === "dados" ? "dados" : "form",
+          });
+        }
       }
     } catch { /* rascunho inválido, ignora */ }
   }, [storageKey]);
@@ -168,13 +173,9 @@ export default function Escala() {
     if (!storageKey || (etapa !== "form" && etapa !== "dados" && etapa !== "erro")) return;
     try {
       const etapaRascunho: "form" | "dados" = etapa === "form" ? "form" : "dados";
-      localStorage.setItem(storageKey, JSON.stringify({
-        nascimento, email, consentimento, nome, cpf, telefone,
-        contatoEmergenciaNome, contatoEmergenciaTelefone, responsavelNome, responsavelTelefone,
-        respostas, atual, etapa: etapaRascunho,
-      }));
+      localStorage.setItem(storageKey, JSON.stringify({ respostas, atual, etapa: etapaRascunho }));
     } catch { /* storage indisponível, ignora */ }
-  }, [storageKey, etapa, nascimento, email, consentimento, nome, cpf, telefone, contatoEmergenciaNome, contatoEmergenciaTelefone, responsavelNome, responsavelTelefone, respostas, atual]);
+  }, [storageKey, etapa, respostas, atual]);
 
   useEffect(() => {
     const answered = respostas[atual];
@@ -291,11 +292,7 @@ export default function Escala() {
   }
   function retomarRascunho() {
     if (!rascunho) return;
-    setNascimento(rascunho.nascimento); setEmail(rascunho.email ?? "");
-    setNome(rascunho.nome ?? ""); setCpf(rascunho.cpf ?? ""); setTelefone(rascunho.telefone ?? "");
-    setContatoEmergenciaNome(rascunho.contatoEmergenciaNome ?? ""); setContatoEmergenciaTelefone(rascunho.contatoEmergenciaTelefone ?? "");
-    setResponsavelNome(rascunho.responsavelNome ?? ""); setResponsavelTelefone(rascunho.responsavelTelefone ?? "");
-    setConsentimento(rascunho.consentimento); setRespostas(rascunho.respostas); setAtual(rascunho.atual);
+    setRespostas(rascunho.respostas); setAtual(rascunho.atual);
     setEtapa(rascunho.etapa === "dados" ? "dados" : "form");
     setRascunho(null);
   }
@@ -358,7 +355,7 @@ export default function Escala() {
                   <p className="mb-6 text-sm leading-relaxed text-[var(--c-muted)]">Esta escala foi liberada pelo seu psicólogo. Informe o código recebido para continuar.</p>
                   <input value={codigoDigitado} onChange={(event) => setCodigoDigitado(event.target.value.replace(/\D/g, "").slice(0, 8))} inputMode="numeric" autoComplete="one-time-code" placeholder="Código de 5 ou 8 dígitos" className="mb-3 w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-center font-mono text-lg tracking-[0.25em] text-[var(--c-text)] focus:border-[var(--c-accent)] focus:outline-none" />
                   {erroCodigo && <p className="mb-3 text-sm" style={{ color: "var(--c-danger)" }}>{erroCodigo}</p>}
-                  <button onClick={() => validarCodigo()} disabled={validandoCodigo || !/^\d{5}(\d{3})?$/.test(codigoDigitado)} className="flex w-full items-center justify-center rounded-full px-6 py-3.5 font-medium text-white disabled:opacity-40" style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
+                  <button onClick={() => validarCodigo()} disabled={validandoCodigo || !/^\d{5}(\d{3})?$/.test(codigoDigitado)} className="flex w-full items-center justify-center rounded-full px-6 py-3.5 font-medium text-[var(--c-on-accent)] disabled:opacity-40" style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
                     {validandoCodigo ? "Validando..." : "Continuar"}
                   </button>
                 </div>
@@ -487,7 +484,7 @@ export default function Escala() {
                       setErroValidacao(erros);
                       if (Object.keys(erros).length === 0) enviarRespostas();
                     }}
-                    className="flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 font-medium text-white transition-opacity"
+                    className="flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 font-medium text-[var(--c-on-accent)] transition-opacity"
                     style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))", boxShadow: "0 12px 30px -10px var(--c-accent)" }}>
                     Enviar respostas <Check size={16} />
                   </motion.button>
@@ -513,7 +510,7 @@ export default function Escala() {
                   <h2 className="mb-2 text-lg font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Não foi possível enviar suas respostas</h2>
                   <p className="mb-6 text-sm leading-relaxed text-[var(--c-muted)]">{erroEnvio || "Ocorreu um erro inesperado ao enviar seus dados."} Suas respostas foram salvas neste dispositivo e nada foi perdido — tente novamente.</p>
                   <div className="flex flex-col gap-2">
-                    <button onClick={enviarRespostas} className="flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 font-medium text-white"
+                    <button onClick={enviarRespostas} className="flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 font-medium text-[var(--c-on-accent)]"
                       style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))", boxShadow: "0 12px 30px -10px var(--c-accent)" }}>
                       Tentar novamente
                     </button>
@@ -531,7 +528,7 @@ export default function Escala() {
                   <div className="mx-auto mb-6 max-w-md rounded-xl border border-[var(--c-accent)]/40 p-4 text-left" style={{ background: "color-mix(in oklab, var(--c-accent) 8%, transparent)" }}>
                     <p className="mb-2 text-sm font-medium text-[var(--c-text)]">Você tem um questionário em andamento.</p>
                     <div className="flex gap-2">
-                      <button onClick={retomarRascunho} className="rounded-full px-4 py-2 text-xs font-semibold text-white" style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>Retomar</button>
+                      <button onClick={retomarRascunho} className="rounded-full px-4 py-2 text-xs font-semibold text-[var(--c-on-accent)]" style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>Retomar</button>
                       <button onClick={descartarRascunho} className="rounded-full border border-[var(--c-border)] px-4 py-2 text-xs font-semibold text-[var(--c-muted)] transition-colors hover:text-[var(--c-text)]">Recomeçar</button>
                     </div>
                   </div>
@@ -549,7 +546,7 @@ export default function Escala() {
                   <span className="rounded-full bg-[var(--c-surface)] px-3 py-1 text-xs font-medium text-[var(--c-muted)]">Rastreio, nao diagnostico</span>
                 </div>
                 <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} onClick={() => setEtapa("form")}
-                  className="inline-flex items-center gap-2 rounded-full px-8 py-3 font-medium text-white"
+                  className="inline-flex items-center gap-2 rounded-full px-8 py-3 font-medium text-[var(--c-on-accent)]"
                   style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))", boxShadow: "0 12px 30px -10px var(--c-accent)" }}>
                   Iniciar <ChevronRight size={18} />
                 </motion.button>

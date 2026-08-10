@@ -93,7 +93,7 @@ export default function LESSII() {
                 onClick={() => handleResposta(score)}
                 className={`w-full p-3 rounded-lg text-sm font-semibold transition-all ${
                   respostas[item.id] === score
-                    ? "bg-[var(--c-accent)] text-white"
+                    ? "bg-[var(--c-accent)] text-[var(--c-on-accent)]"
                     : "bg-[var(--c-surface)] text-[var(--c-text)] border border-[var(--c-border)]"
                 }`}
               >

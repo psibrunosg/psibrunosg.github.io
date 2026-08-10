@@ -167,7 +167,7 @@ export default function PacienteHub() {
                 <p className="mb-3 inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--c-moss)]"><Lock size={13} />Privacidade e cuidado</p>
                 <h2 className="mb-3 text-2xl font-medium text-[var(--c-bg)] md:text-3xl" style={{ fontFamily: "var(--font-heading)" }}>Suas respostas fazem parte do seu processo.</h2>
                 <p className="mb-6 text-sm leading-relaxed text-[var(--c-moss)]">Elas são armazenadas de forma segura e acessíveis exclusivamente por Bruno de Souza Gonçalves, {contato.crp}. Estas ferramentas são de rastreio, não de diagnóstico.</p>
-                <Link to="/privacidade" className="inline-flex rounded-full bg-[var(--c-warm)] px-6 py-3 text-sm font-bold text-white shadow-md transition-transform hover:scale-[1.03]">Ler política de privacidade</Link>
+                <Link to="/privacidade" className="inline-flex rounded-full bg-[var(--c-warm)] px-6 py-3 text-sm font-bold text-[var(--c-on-warm)] shadow-md transition-transform hover:scale-[1.03]">Ler política de privacidade</Link>
               </div>
             </motion.section>
 

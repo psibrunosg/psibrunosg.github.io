@@ -167,7 +167,7 @@ export default function ExerciciosRestritos() {
                 <motion.button
                   variants={fadeUp}
                   onClick={() => navigate("/exercicios")}
-                  className="rounded-full px-6 py-3 font-semibold text-white"
+                  className="rounded-full px-6 py-3 font-semibold text-[var(--c-on-accent)]"
                   style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}
                 >
                   Voltar aos exercícios públicos

@@ -166,7 +166,7 @@ export default function BalancaTerapeutica() {
           <p className="text-sm text-[var(--c-text)] italic mb-6">{cenario.reflexao}</p>
           <button
             onClick={reiniciar}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-[var(--c-accent)] text-white font-semibold"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold"
           >
             <RotateCcw size={16} aria-hidden /> Julgar outro pensamento
           </button>
@@ -242,7 +242,7 @@ export default function BalancaTerapeutica() {
                 </p>
                 <button
                   onClick={proximaCarta}
-                  className="w-full py-3 rounded-lg bg-[var(--c-accent)] text-white font-semibold"
+                  className="w-full py-3 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold"
                 >
                   {cartaIdx + 1 >= (cenario?.cartas.length ?? 0) ? "Ver o veredito" : "Próxima carta"}
                 </button>

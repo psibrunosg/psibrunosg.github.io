@@ -434,7 +434,7 @@ export default function TerritorioTorajo({
             {fechamentoLinkExtra && (
               <Link
                 to={fechamentoLinkExtra.rota}
-                className="px-6 py-3 rounded-full text-white text-sm font-semibold"
+                className="px-6 py-3 rounded-full text-[var(--c-on-accent)] text-sm font-semibold"
                 style={{ background: "var(--c-accent)" }}
               >
                 {fechamentoLinkExtra.titulo}
@@ -445,7 +445,7 @@ export default function TerritorioTorajo({
               className={
                 fechamentoLinkExtra
                   ? "px-6 py-3 rounded-full text-sm font-semibold border border-[var(--c-border)] text-[var(--c-muted)]"
-                  : "px-6 py-3 rounded-full text-white text-sm font-semibold"
+                  : "px-6 py-3 rounded-full text-[var(--c-on-accent)] text-sm font-semibold"
               }
               style={fechamentoLinkExtra ? undefined : { background: "var(--c-accent)" }}
             >

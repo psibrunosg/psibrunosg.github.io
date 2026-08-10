@@ -69,7 +69,7 @@ export default function MiniSimuladorModos({
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
           onClick={reiniciar}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[var(--c-accent)] text-white font-semibold text-sm"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm"
         >
           <RotateCcw size={16} />
           Tentar de novo
@@ -155,7 +155,7 @@ export default function MiniSimuladorModos({
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             onClick={proximo}
-            className="mt-6 w-full sm:w-auto px-5 py-2.5 rounded-full bg-[var(--c-accent)] text-white font-semibold text-sm"
+            className="mt-6 w-full sm:w-auto px-5 py-2.5 rounded-full bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm"
           >
             {indice + 1 < total ? "Próximo cenário" : "Ver resultado"}
           </motion.button>

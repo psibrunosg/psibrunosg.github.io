@@ -77,7 +77,7 @@ export default function CofreForças() {
             whileTap={{ scale: 0.98 }}
             onClick={handleAdicionar}
             disabled={!nova.adversidade.trim() || !nova.comoLidou.trim() || !nova.recurso.trim()}
-            className="py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-xs disabled:opacity-50"
+            className="py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-xs disabled:opacity-50"
           >
             + Adicionar
           </motion.button>

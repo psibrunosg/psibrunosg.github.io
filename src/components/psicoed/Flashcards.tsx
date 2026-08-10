@@ -88,7 +88,7 @@ export default function Flashcards({ cartas, onFinalizar }: FlashcardsProps) {
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
           onClick={reiniciar}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[var(--c-accent)] text-white font-semibold text-sm"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm"
         >
           <RotateCcw size={16} />
           Revisar de novo
@@ -151,7 +151,7 @@ export default function Flashcards({ cartas, onFinalizar }: FlashcardsProps) {
           </button>
           <button
             onClick={() => avancar(true, carta)}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-[var(--c-accent)] text-white font-semibold text-sm"
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm"
           >
             <Check size={16} /> Acertei
           </button>

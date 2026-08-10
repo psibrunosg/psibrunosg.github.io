@@ -57,7 +57,7 @@ export default function Crise() {
             </p>
             <a
               href="tel:188"
-              className="mb-3 flex w-full items-center justify-center gap-3 rounded-xl px-6 py-4 text-lg font-bold text-white"
+              className="mb-3 flex w-full items-center justify-center gap-3 rounded-xl px-6 py-4 text-lg font-bold text-[var(--c-on-accent)]"
               style={{ background: "var(--c-accent)" }}
             >
               <Phone size={22} aria-hidden="true" />
@@ -89,7 +89,7 @@ export default function Crise() {
             </p>
             <a
               href="tel:192"
-              className="flex w-full items-center justify-center gap-3 rounded-xl px-6 py-4 text-lg font-bold text-white"
+              className="flex w-full items-center justify-center gap-3 rounded-xl px-6 py-4 text-lg font-bold text-[var(--c-on-warm)]"
               style={{ background: "var(--c-warm)" }}
             >
               <Phone size={22} aria-hidden="true" />

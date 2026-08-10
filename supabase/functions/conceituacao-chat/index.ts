@@ -35,6 +35,8 @@ const jsonHeaders = { ...corsHeaders, "Content-Type": "application/json" };
 // corta e sinaliza em vez de mandar tudo pra IA silenciosamente.
 const MAX_ANEXO_CHARS = 20000;
 
+const THERAPIST_USER_ID = "d0dddd26-7dd0-4b5c-911a-7d541c7826e6";
+
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
@@ -240,6 +242,19 @@ serve(async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405, headers: corsHeaders });
 
   try {
+    // Gate de terapeuta antes de qualquer leitura/escrita: esta função opera com
+    // service role sobre um pacienteId arbitrário vindo do body.
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: jsonHeaders });
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: authData, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !authData.user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: jsonHeaders });
+
+    if (authData.user.id !== THERAPIST_USER_ID) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: jsonHeaders });
+    }
+
     const body = await req.json();
     const acao = typeof body?.acao === "string" ? body.acao : "";
 

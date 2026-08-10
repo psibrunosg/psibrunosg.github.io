@@ -220,7 +220,7 @@ export default function VariantC() {
               href={contato.whatsappLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-h-11 items-center gap-2 border border-[var(--c-deep)] bg-[var(--c-deep)] px-5 text-sm font-extrabold text-white transition-colors duration-200 hover:bg-[var(--c-warm)] hover:border-[var(--c-warm)]"
+              className="inline-flex min-h-11 items-center gap-2 border border-[var(--c-deep)] bg-[var(--c-deep)] px-5 text-sm font-extrabold text-[var(--c-on-accent)] transition-colors duration-200 hover:bg-[var(--c-warm)] hover:border-[var(--c-warm)]"
             >
               Conversar agora
               <ArrowUpRight size={16} aria-hidden="true" />
@@ -279,7 +279,7 @@ export default function VariantC() {
                   href={contato.whatsappLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-5 inline-flex min-h-12 items-center justify-center gap-2 bg-[var(--c-deep)] px-5 font-extrabold text-white"
+                  className="mt-5 inline-flex min-h-12 items-center justify-center gap-2 bg-[var(--c-deep)] px-5 font-extrabold text-[var(--c-on-accent)]"
                 >
                   Conversar no WhatsApp
                   <ArrowUpRight size={17} aria-hidden="true" />
@@ -331,7 +331,7 @@ export default function VariantC() {
                 <a
                   href="#para-voce"
                   aria-label="Conhecer o atendimento"
-                  className="hidden size-14 items-center justify-center border border-[var(--c-deep)] text-[var(--c-deep)] transition-colors duration-200 hover:bg-[var(--c-deep)] hover:text-white sm:flex"
+                  className="hidden size-14 items-center justify-center border border-[var(--c-deep)] text-[var(--c-deep)] transition-colors duration-200 hover:bg-[var(--c-deep)] hover:text-[var(--c-on-accent)] sm:flex"
                 >
                   <ArrowDown size={20} aria-hidden="true" />
                 </a>
@@ -342,14 +342,14 @@ export default function VariantC() {
                   href={contato.whatsappLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex min-h-13 items-center justify-center gap-3 bg-[var(--c-deep)] px-7 text-sm font-extrabold text-white transition-colors duration-200 hover:bg-[var(--c-warm)]"
+                  className="inline-flex min-h-13 items-center justify-center gap-3 bg-[var(--c-deep)] px-7 text-sm font-extrabold text-[var(--c-on-accent)] transition-colors duration-200 hover:bg-[var(--c-warm)]"
                 >
                   Me conte o que está acontecendo
                   <MessageCircle size={18} aria-hidden="true" />
                 </a>
                 <Link
                   to="/como-funciona"
-                  className="inline-flex min-h-13 items-center justify-center gap-2 border border-[var(--c-deep)] px-6 text-sm font-extrabold text-[var(--c-deep)] transition-colors duration-200 hover:bg-[var(--c-deep)] hover:text-white"
+                  className="inline-flex min-h-13 items-center justify-center gap-2 border border-[var(--c-deep)] px-6 text-sm font-extrabold text-[var(--c-deep)] transition-colors duration-200 hover:bg-[var(--c-deep)] hover:text-[var(--c-on-accent)]"
                 >
                   Entender como trabalho
                   <ArrowRight size={17} aria-hidden="true" />
@@ -390,7 +390,7 @@ export default function VariantC() {
           </div>
         </section>
 
-        <section className="border-y border-[var(--c-deep)] bg-[var(--c-deep)] text-white" aria-label="Informações do atendimento">
+        <section className="border-y border-[var(--c-deep)] bg-[var(--c-deep)] text-[var(--c-on-accent)]" aria-label="Informações do atendimento">
           <div className="mx-auto grid max-w-[90rem] sm:grid-cols-3">
             {[
               ["Atendimento", "Adultos e adolescentes"],
@@ -399,7 +399,7 @@ export default function VariantC() {
             ].map(([label, value], index) => (
               <div key={label} className={`px-6 py-6 sm:px-8 lg:px-12 ${index > 0 ? "border-t border-white/18 sm:border-l sm:border-t-0" : ""}`}>
                 <p className="text-[0.65rem] font-extrabold uppercase tracking-[0.18em] text-white/52">{label}</p>
-                <p className="mt-2 text-base font-bold text-white">{value}</p>
+                <p className="mt-2 text-base font-bold text-[var(--c-on-accent)]">{value}</p>
               </div>
             ))}
           </div>
@@ -456,12 +456,12 @@ export default function VariantC() {
           </div>
         </section>
 
-        <section id="trabalho" className="bg-[var(--c-deep)] text-white">
+        <section id="trabalho" className="bg-[var(--c-deep)] text-[var(--c-on-accent)]">
           <div className="mx-auto max-w-[90rem] px-5 py-20 sm:px-8 lg:px-12 lg:py-28">
             <div className="grid gap-14 lg:grid-cols-[1fr_1.05fr] lg:gap-20">
               <Reveal>
                 <SectionLabel light>Meu jeito de trabalhar</SectionLabel>
-                <h2 className="max-w-[12ch] text-[clamp(3rem,5.6vw,6.4rem)] font-medium leading-[0.9] tracking-[-0.055em] text-white" style={{ fontFamily: "var(--font-display)" }}>
+                <h2 className="max-w-[12ch] text-[clamp(3rem,5.6vw,6.4rem)] font-medium leading-[0.9] tracking-[-0.055em] text-[var(--c-on-accent)]" style={{ fontFamily: "var(--font-display)" }}>
                   Acolhimento não é deixar a conversa sem direção.
                 </h2>
                 <p className="mt-7 max-w-xl text-lg leading-[1.75] text-white/68">
@@ -477,7 +477,7 @@ export default function VariantC() {
                     <article className="grid gap-5 border-b border-white/18 py-8 sm:grid-cols-[5rem_1fr] sm:py-10">
                       <span className="text-sm font-extrabold uppercase tracking-[0.16em] text-[#e3a178]">{item.sigla}</span>
                       <div>
-                        <h3 className="text-3xl font-medium tracking-[-0.03em] text-white sm:text-4xl" style={{ fontFamily: "var(--font-display)" }}>
+                        <h3 className="text-3xl font-medium tracking-[-0.03em] text-[var(--c-on-accent)] sm:text-4xl" style={{ fontFamily: "var(--font-display)" }}>
                           {item.nome}
                         </h3>
                         <p className="mt-4 max-w-2xl text-base leading-[1.75] text-white/64">{item.descricao}</p>
@@ -493,7 +493,7 @@ export default function VariantC() {
                 {processo.map((item) => (
                   <div key={item.numero}>
                     <span className="text-sm font-extrabold text-[#e3a178]">{item.numero}</span>
-                    <h3 className="mt-5 text-3xl font-medium text-white" style={{ fontFamily: "var(--font-display)" }}>{item.titulo}</h3>
+                    <h3 className="mt-5 text-3xl font-medium text-[var(--c-on-accent)]" style={{ fontFamily: "var(--font-display)" }}>{item.titulo}</h3>
                     <p className="mt-4 text-base leading-[1.7] text-white/62">{item.descricao}</p>
                   </div>
                 ))}
@@ -613,13 +613,13 @@ export default function VariantC() {
               <Reveal key={item.href} delay={index * 0.05}>
                 <Link
                   to={item.href}
-                  className={`group block min-h-[20rem] border-b border-[var(--c-border)] p-6 transition-colors duration-200 hover:bg-[var(--c-deep)] hover:text-white sm:p-8 lg:border-b-0 ${index % 3 > 0 ? "lg:border-l" : ""} ${index >= 3 ? "lg:border-t lg:border-[var(--c-border)]" : ""}`}
+                  className={`group block min-h-[20rem] border-b border-[var(--c-border)] p-6 transition-colors duration-200 hover:bg-[var(--c-deep)] hover:text-[var(--c-on-accent)] sm:p-8 lg:border-b-0 ${index % 3 > 0 ? "lg:border-l" : ""} ${index >= 3 ? "lg:border-t lg:border-[var(--c-border)]" : ""}`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-extrabold text-[var(--c-warm)]">{item.index}</span>
-                    <ArrowUpRight size={20} className="text-[var(--c-deep)] transition-colors group-hover:text-white" aria-hidden="true" />
+                    <ArrowUpRight size={20} className="text-[var(--c-deep)] transition-colors group-hover:text-[var(--c-on-accent)]" aria-hidden="true" />
                   </div>
-                  <h3 className="mt-16 max-w-[12ch] text-3xl font-medium leading-tight tracking-[-0.035em] text-[var(--c-deep)] transition-colors group-hover:text-white" style={{ fontFamily: "var(--font-display)" }}>
+                  <h3 className="mt-16 max-w-[12ch] text-3xl font-medium leading-tight tracking-[-0.035em] text-[var(--c-deep)] transition-colors group-hover:text-[var(--c-on-accent)]" style={{ fontFamily: "var(--font-display)" }}>
                     {item.title}
                   </h3>
                   <p className="mt-4 max-w-sm text-sm leading-[1.7] text-[var(--c-muted)] transition-colors group-hover:text-white/68">{item.text}</p>
@@ -696,7 +696,7 @@ export default function VariantC() {
                 href={contato.whatsappLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-7 inline-flex min-h-13 items-center gap-3 bg-[var(--c-deep)] px-7 text-sm font-extrabold text-white transition-colors duration-200 hover:bg-white hover:text-[var(--c-deep)]"
+                className="mt-7 inline-flex min-h-13 items-center gap-3 bg-[var(--c-deep)] px-7 text-sm font-extrabold text-[var(--c-on-accent)] transition-colors duration-200 hover:bg-white hover:text-[var(--c-deep)]"
               >
                 Falar com Bruno no WhatsApp
                 <ArrowUpRight size={18} aria-hidden="true" />

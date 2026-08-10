@@ -110,7 +110,7 @@ export default function ReflexaoPosExercicio({ onSalvar }: ReflexaoPosExercicioP
           whileTap={{ scale: 0.98 }}
           onClick={handleSalvar}
           disabled={humorFinal === null}
-          className="flex-1 py-3 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all min-h-[44px]"
+          className="flex-1 py-3 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all min-h-[44px]"
         >
           Salvar e voltar
         </motion.button>

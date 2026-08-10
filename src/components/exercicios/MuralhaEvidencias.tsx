@@ -95,7 +95,7 @@ export default function MuralhaEvidencias() {
               if (pensamento.trim()) setFase("evidencias");
             }}
             disabled={!pensamento.trim()}
-            className="mt-3 w-full py-2.5 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm disabled:opacity-50"
+            className="mt-3 w-full py-2.5 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm disabled:opacity-50"
           >
             Acusar →
           </motion.button>
@@ -192,7 +192,7 @@ export default function MuralhaEvidencias() {
             whileTap={{ scale: 0.98 }}
             onClick={() => setFase("veredito")}
             disabled={!todasTestadas}
-            className="w-full py-2.5 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm disabled:opacity-50"
+            className="w-full py-2.5 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm disabled:opacity-50"
           >
             {todasTestadas ? "Veredito →" : "Teste todas as evidências no júri"}
           </motion.button>
@@ -227,7 +227,7 @@ export default function MuralhaEvidencias() {
             whileTap={{ scale: 0.98 }}
             onClick={handleVeredito}
             disabled={!reformulado.trim()}
-            className="w-full py-2.5 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm disabled:opacity-50"
+            className="w-full py-2.5 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm disabled:opacity-50"
           >
             {rodada < 3 ? "Próxima rodada" : "Finalizar"}
           </motion.button>

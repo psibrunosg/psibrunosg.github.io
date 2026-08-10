@@ -73,7 +73,7 @@ function PraticaDistorcoes() {
           )}
           <button
             onClick={() => setEtapa("quiz")}
-            className="px-6 py-3 rounded-full bg-[var(--c-accent)] text-white font-semibold text-sm"
+            className="px-6 py-3 rounded-full bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm"
           >
             Começar
           </button>
@@ -134,7 +134,7 @@ function PraticaModos() {
           )}
           <button
             onClick={() => setEtapa("quiz")}
-            className="px-6 py-3 rounded-full bg-[var(--c-accent)] text-white font-semibold text-sm"
+            className="px-6 py-3 rounded-full bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm"
           >
             Começar
           </button>
@@ -303,7 +303,7 @@ export default function PersonagensTorajo() {
                 onClick={() => setPraticaTab("distorcoes")}
                 className={`px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${
                   praticaTab === "distorcoes"
-                    ? "bg-[var(--c-accent)] text-white border-[var(--c-accent)]"
+                    ? "bg-[var(--c-accent)] text-[var(--c-on-accent)] border-[var(--c-accent)]"
                     : "border-[var(--c-border)] text-[var(--c-muted)]"
                 }`}
               >
@@ -313,7 +313,7 @@ export default function PersonagensTorajo() {
                 onClick={() => setPraticaTab("modos")}
                 className={`px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${
                   praticaTab === "modos"
-                    ? "bg-[var(--c-accent)] text-white border-[var(--c-accent)]"
+                    ? "bg-[var(--c-accent)] text-[var(--c-on-accent)] border-[var(--c-accent)]"
                     : "border-[var(--c-border)] text-[var(--c-muted)]"
                 }`}
               >

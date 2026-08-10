@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Plus, Copy, Check, Unlock, Eye, EyeOff, Link2, Send, Trash2, Pencil, X, MessageCircle } from "lucide-react";
+import { Plus, Copy, Check, Unlock, Eye, EyeOff, Link2, Send, Ban, Pencil, X, MessageCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { fadeUp } from "@/lib/motion";
 import { ESCALAS_RESTRITAS } from "@/content/escalas-restritas";
@@ -255,21 +255,21 @@ export function PainelPacientes() {
     setUnlockingCode(null);
   };
 
-  const handleExcluirCodigo = async (codigo: string, nome: string) => {
-    if (!window.confirm(`Excluir o código de ${nome}? O código também será desativado.`)) {
+  const handleDesativarCodigo = async (codigo: string, nome: string) => {
+    if (!window.confirm(`Desativar o código de ${nome}? O código deixa de funcionar para o paciente, mas o registro permanece no banco (não é exclusão). Ele sai desta lista.`)) {
       return;
     }
 
     setExcluindo(codigo);
     try {
-      // Desativa o código no Supabase (fonte de verdade); a lista já filtra
-      // por active=true, então isso remove o paciente permanentemente da view.
+      // Desativa o código no Supabase (fonte de verdade); a lista filtra por
+      // active=true, então ele some daqui — o registro em si continua existindo.
       const { error } = await supabase?.from("patient_codes").update({ active: false }).eq("code", codigo) ?? {};
       if (error) throw error;
       setPacientes((prev) => prev.filter((p) => p.codigo !== codigo));
     } catch (error) {
       console.error("Erro ao desativar código no Supabase:", error);
-      alert("Erro ao excluir código. Tente novamente.");
+      alert("Erro ao desativar código. Tente novamente.");
     }
     setExcluindo(null);
   };
@@ -401,11 +401,13 @@ export function PainelPacientes() {
                     {copiado === `msg-generica-${p.codigo}` ? <Check size={16} /> : <Send size={16} />}
                   </button>
                   <button
-                    onClick={() => handleExcluirCodigo(p.codigo, p.nome)}
+                    onClick={() => handleDesativarCodigo(p.codigo, p.nome)}
                     disabled={excluindo === p.codigo}
+                    title="Desativar código"
+                    aria-label={`Desativar código de ${p.nome}`}
                     className="flex-shrink-0 p-2 rounded-lg text-[var(--c-muted)] hover:text-[#ff6b6b] transition-colors disabled:opacity-50"
                   >
-                    <Trash2 size={16} />
+                    <Ban size={16} />
                   </button>
                 </div>
               </div>

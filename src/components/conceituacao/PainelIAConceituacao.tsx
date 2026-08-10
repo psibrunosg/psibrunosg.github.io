@@ -88,7 +88,7 @@ export function PainelIAConceituacao({ ia }: { ia: UseConceituacaoIAResult }) {
           <p className="mt-1 text-[10px] text-[var(--c-muted)]">Você é responsável por não digitar dados que identifiquem o paciente aqui.</p>
         </div>
         <button onClick={ia.sugerirRascunho} disabled={ia.loading}
-          className="mt-3 flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+          className="mt-3 flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-[var(--c-on-accent)] disabled:opacity-60"
           style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
           {ia.loading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
           {ia.loading ? "Gerando..." : "Sugerir rascunho (IA)"}
@@ -104,7 +104,7 @@ export function PainelIAConceituacao({ ia }: { ia: UseConceituacaoIAResult }) {
             <input value={ia.rotulo} onChange={(e) => ia.setRotulo(e.target.value)} placeholder="ex: sessão inicial, revisão 3 meses depois" className={inputCls} />
           </div>
           <button onClick={ia.salvarDiagrama} disabled={ia.salvando}
-            className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+            className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-[var(--c-on-accent)] disabled:opacity-60"
             style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
             {ia.salvando ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
             {ia.salvando ? "Gravando..." : "Gravar"}
@@ -165,7 +165,7 @@ export function PainelIAConceituacao({ ia }: { ia: UseConceituacaoIAResult }) {
             placeholder="Responda ou descreva o caso — a IA vai perguntando e preenchendo o diagrama"
             className={inputCls} />
           <button onClick={ia.enviarMensagemChat} disabled={ia.chatLoading || !ia.inputChat.trim()}
-            className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+            className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-[var(--c-on-accent)] disabled:opacity-60"
             style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
             {ia.chatLoading ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
           </button>

@@ -73,7 +73,7 @@ export default function AEscavacao() {
             whileTap={{ scale: 0.98 }}
             onClick={handleIniciar}
             disabled={!pensamento.trim()}
-            className="mt-3 w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm disabled:opacity-50"
+            className="mt-3 w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm disabled:opacity-50"
           >
             Cavar fundo →
           </motion.button>
@@ -138,7 +138,7 @@ export default function AEscavacao() {
               if (respostaAtual.trim()) handleResponder(respostaAtual.trim());
             }}
             disabled={!respostaAtual.trim()}
-            className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {cavaIdx < SCRIPT_ESCAVACAO.perguntas.length - 1 ? "Próxima camada" : "Ver resultado"} <ChevronDown size={14} />
           </motion.button>

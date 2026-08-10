@@ -58,7 +58,7 @@ export default function PontosTensao() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleIniciar}
-            className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm"
+            className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm"
           >
             Começar mapeamento →
           </motion.button>
@@ -143,7 +143,7 @@ export default function PontosTensao() {
           whileTap={{ scale: 0.98 }}
           onClick={handleProximo}
           disabled={!ponto.disparador || !ponto.emocao || !ponto.acao}
-          className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm disabled:opacity-50"
+          className="w-full py-2 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm disabled:opacity-50"
         >
           {pontosIdx < 2 ? "Próximo ponto" : "Ver mapa"}
         </motion.button>

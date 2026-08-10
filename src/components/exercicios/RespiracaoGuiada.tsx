@@ -149,7 +149,7 @@ export default function RespiracaoGuiada({ audioUrl }: RespiracaoGuiadaProps) {
         <div className="flex gap-2 justify-center">
           <button
             onClick={() => setIsPlaying(!isPlaying)}
-            className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-[var(--c-accent)] text-white font-semibold text-sm transition-all hover:opacity-90 min-h-[44px]"
+            className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold text-sm transition-all hover:opacity-90 min-h-[44px]"
           >
             {isPlaying ? (
               <>
@@ -177,7 +177,7 @@ export default function RespiracaoGuiada({ audioUrl }: RespiracaoGuiadaProps) {
                 onClick={() => handleVelocidadeChange(vel as Velocidade)}
                 className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all min-h-[44px] ${
                   velocidade === vel
-                    ? "bg-[var(--c-accent)] text-white"
+                    ? "bg-[var(--c-accent)] text-[var(--c-on-accent)]"
                     : "bg-[var(--c-border)] text-[var(--c-text)] hover:bg-[var(--c-muted)]"
                 }`}
               >

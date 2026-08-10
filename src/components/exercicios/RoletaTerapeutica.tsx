@@ -176,7 +176,7 @@ export default function RoletaTerapeutica() {
             <>Suas estimativas se mantiveram. Vale repetir o giro em outro dia — o "E se?" muda de tamanho conforme o contexto.</>
           )}
         </p>
-        <button onClick={reiniciar} className="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-[var(--c-accent)] text-white font-semibold">
+        <button onClick={reiniciar} className="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold">
           <RotateCcw size={16} aria-hidden /> Girar de novo
         </button>
       </motion.div>
@@ -219,7 +219,7 @@ export default function RoletaTerapeutica() {
             onClick={girar}
             disabled={girando}
             aria-label="Girar a roleta"
-            className="px-8 py-3 rounded-lg bg-[var(--c-accent)] text-white font-semibold disabled:opacity-50"
+            className="px-8 py-3 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold disabled:opacity-50"
           >
             {girando ? "Girando..." : "Girar a roleta"}
           </button>
@@ -249,7 +249,7 @@ export default function RoletaTerapeutica() {
               />
               <p className="text-center text-2xl font-bold text-[var(--c-accent)]">{estimativa1}%</p>
             </div>
-            <button onClick={() => setFase("finais")} className="w-full py-3 rounded-lg bg-[var(--c-accent)] text-white font-semibold">
+            <button onClick={() => setFase("finais")} className="w-full py-3 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold">
               Travar estimativa e ver os finais possíveis
             </button>
           </motion.div>
@@ -308,7 +308,7 @@ export default function RoletaTerapeutica() {
                 </p>
               )}
             </div>
-            <button onClick={proximaRodada} className="w-full py-3 rounded-lg bg-[var(--c-accent)] text-white font-semibold">
+            <button onClick={proximaRodada} className="w-full py-3 rounded-lg bg-[var(--c-accent)] text-[var(--c-on-accent)] font-semibold">
               {rodada >= RODADAS ? "Ver resultado" : "Próximo giro"}
             </button>
           </motion.div>

@@ -1,0 +1,1530 @@
+[2026-07-24T15:47:45.664Z] PROMPT
+============================================================
+Analyze this codebase for security vulnerabilities:
+- Check for hardcoded secrets (API keys, passwords)
+- Identify SQL injection risks
+- Find XSS vulnerabilities
+- Check for insecure dependencies
+- Identify authentication/authorization issues
+
+Provide a JSON report with:
+{
+  "vulnerabilities": [{ "severity": "high|medium|low", "file": "...", "line": N, "description": "..." }],
+  "riskScore": 0-100,
+  "recommendations": ["..."]
+}
+
+## Codebase Context
+
+--- eslint.config.js ---
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import tseslint from 'typescript-eslint'
+import { defineConfig, globalIgnores } from 'eslint/config'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      js.configs.recommended,
+      tseslint.configs.recommended,
+      reactHooks.configs.flat.recommended,
+      reactRefresh.configs.vite,
+    ],
+    languageOptions: {
+      globals: globals.browser,
+    },
+  },
+])
+
+
+--- scripts/generate-og-pages.js ---
+import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const root = join(__dirname, "..");
+const dist = join(root, "dist");
+const blogDir = join(root, "src", "content", "blog");
+
+const indexHtml = readFileSync(join(dist, "index.html"), "utf-8");
+
+const files = readdirSync(blogDir).filter((f) => f.endsWith(".json"));
+
+for (const file of files) {
+  const post = JSON.parse(readFileSync(join(blogDir, file), "utf-8").replace(/^﻿/, ""));
+  const slug = post.slug;
+  const title = post.titulo + " | Bruno de Souza Gonçalves Psicólogo";
+  const description = post.resumo || post.subtitulo || "";
+  const url = "https://psibrunosg.github.io/blog/" + slug;
+  const image = "https://psibrunosg.github.io/img/foto.jpg";
+
+  const ogTags = `
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="${url}" />
+    <meta property="og:title" content="${escapeHtml(post.titulo)}" />
+    <meta property="og:description" content="${escapeHtml(description)}" />
+    <meta property="og:image" content="${image}" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${escapeHtml(post.titulo)}" />
+    <meta name="twitter:description" content="${escapeHtml(description)}" />
+    <meta name="twitter:image" content="${image}" />`;
+
+  const pageHtml = indexHtml
+    .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(title)}</title>`)
+    .replace(/<meta name="description"[^>]*\/>/, `<meta name="description" content="${escapeHtml(description)}" />`)
+    .replace(/<meta property="og:type"[^>]*\/>/, "")
+    .replace(/<meta property="og:url"[^>]*\/>/, "")
+    .replace(/<meta property="og:title"[^>]*\/>/, "")
+    .replace(/<meta property="og:description"[^>]*\/>/, "")
+    .replace(/<meta property="og:image"[^>]*\/>/, "")
+    .replace(/<meta name="twitter:card"[^>]*\/>/, "")
+    .replace(/<meta name="twitter:title"[^>]*\/>/, "")
+    .replace(/<meta name="twitter:description"[^>]*\/>/, "")
+    .replace(/<meta name="twitter:image"[^>]*\/>/, "")
+    .replace("</head>", ogTags + "\n  </head>");
+
+  const outDir = join(dist, "blog", slug);
+  mkdirSync(outDir, { recursive: true });
+  writeFileSync(join(outDir, "index.html"), pageHtml);
+  console.log("  OG page: /blog/" + slug + "/");
+}
+
+console.log(`Generated ${files.length} OG pages.`);
+
+function escapeHtml(str) {
+  return str.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+
+--- src/components/blog/types.ts ---
+// Tipos compartilhados dos blocos ricos de blog (fenced code blocks customizados)
+
+export type MindMapNo = {
+  titulo: string;
+  cor?: string;
+  filhos?: string[];
+};
+
+export type MindMapData = {
+  centro: string;
+  nos: MindMapNo[];
+};
+
+export type GraficoPonto = {
+  label: string;
+  valor: number;
+};
+
+export type GraficoData = {
+  tipo: "barras" | "linha";
+  titulo?: string;
+  dados: GraficoPonto[];
+  unidade?: string;
+  fonte?: string;
+};
+
+export type DestaqueTipo = "dica" | "alerta" | "info" | "mito";
+
+export type DestaqueData = {
+  tipo: DestaqueTipo;
+  titulo?: string;
+  texto: string;
+};
+
+export type RevelarData = {
+  titulo: string;
+  conteudo: string;
+};
+
+export type PassosData = {
+  titulo?: string;
+  passos: string[];
+};
+
+
+--- src/components/psicoed/useProgresso.ts ---
+import { useEffect, useState } from "react";
+import { useExerciseSession } from "@/hooks/useExerciseSession";
+
+/**
+ * Hook de progresso dos módulos de psicoeducação.
+ *
+ * Persiste NO BANCO reutilizando a tabela exercise_sessions já existente
+ * (via useExerciseSession), com exercise_slug prefixado "psicoed:{moduloId}".
+ * Sem código de paciente: funciona normalmente, apenas fica local
+ * (localStorage), sem persistir no banco — hasCode indica esse estado
+ * para a UI mostrar um aviso discreto.
+ */
+export function useProgresso(moduloId: string) {
+  const session = useExerciseSession(`psicoed:${moduloId}`);
+  const [hasCode, setHasCode] = useState(false);
+
+  useEffect(() => {
+    setHasCode(!!localStorage.getItem("exercise_patient_code"));
+  }, []);
+
+  return { ...session, hasCode };
+}
+
+
+--- src/content/areas-blog.ts ---
+import { Brain, Briefcase, Zap, Leaf, Dumbbell, type LucideIcon } from "lucide-react";
+
+// Catalogo das 5 areas editoriais do blog -> cor, fundo suave e icone.
+export interface AreaBlog {
+  id: string;
+  label: string;
+  cor: string;
+  corBg: string;
+  Icon: LucideIcon;
+}
+
+export const areas: Record<string, AreaBlog> = {
+  "tcc-esquema":     { id: "tcc-esquema",     label: "TCC & Terapia do Esquema", cor: "#6D4AA0", corBg: "#6D4AA014", Icon: Brain },
+  "organizacional":  { id: "organizacional",  label: "Psicologia Organizacional", cor: "#2F6F8F", corBg: "#2F6F8F14", Icon: Briefcase },
+  "neurociencia":    { id: "neurociencia",    label: "Neurociencia",              cor: "#B0473A", corBg: "#B0473A14", Icon: Zap },
+  "nutricao":        { id: "nutricao",        label: "Nutricao e Psicologia",     cor: "#3E8E5A", corBg: "#3E8E5A14", Icon: Leaf },
+  "educacao-fisica": { id: "educacao-fisica", label: "Movimento e Mente",         cor: "#C77A2E", corBg: "#C77A2E14", Icon: Dumbbell },
+};
+
+export const areasLista = Object.values(areas);
+
+export function areaDe(id?: string): AreaBlog | undefined {
+  return id ? areas[id] : undefined;
+}
+
+
+--- src/content/copy.ts (truncated) ---
+﻿export const hero = {
+  headline: "Um espaço seguro\npara ser você.",
+  subline:
+    "Às vezes tudo o que precisamos é de um lugar onde não seja necessário se proteger, performar ou explicar demais. Um espaço para respirar e, a partir daí, entender o que está acontecendo.",
+  cta: "Agendar uma conversa",
+  ctaSub: "Primeiro contato sem compromisso",
+};
+
+export const manifesto = {
+  quote:
+    "A montanha não é o obstáculo. É o caminho. O que nos transforma não é chegar, mas o que encontramos enquanto atravessamos.",
+};
+
+export const sobre = {
+  titulo: "Quem sou eu",
+  subtitulo: "Bruno de Souza Gonçalves, psicólogo clínico",
+  bio: "Sou psicólogo formado pela Universidade Católica de Pelotas (UCPel). Atualmente curso pós-graduação em Terapia Cognitivo-Comportamental e Terapia do Esquema. Atendo adultos e adolescentes, presencialmente em Pelotas/RS e online para todo o Brasil.",
+  complemento:
+    "Meu trabalho respeita o ritmo de cada pessoa, mas não se perde em conversa solta. Juntos, organizamos a demanda, entendemos padrões e construímos recursos que possam ajudar também fora da sessão.",
+  formacao: [
+    "Graduação em Psicologia (UCPel)",
+    "Pós-graduação em TCC em andamento",
+    "Pós-graduação em Terapia do Esquema em andamento",
+  ],
+};
+
+export const publicos = [
+  {
+    id: "adultos",
+    icon: "Leaf",
+    titulo: "Para adultos",
+    descricao:
+      "Ansiedade, burnout, padrões nos relacionamentos, autoestima, decisões difíceis e transições de vida. O trabalho é entender o que está pesando e construir caminhos mais possíveis.",
+  },
+  {
+    id: "adolescentes",
+    icon: "Sprout",
+    titulo: "Para adolescentes",
+    descricao:
+      "A adolescência pode ser intensa. Pressões, inseguranças, conflitos e a busca por quem se é. Ofereço um espaço seguro, sem julgamento e sem respostas prontas.",
+  },
+  {
+    id: "pais",
+    icon: "Heart",
+    titulo: "Para pais de adolescentes",
+    descricao:
+      "Entender o que o seu filho vive já muda muita coisa. Posso ajudar a atravessar essa fase com mais clareza, tanto no processo do adolescente quanto no seu próprio lugar como responsável.",
+  },
+];
+
+export const dores = [
+  {
+    id: "ansiedade",
+    titulo: "Você sente que a preocupação nunca para?",
+    descricao:
+      "Pensamentos que não desligam, tensão no corpo e uma sensação constante de que algo pode dar errado, mesmo quando, por fora, parece que está tudo normal.",
+  },
+  {
+    id: "exaustao",
+    titulo: "O cansaço vai além do físico?",
+    descricao:
+      "Um cansaço que não melhora só com descanso. Fica difícil sentir prazer nas pequenas coisas, retomar energia ou relaxar sem que a culpa apareça logo depois.",
+  },
+  {
+    id: "padroes",
+    titulo: "Percebe os mesmos padrões se repetindo?",
+    descricao:
+      "Situações parecidas reaparecem nos relacionamentos, no trabalho ou na forma como você se trata, e mesmo tentando mudar, o ciclo continua.",
+  },
+];
+
+export const processo = [
+  {
+    numero: "01",
+    titulo: "Acolhimento",
+    descricao:
+      "Um espaço para falar do que está acontecendo no seu tempo, sem julgamento. O começo não exige clareza perfeita, exige presença e escuta.",
+  },
+  {
+    numero: "02",
+    titulo: "Compreensão",
+    descricao:
+      "Juntos, vamos entendendo os padrões que aparecem na sua história e montando estratégias práticas que façam sentido para a sua realidade.",
+  },
+  {
+    numero: "03",
+    titulo: "Autonomia",
+    descricao:
+      "O objetivo é que você desenvolva recursos que continuem com você fora da sessão, no cotidiano, nas relações e nas decisões que precisa tomar.",
+  },
+];
+
+export const abordagens = [
+  {
+    id: "tcc",
+    nome: "Terapia Cognitivo-Comportamental",
+    sigla: "TCC",
+    descricao:
+      "Abordagem com sólida base em evidências científicas que explora a relação entre pensamentos, emoções e comportamentos, amplamente estudada no manejo de ansiedade, depressão, fobias e dificuldades do cotidiano.",
+    detalhe:
+      "A TCC parte da ideia de que a forma como interpretamos os acontecimentos influencia diretamente o que sentimos e como agimos. Por meio de técnicas estruturadas, o processo terapêutico favorece a identificação de pensamentos automáticos e o desenvolvimento de respostas mais funcionais.",
+  },
+  {
+    id: "esquema",
+    nome: "Terapia do Esquema",
+    sigla: "TE",
+    descricao:
+      "Uma ampliação da TCC voltada a padrões emocionais mais profundos, muitas vezes formados na infância, que seguem influenciando relacionamentos e autoestima na vida adulta.",
+    detalhe:
+      "Especialmente indicada quando sentimentos de inadequação, medo de abandono ou dificuldades relacionais persistem ao longo do tempo. Integra elementos cognitivos, emocionais e relacionais, favorecendo um processo de mudança mais consistente e duradouro.",
+  },
+];
+
+export const faqs = [
+  {
+    pergunta: "Como funciona a primeira consulta?",
+    resposta:
+      "A primeira sessão é uma conversa par
+
+--- src/content/distorcoes.ts (truncated) ---
+// Baralho das Distorções — 12 monstros (public/img/monstros/<id>.webp) mapeados
+// para as distorções cognitivas clássicas da TCC (Beck/Burns).
+// ⚠️ Textos e mapeamento são proposta inicial — revisão clínica do Bruno pendente (ver Vault/Plano.md).
+
+export type Distorcao = {
+  id: string; // casa com public/img/monstros/<id>.webp
+  apelido: string; // nome lúdico do monstro
+  distorcao: string; // nome clínico
+  resumo: string; // o que o monstro faz
+  exemplo: string; // pensamento típico (verso da carta)
+  antidoto: string; // pergunta socrática de contraponto
+  frases: string[]; // pensamentos para o modo jogo (quiz)
+};
+
+export const distorcoes: Distorcao[] = [
+  {
+    id: "pretoebranco",
+    apelido: "O Preto-e-Branco",
+    distorcao: "Pensamento tudo-ou-nada",
+    resumo: "Vê o mundo em 8 ou 80: ou é perfeito, ou é um fracasso total. Meio-termo não existe no vocabulário dele.",
+    exemplo: "Se não tirei 10, sou um fracasso.",
+    antidoto: "O que existe entre o perfeito e o desastre? Onde está o meio-termo?",
+    frases: [
+      "Se não tirei 10, sou um fracasso.",
+      "Ou faço tudo certo, ou nem vale a pena começar.",
+    ],
+  },
+  {
+    id: "generalizador",
+    apelido: "O Generalizador",
+    distorcao: "Supergeneralização",
+    resumo: "Transforma um evento isolado em regra universal: um \"não\" vira \"sempre\" e \"nunca\".",
+    exemplo: "Deu errado uma vez, sempre vai dar errado.",
+    antidoto: "Isso acontece de fato sempre, ou aconteceu uma vez? Quais foram as exceções?",
+    frases: [
+      "Deu errado uma vez, sempre vai dar errado.",
+      "Ninguém nunca me escuta.",
+    ],
+  },
+  {
+    id: "filtro",
+    apelido: "O Filtro",
+    distorcao: "Filtro mental",
+    resumo: "Coa a realidade e deixa passar só o negativo. Dez elogios e uma crítica? Só a crítica fica retida.",
+    exemplo: "A apresentação foi horrível — travei em um slide.",
+    antidoto: "O que mais aconteceu que estou deixando fora da foto?",
+    frases: [
+      "A apresentação foi horrível — travei em um slide.",
+      "O dia foi péssimo, peguei trânsito de manhã.",
+    ],
+  },
+  {
+    id: "vampiro",
+    apelido: "O Vampiro do Positivo",
+    distorcao: "Desqualificação do positivo",
+    resumo: "Suga a força de tudo que é bom: elogio vira \"educação\", conquista vira \"sorte\", carinho vira \"pena\".",
+    exemplo: "Só me elogiaram por educação.",
+    antidoto: "Se foi só sorte, por que deu certo outras vezes? O que EU fiz pra isso acontecer?",
+    frases: [
+      "Só me elogiaram por educação.",
+      "Passei na prova, mas foi pura sorte.",
+    ],
+  },
+  {
+    id: "leitor",
+    apelido: "O Leitor de Mentes",
+    distorcao: "Leitura mental",
+    resumo: "Tem certeza absoluta do que os outros estão pensando — sem nenhuma prova.",
+    exemplo: "Ela não respondeu, com certeza está brava comigo.",
+    antidoto: "Que evidência real eu tenho? Já perguntei, em vez de adivinhar?",
+    frases: [
+      "Ela não respondeu, com certeza está brava comigo.",
+      "Todo mundo ali achou que eu era ridículo.",
+    ],
+  },
+  {
+    id: "bolacristal",
+    apelido: "A Bola de Cristal",
+    distorcao: "Adivinhação do futuro",
+    resumo: "Prevê desastres com convicção de vidente: o futuro ruim deixa de ser hipótese e vira certeza.",
+    exemplo: "Vou mal na entrevista, nem adianta ir.",
+    antidoto: "Quantas previsões minhas já erraram? O que é possível, e o que é provável?",
+    frases: [
+      "Vou mal na entrevista, nem adianta ir.",
+      "Isso não vai dar certo, eu já sei como termina.",
+    ],
+  },
+  {
+    id: "dramatizador",
+    apelido: "O Dramatizador",
+    distorcao: "Catastrofização",
+    resumo: "Pega um problema real e amplia, amplia, amplia — até virar o fim do mundo.",
+    exemplo: "Errei no trabalho. Vou ser demitido e nunca mais vou me recuperar.",
+    antidoto: "Qual é o pior cenário, o melhor e o MAIS PROVÁVEL? Eu sobreviveria ao pior?",
+    frases: [
+      "Errei no trabalho. Vou ser demitido e nunca mais vou me recuperar.",
+      "Meu coração acelerou — deve ser algo gravíssimo.",
+    ],
+  },
+  {
+    id: "zarolho",
+    apelido: "O Zarolho",
+    distorcao: "Minimização",
+    resumo: "Enxerga com um olho só: diminui suas qualidades e conquistas até quase desaparecerem.",
+    exemplo: "Passei, mas foi fácil — qualquer um passaria.",
+    antidoto: "Se um amigo tivesse feito o mesmo, eu diminuiria o feito dele assim?",
+    frases: [
+      "Passei, mas foi fácil — qualquer um passaria.",
+      "Isso que eu fiz não conta, era obrigação.",
+    ],
+  },
+  {
+    id: "detetive",
+    apelido: "O Detetive do Sentimento",
+    distorcao: "Raciocínio emocional",
+    resumo: "Trata sentimento como prova definitiva: se eu sinto, então é verdade.",
+    exemplo: "Sinto que sou um fardo, então devo ser mesmo.",
+    antidoto: "Sentir algo torna isso um fato? Que provas existem além do sentimento?",
+    frases: [
+      "Sinto que sou
+
+--- src/content/escalas-gerais.ts (truncated) ---
+// Auto-generated scale data - do not edit manually
+// Extracted from HTML source files
+
+export interface BDIItem {
+  opcoes: { texto: string; valor: number }[];
+}
+
+export interface EscalaGeralDominio {
+  id: string;
+  nome: string;
+  itens: number[];
+  invertidos?: number[];
+}
+
+export interface EscalaGeralConfig {
+  id: string;
+  sigla: string;
+  nome: string;
+  instrucoes: string;
+  tipo: "likert" | "likert-statements" | "binary";
+  opcoes?: { label: string; valor: number }[];
+  itens: string[] | BDIItem[];
+  dominios?: EscalaGeralDominio[];
+  invertidos?: number[];
+  chaveCorrecao?: Record<number, string>;
+  pontuacaoMaxima?: number;
+  /** Min/max da escala de resposta, usado na inversao de itens quando os
+   * itens tem opcoes proprias (tipo "likert-statements") em vez de um
+   * `opcoes` global. Default: min 0, max 4 (compatibilidade retroativa). */
+  escalaMin?: number;
+  escalaMax?: number;
+}
+
+// ============ ASRS-18 ============
+export const asrs: EscalaGeralConfig = {
+  id: "asrs",
+  sigla: "ASRS-18",
+  nome: "Escala de TDAH no Adulto",
+  instrucoes: "Responda as perguntas abaixo escolhendo a opcao que corresponde a como voce se sentiu e se comportou nos ultimos seis meses.",
+  tipo: "likert",
+  opcoes: [
+    { label: "Nunca", valor: 0 },
+    { label: "Raramente", valor: 1 },
+    { label: "Algumas vezes", valor: 2 },
+    { label: "Frequentemente", valor: 3 },
+    { label: "Muito frequentemente", valor: 4 },
+  ],
+  dominios: [
+    { id: "desatencao", nome: "Parte A: Desatencao", itens: [1,2,3,4,5,6,7,8,9] },
+    { id: "hiperatividade", nome: "Parte B: Hiperatividade/Impulsividade", itens: [10,11,12,13,14,15,16,17,18] },
+  ],
+  itens: [
+    "Com que frequencia voce comete erros por falta de atencao quando tem de trabalhar num projeto chato ou dificil?",
+    "Com que frequencia voce tem dificuldade para manter a atencao quando esta fazendo um trabalho chato ou repetitivo?",
+    "Com que frequencia voce tem dificuldade para se concentrar no que as pessoas dizem, mesmo quando elas estao falando diretamente com voce?",
+    "Com que frequencia voce deixa um projeto pela metade depois de ja ter feito as partes mais dificeis?",
+    "Com que frequencia voce tem dificuldade para fazer um trabalho que exige organizacao?",
+    "Quando voce precisa fazer algo que exige muita concentracao, com que frequencia voce evita ou adia o inicio?",
+    "Com que frequencia voce coloca as coisas fora do lugar ou tem dificuldade de encontrar as coisas em casa ou no trabalho?",
+    "Com que frequencia voce se distrai com atividades ou barulho a sua volta?",
+    "Com que frequencia voce tem dificuldade para lembrar de compromissos ou obrigacoes?",
+    "Com que frequencia voce fica se mexendo na cadeira ou balancando as maos ou os pes quando precisa ficar sentado(a) por muito tempo?",
+    "Com que frequencia voce se levanta da cadeira em reunioes ou em outras situacoes onde deveria ficar sentado(a)?",
+    "Com que frequencia voce se sente inquieto(a) ou agitado(a)?",
+    "Com que frequencia voce tem dificuldade para sossegar e relaxar quando tem tempo livre para voce?",
+    "Com que frequencia voce se sente ativo(a) demais e necessitando fazer coisas, como se estivesse com um motor ligado?",
+    "Com que frequencia voce se pega falando demais em situacoes sociais?",
+    "Quando voce esta conversando, com que frequencia voce se pega terminando as frases das pessoas antes delas?",
+    "Com que frequencia voce tem dificuldade para esperar nas situacoes onde cada um tem a sua vez?",
+    "Com que frequencia voce interrompe os outros quando eles estao ocupados?",
+  ],
+};
+
+// ============ BAI ============
+export const bai: EscalaGeralConfig = {
+  id: "bai",
+  sigla: "BAI",
+  nome: "Inventario de Ansiedade de Beck",
+  instrucoes: "Avalie o quanto voce tem sido incomodado por cada sintoma durante a ultima semana, incluindo hoje.",
+  tipo: "likert",
+  pontuacaoMaxima: 63,
+  opcoes: [
+    { label: "Absolutamente nao", valor: 0 },
+    { label: "Levemente", valor: 1 },
+    { label: "Moderadamente", valor: 2 },
+    { label: "Gravemente", valor: 3 },
+  ],
+  itens: [
+    "Dormencia ou formigamento.",
+    "Sensacao de calor.",
+    "Tremores nas pernas.",
+    "Incapaz de relaxar.",
+    "Medo que aconteca o pior.",
+    "Atordoado ou tonto.",
+    "Palpitacao ou aceleracao do coracao.",
+    "Sem equilibrio.",
+    "Aterrorizado.",
+    "Nervoso.",
+    "Sensacao de sufocacao.",
+    "Tremores nas maos.",
+    "Tremulo.",
+    "Medo de perder o controle.",
+    "Dificuldade de respirar.",
+    "Medo de morrer.",
+    "Assustado.",
+    "Indigestao ou desconforto no abdomen.",
+    "Sensacao de desmaio.",
+    "Rosto afogueado.",
+    "Suor (nao devido ao calor).",
+  ],
+};
+
+// ============ BDI ============
+export const bdi: EscalaGeralConfig = {
+  id: "bdi",
+  sigla: "BDI",
+  nome: "Inventario de Depressao de Beck",
+  instrucoes: "Este questionario 
+
+--- src/content/escalas-restritas.ts ---
+// Escalas de acesso restrito: exigem código gerado pelo psicólogo para
+// serem respondidas (ver Escala.tsx, etapa "codigo", e a edge function
+// validate-code). Não devem aparecer na listagem pública do Hub do
+// paciente, apenas ser acessíveis por link direto.
+export const ESCALAS_RESTRITAS = [
+  { id: "neoffir", label: "NEO-FFI-R" },
+  { id: "neopir", label: "NEO-PI-R" },
+  { id: "bdi", label: "BDI" },
+  { id: "bai", label: "BAI" },
+  { id: "bhs", label: "BHS" },
+  { id: "bss", label: "BSS" },
+  { id: "cssrs", label: "C-SSRS (Rastreio)" },
+] as const;
+
+export const ESCALAS_RESTRITAS_IDS: Set<string> = new Set(ESCALAS_RESTRITAS.map((e) => e.id));
+
+export type EscalaRestritaId = (typeof ESCALAS_RESTRITAS)[number]["id"];
+
+
+--- src/content/escalas.ts (truncated) ---
+﻿export interface EscalaDominio {
+  id: string;
+  nome: string;
+  esquemas: { id: string; nome: string; itens: number[]; invertido?: boolean }[];
+}
+
+export interface EscalaConfig {
+  id: string;
+  sigla: string;
+  nome: string;
+  instrucoes: string;
+  itens: string[];
+  opcoes: { label: string; valor: number }[];
+  dominios?: EscalaDominio[];
+  scoring: "schema-avg" | "threshold";
+  rodadas?: string[];
+}
+
+const opcoes6 = [
+  { label: "Completamente falso", valor: 1 },
+  { label: "Em grande parte falso", valor: 2 },
+  { label: "Mais verdadeiro do que falso", valor: 3 },
+  { label: "Moderadamente verdadeiro", valor: 4 },
+  { label: "Em grande parte verdadeiro", valor: 5 },
+  { label: "Me descreve perfeitamente", valor: 6 },
+];
+
+export const ysq: EscalaConfig = {
+  id: "ysq",
+  sigla: "YSQ-S3",
+  nome: "Questionario de Esquemas de Young",
+  instrucoes:
+    "Leia cada afirmacao e avalie o quanto ela descreve voce no ultimo ano. Quando voce nao tiver certeza, baseie sua resposta nos seus sentimentos, e nao no que voce acredita racionalmente que seja verdade.",
+  opcoes: opcoes6,
+  scoring: "schema-avg",
+  dominios: [
+    {
+      id: "d1",
+      nome: "Desconexao e Rejeicao",
+      esquemas: [
+        { id: "ed", nome: "Privacao Emocional", itens: [1, 19, 37, 55, 73] },
+        { id: "ab", nome: "Abandono / Instabilidade", itens: [2, 20, 38, 56, 74] },
+        { id: "ma", nome: "Desconfianca / Abuso", itens: [3, 21, 39, 57, 75] },
+        { id: "si", nome: "Isolamento Social", itens: [4, 22, 40, 58, 76] },
+        { id: "ds", nome: "Defectividade / Vergonha", itens: [5, 23, 41, 59, 77] },
+      ],
+    },
+    {
+      id: "d2",
+      nome: "Autonomia e Desempenho Prejudicados",
+      esquemas: [
+        { id: "fa", nome: "Fracasso", itens: [6, 24, 42, 60, 78] },
+        { id: "di", nome: "Dependencia / Incompetencia", itens: [7, 25, 43, 61, 79] },
+        { id: "vu", nome: "Vulnerabilidade ao Perigo/Doenca", itens: [8, 26, 44, 62, 80] },
+        { id: "em", nome: "Emaranhamento / Self Subdesenvolvido", itens: [9, 27, 45, 63, 81] },
+      ],
+    },
+    {
+      id: "d3",
+      nome: "Limites Prejudicados",
+      esquemas: [
+        { id: "et", nome: "Arrogo / Grandiosidade", itens: [14, 32, 50, 68, 86] },
+        { id: "is", nome: "Autocontrole / Autodisciplina Insuficientes", itens: [15, 33, 51, 69, 87] },
+      ],
+    },
+    {
+      id: "d4",
+      nome: "Direcionamento para o Outro",
+      esquemas: [
+        { id: "sb", nome: "Subjugacao", itens: [10, 28, 46, 64, 82] },
+        { id: "ss", nome: "Autossacrificio", itens: [11, 29, 47, 65, 83] },
+        { id: "as", nome: "Busca de Aprovacao / Reconhecimento", itens: [16, 34, 52, 70, 88] },
+      ],
+    },
+    {
+      id: "d5",
+      nome: "Supervigilancia e Inibicao",
+      esquemas: [
+        { id: "np", nome: "Negativismo / Pessimismo", itens: [17, 35, 53, 71, 89] },
+        { id: "ei", nome: "Inibicao Emocional", itens: [12, 30, 48, 66, 84] },
+        { id: "us", nome: "Padroes Inflexiveis / Postura Hipercritica", itens: [13, 31, 49, 67, 85] },
+        { id: "pu", nome: "Punicao", itens: [18, 36, 54, 72, 90] },
+      ],
+    },
+  ],
+  itens: [
+    "Eu nao tive ninguem para me dar afeto, cuidado e protecao, que partilhasse sua vida comigo, ou que se importasse de verdade com as coisas que me acontecem.",
+    "Eu percebo que me agarro as pessoas que sao proximas de mim com medo de que elas me abandonem.",
+    "Eu sinto que as pessoas vao tirar vantagem de mim.",
+    "Eu nao me encaixo.",
+    "Nenhum homem/mulher que eu deseje seria capaz de me amar depois de ver meus defeitos ou falhas.",
+    "Quase nada do que eu faco no trabalho (ou nos estudos) e tao bom quanto o que os outros sao capazes de fazer.",
+    "Eu nao me sinto capaz de me virar sem a ajuda dos outros no dia a dia.",
+    "Parece que eu nao consigo parar de sentir que algo ruim esta prestes a acontecer.",
+    "Eu ainda nao consegui me separar dos meus pais (ambos ou um deles) do jeito que as outras pessoas da minha idade parecem ter se separado.",
+    "Eu sinto que, se eu fizer o que quero, os outros nao me apoiarao e poderao ficar bravos ou chateados comigo.",
+    "Geralmente sou eu quem acaba cuidando das pessoas que sao proximas de mim.",
+    "Eu sou envergonhado demais para demonstrar sentimentos positivos para os outros (por ex.: afeto; demonstrar que me importo com eles).",
+    "Eu tenho que ser o melhor na maioria das coisas que eu faco; nao consigo aceitar o segundo lugar.",
+    "Eu tenho muita dificuldade de aceitar um 'nao' quando quero algo dos outros.",
+    "Parece que eu nao consigo me disciplinar para concluir a maioria das tarefas rotineiras ou entediantes.",
+    "Ter dinheiro e conhecer pessoas importantes faz com que eu me sinta uma pessoa com valor.",
+    "Mesmo quando as coisas parecem estar indo bem, eu sinto que e apenas questao de tempo para que elas comecem a dar errado.",
+    "
+
+--- src/content/ferramentas-ia-prompts.ts (truncated) ---
+// Espelho de supabase/functions/_shared/ferramentas-conceituacao.ts — Deno
+// (edge functions) roda em runtime separado do Vite/browser, sem bundler
+// compartilhado nem path alias `@/`, então esta config é duplicada de
+// propósito (mesmo conteúdo, mantido em sincronia manual). Só usado pelo
+// caminho client-side do provedor 9Router (local), que não passa pela edge
+// function — os demais provedores usam a config do lado do servidor.
+
+export interface ConfigFerramentaIA {
+  labels: string[];
+  promptDraft: string;
+  promptTurno: string;
+  promptEncerrar: string;
+}
+
+export const FERRAMENTAS_IA: Record<string, ConfigFerramentaIA> = {
+  "conceituacao-cognitiva": {
+    labels: [
+      "Dados relevantes da história",
+      "Crença Central",
+      "Crenças Intermediárias (pressupostos, regras, atitudes)",
+      "Estratégias Compensatórias",
+      "Situação 1",
+      "Pensamento Automático (Sit. 1)",
+      "Significado do PA (Sit. 1)",
+      "Resposta Emocional (Sit. 1)",
+      "Resposta Física (Sit. 1)",
+      "Comportamento (Sit. 1)",
+      "Situação 2",
+      "Pensamento Automático (Sit. 2)",
+      "Significado do PA (Sit. 2)",
+      "Resposta Emocional (Sit. 2)",
+      "Resposta Física (Sit. 2)",
+      "Comportamento (Sit. 2)",
+    ],
+    promptDraft: `Você é um assistente de psicologia clínica que redige RASCUNHOS de Conceituação
+Cognitiva de Caso (modelo de Judith Beck), em português do Brasil, com tom profissional.
+Nunca afirme diagnóstico com certeza — use linguagem de hipótese ("hipótese:", "sugere",
+"pode indicar"). Deixe explícito que o rascunho deve ser revisado e editado pelo psicólogo
+responsável antes de qualquer uso clínico. Responda SOMENTE em JSON estrito, sem texto fora
+do JSON, com uma chave para cada rótulo de campo fornecido pelo usuário.`,
+    promptTurno: `Você conduz uma entrevista socrática para ajudar um psicólogo clínico a
+preencher o Diagrama de Conceituação Cognitiva (modelo de Judith Beck), em português do Brasil.
+Faça UMA pergunta objetiva de cada vez, focada no que ainda falta preencher — nunca repita pergunta
+sobre campo já respondido. Use tom profissional e colaborativo, como um par clínico pensando junto,
+nunca prescritivo. Nunca afirme diagnóstico com certeza — use linguagem de hipótese quando inferir
+algo. Com base no que o terapeuta acabou de responder, você pode atualizar um ou mais campos do
+diagrama. Responda SOMENTE em JSON estrito, sem texto fora do JSON, no formato:
+{"resposta": "sua próxima pergunta ou comentário", "campos": {"Rótulo do campo": "valor inferido"}}
+"campos" só deve conter campos que você tem confiança para preencher/atualizar agora — pode ser
+um objeto vazio {} se ainda não há nada novo a registrar.`,
+    promptEncerrar: `Você é um assistente de psicologia clínica que mantém um perfil evolutivo
+e duradouro de um paciente, em português do Brasil, a partir de conversas de conceituação
+cognitiva. Diferente do diagrama de trabalho de uma sessão (que tem "Situação 1"/"Situação 2"
+pontuais), este perfil guarda o que é ESTÁVEL ao longo do tempo. Nunca afirme diagnóstico com
+certeza. Responda SOMENTE em JSON estrito no formato:
+{"crenca_central": "...", "crencas_intermediarias": "...", "estrategias_compensatorias": "...",
+ "situacoesNovas": ["tema ou padrão recorrente novo observado nesta sessão", "..."]}
+"situacoesNovas" deve conter só temas GENUINAMENTE novos em relação ao perfil já existente — se
+nada de novo surgiu, retorne uma lista vazia []. Nunca repita um tema já registrado no perfil atual.`,
+  },
+
+  "conceituacao-esquema": {
+    labels: [
+      "Necessidades emocionais não supridas na infância (origem)",
+      "Esquemas Iniciais Desadaptativos (EIDs) identificados",
+      "Estilo de Enfrentamento predominante (Rendição / Evitação / Supercompensação)",
+      "Situação 1",
+      "Modo de Esquema ativado (Sit. 1)",
+      "Pensamento (Sit. 1)",
+      "Resposta Emocional (Sit. 1)",
+      "Resposta Comportamental (Sit. 1)",
+      "Situação 2",
+      "Modo de Esquema ativado (Sit. 2)",
+      "Pensamento (Sit. 2)",
+      "Resposta Emocional (Sit. 2)",
+      "Resposta Comportamental (Sit. 2)",
+      "Padrão relacional/vincular geral",
+    ],
+    promptDraft: `Você é um assistente de psicologia clínica que redige RASCUNHOS de Conceituação
+de Caso segundo a Terapia do Esquema (Jeffrey Young), em português do Brasil, com tom profissional.
+Nunca afirme diagnóstico com certeza — use linguagem de hipótese ("hipótese:", "sugere",
+"pode indicar"). Deixe explícito que o rascunho deve ser revisado e editado pelo psicólogo
+responsável antes de qualquer uso clínico. Responda SOMENTE em JSON estrito, sem texto fora
+do JSON, com uma chave para cada rótulo de campo fornecido pelo usuário.`,
+    promptTurno: `Você conduz uma entrevista socrática para ajudar um psicólogo clínico a
+preencher uma Conceituação de Caso segundo a Terapia do Esquema (Jeffrey Young), em português
+do Brasil. Faça UMA pergunta objetiva de cada vez, focada no que ainda falta preencher — nunca
+repita pe
+
+--- src/content/ferramentas-terapeuta.ts (truncated) ---
+export interface FerramentaTerapeuta {
+  id: string;
+  titulo: string;
+  categoria: string;
+  campos: { label: string; tipo: "texto" | "area" | "lista" }[];
+  referencia: string;
+}
+
+export const ferramentas: FerramentaTerapeuta[] = [
+  {
+    id: "formulacao-caso",
+    titulo: "Formulação do Caso e Testagem de Hipóteses",
+    categoria: "Conceituação",
+    campos: [
+      { label: "Nome do paciente", tipo: "texto" },
+      { label: "Data", tipo: "texto" },
+      { label: "1. Diagnóstico do cliente", tipo: "area" },
+      { label: "2. Problemas atuais — como se desenvolveram e como são mantidos", tipo: "area" },
+      { label: "3. Pensamentos e crenças disfuncionais associados (reações emocionais, fisiológicas e comportamentais)", tipo: "area" },
+      { label: "4a. Como o cliente vê a SI MESMO", tipo: "area" },
+      { label: "4b. Como o cliente vê OS OUTROS", tipo: "area" },
+      { label: "4c. Como o cliente vê SEU FUTURO", tipo: "area" },
+    ],
+    referencia: "Formulação do Caso e Testagem de Hipóteses — Processos Básicos.",
+  },
+  {
+    id: "conceituacao-cognitiva",
+    titulo: "Diagrama de Conceituação Cognitiva",
+    categoria: "Conceituação",
+    campos: [
+      { label: "Dados relevantes da história", tipo: "area" },
+      { label: "Crença Central", tipo: "texto" },
+      { label: "Crenças Intermediárias (pressupostos, regras, atitudes)", tipo: "area" },
+      { label: "Estratégias Compensatórias", tipo: "area" },
+      { label: "Situação 1", tipo: "texto" },
+      { label: "Pensamento Automático (Sit. 1)", tipo: "texto" },
+      { label: "Significado do PA (Sit. 1)", tipo: "texto" },
+      { label: "Resposta Emocional (Sit. 1)", tipo: "texto" },
+      { label: "Resposta Física (Sit. 1)", tipo: "texto" },
+      { label: "Comportamento (Sit. 1)", tipo: "texto" },
+      { label: "Situação 2", tipo: "texto" },
+      { label: "Pensamento Automático (Sit. 2)", tipo: "texto" },
+      { label: "Significado do PA (Sit. 2)", tipo: "texto" },
+      { label: "Resposta Emocional (Sit. 2)", tipo: "texto" },
+      { label: "Resposta Física (Sit. 2)", tipo: "texto" },
+      { label: "Comportamento (Sit. 2)", tipo: "texto" },
+    ],
+    referencia: "Diagrama de Conceituação Cognitiva — Judith Beck.",
+  },
+  {
+    id: "conceituacao-esquema",
+    titulo: "Conceituação — Terapia do Esquema",
+    categoria: "Conceituação",
+    campos: [
+      { label: "Necessidades emocionais não supridas na infância (origem)", tipo: "area" },
+      { label: "Esquemas Iniciais Desadaptativos (EIDs) identificados", tipo: "area" },
+      { label: "Estilo de Enfrentamento predominante (Rendição / Evitação / Supercompensação)", tipo: "texto" },
+      { label: "Situação 1", tipo: "texto" },
+      { label: "Modo de Esquema ativado (Sit. 1)", tipo: "texto" },
+      { label: "Pensamento (Sit. 1)", tipo: "texto" },
+      { label: "Resposta Emocional (Sit. 1)", tipo: "texto" },
+      { label: "Resposta Comportamental (Sit. 1)", tipo: "texto" },
+      { label: "Situação 2", tipo: "texto" },
+      { label: "Modo de Esquema ativado (Sit. 2)", tipo: "texto" },
+      { label: "Pensamento (Sit. 2)", tipo: "texto" },
+      { label: "Resposta Emocional (Sit. 2)", tipo: "texto" },
+      { label: "Resposta Comportamental (Sit. 2)", tipo: "texto" },
+      { label: "Padrão relacional/vincular geral", tipo: "area" },
+    ],
+    referencia: "Terapia do Esquema — Jeffrey Young.",
+  },
+  {
+    id: "conceituacao-funcional",
+    titulo: "Conceituação Funcional (ABC)",
+    categoria: "Conceituação",
+    campos: [
+      { label: "Comportamento-alvo", tipo: "texto" },
+      { label: "Função hipotética (fuga/esquiva, atenção, reforço tangível, autorregulação)", tipo: "area" },
+      { label: "Situação 1 — Antecedente", tipo: "texto" },
+      { label: "Situação 1 — Comportamento", tipo: "texto" },
+      { label: "Situação 1 — Consequência (o que mantém)", tipo: "texto" },
+      { label: "Situação 2 — Antecedente", tipo: "texto" },
+      { label: "Situação 2 — Comportamento", tipo: "texto" },
+      { label: "Situação 2 — Consequência", tipo: "texto" },
+      { label: "Consequências de longo prazo / custo do padrão", tipo: "area" },
+    ],
+    referencia: "Análise Funcional do Comportamento — modelo ABC.",
+  },
+  {
+    id: "conceituacao-act",
+    titulo: "Conceituação ACT (Hexaflex)",
+    categoria: "Conceituação",
+    campos: [
+      { label: "Valores identificados", tipo: "area" },
+      { label: "Ação comprometida (passos práticos)", tipo: "area" },
+      { label: "Fusão cognitiva (pensamentos aos quais está fundido)", tipo: "area" },
+      { label: "Esquiva experiencial (do que foge)", tipo: "area" },
+      { label: "Self conceitualizado (história que conta sobre si)", tipo: "area" },
+      { label: "Situação 1 — gatilho", tipo: "texto" },
+      { label: "Situação 1 — reação de inflexibilidade", tipo: "texto" },
+      { label: "Situação 1 — custo", tipo: "texto" },
+
+
+--- src/content/neo-percentis.ts (truncated) ---
+// ============================================================
+// NEO PI-R (FORMA S) — TABELAS DE PERCENTIL (lookup bruto→PP)
+// ============================================================
+// Fonte: manual NEO PI-R (Costa & McCrae), amostra brasileira,
+// FORMA S (autorrelato) — Adultos. Anexo 2 = domínios;
+// Anexo 3-7 = facetas (N, E, O, A, C).
+//
+// Percentil é EMPÍRICO (distribuição real da amostra) — não sai da
+// média/DP. Não existe substituto paramétrico, diferente do T
+// normalizado (ver ./neo-tabelas-t). Por isso só entra aqui o que
+// foi lido de foto legível; o resto fica pendente, nunca estimado.
+//
+// FORMATO: cada escala = array de mínimos alinhado a neoPercentilPPs.
+// mins[i] = MENOR escore bruto que atinge o percentil neoPercentilPPs[i].
+// As faixas do manual são contíguas, então guardar só o mínimo é
+// representação SEM PERDA.
+//   lookup(bruto) = PP do maior mins[i] <= bruto.
+// Mínimos IGUAIS em PPs vizinhos = faixa vazia no manual (percentil
+// inalcançável); o lookup varre de trás pra frente e devolve o maior PP.
+//
+// ⚠️ RASCUNHO — transcrito de foto do manual. CONFERIR contra o livro
+// físico antes de uso clínico. Checagens aplicadas:
+//   (1) 27 valores por escala, mínimos não-decrescentes;
+//   (2) CONTIGUIDADE: máximo de cada faixa + 1 == mínimo da próxima.
+//       Geral: N e C batem nos 27 níveis. Feminino: N e O batem nos 27.
+//       As demais colunas têm 1-3 folgas/sobreposições de 1 ponto,
+//       corrigidas pelo lookup por mínimo (que ignora o máximo impresso);
+//   (3) faixa do P50 (mediana) ≈ média do Anexo 1 (neoPIRNormas).
+//       C fica acima da média por assimetria à esquerda (efeito de teto).
+//
+// COMPLETO: Anexo 2 (domínios) — Geral, Masculino e Feminino.
+// PENDENTE: Anexo 3-7 (facetas). Exigem foto com zoom de UM bloco de
+// sexo por vez — foto com H/M/G juntos é densa demais pra leitura
+// confiável, e não se fabrica dado clínico.
+// ============================================================
+import type { NeoFFIDominio, NeoPISexo } from "./normative-tables";
+import { neoPIRNormas } from "./normative-tables";
+
+/** Eixo de percentis do Anexo 2 (domínios). 27 níveis. */
+export const neoPercentilPPs = [
+  1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50,
+  55, 60, 65, 70, 75, 80, 85, 90, 95, 96, 97, 98, 99,
+] as const;
+
+// ------------------------------------------------------------
+// ANEXO 2 — Percentis dos Cinco Domínios (Forma S)
+// mins alinhados a neoPercentilPPs (índice 0 = PP1 ... índice 26 = PP99)
+// ------------------------------------------------------------
+export const neoPercentilDominios_geral: Record<NeoFFIDominio, number[]> = {
+  //  PP:  1   2   3   4   5  10  15  20  25  30  35  40  45  50  55  60  65  70  75  80  85  90  95  96  97  98  99
+  N: [0, 50, 55, 58, 60, 68, 72, 76, 79, 82, 85, 88, 92, 94, 97, 100, 103, 106, 111, 114, 118, 125, 134, 136, 139, 143, 151],
+  E: [0, 70, 75, 77, 80, 88, 92, 97, 101, 104, 106, 108, 111, 113, 116, 118, 120, 123, 126, 128, 132, 138, 144, 146, 151, 154, 160],
+  O: [0, 82, 84, 86, 88, 94, 98, 101, 104, 107, 109, 111, 114, 116, 118, 121, 123, 126, 128, 130, 135, 139, 147, 149, 152, 156, 159],
+  A: [0, 80, 84, 88, 90, 98, 102, 106, 108, 111, 113, 115, 117, 119, 121, 123, 125, 127, 129, 132, 134, 138, 143, 145, 147, 149, 154],
+  C: [0, 70, 76, 81, 83, 92, 98, 102, 106, 109, 113, 116, 118, 121, 123, 125, 128, 130, 133, 136, 139, 144, 149, 152, 156, 159, 163],
+};
+
+// Feminino. OBS: A não tem faixa P98 no manual (P97 termina em 152,
+// P99 começa em 153) — daí mins[P98] == mins[P99] == 153.
+export const neoPercentilDominios_feminino: Record<NeoFFIDominio, number[]> = {
+  //  PP:  1   2   3   4   5  10  15  20  25  30  35  40  45  50  55  60  65  70  75  80  85  90  95  96  97  98  99
+  N: [0, 54, 58, 61, 65, 71, 76, 79, 82, 85, 89, 93, 95, 98, 100, 103, 107, 110, 113, 118, 123, 129, 136, 139, 142, 146, 152],
+  E: [0, 70, 73, 75, 77, 87, 93, 98, 102, 105, 107, 110, 112, 114, 117, 120, 122, 124, 127, 130, 134, 139, 146, 150, 153, 156, 161],
+  O: [0, 82, 84, 86, 87, 94, 99, 102, 104, 107, 109, 111, 114, 116, 119, 121, 124, 126, 128, 131, 135, 139, 146, 148, 150, 156, 159],
+  A: [0, 83, 89, 92, 93, 101, 105, 107, 110, 112, 114, 116, 118, 120, 121, 124, 126, 128, 131, 134, 136, 140, 144, 145, 149, 153, 153],
+  C: [0, 69, 75, 81, 83, 92, 99, 103, 106, 110, 113, 117, 119, 121, 124, 126, 128, 131, 133, 136, 139, 143, 149, 151, 155, 158, 162],
+};
+
+export const neoPercentilDominios_masculino: Record<NeoFFIDominio, number[]> = {
+  //  PP:  1   2   3   4   5  10  15  20  25  30  35  40  45  50  55  60  65  70  75  80  85  90  95  96  97  98  99
+  N: [0, 45, 47, 51, 55, 62, 66, 70, 73, 76, 79, 82, 84, 87, 91, 94, 96, 99, 102, 105, 111, 116, 125, 127, 130, 133, 146],
+  E: [0, 66, 79, 80, 82, 88, 91, 96, 99, 102, 104, 106, 108, 110, 113, 115, 118, 120, 122, 124, 130, 135, 141, 143, 145, 148, 153],
+  O: [0, 83, 84, 87, 88, 92, 96, 98, 101, 105, 108, 10
+
+--- src/content/neo-tabelas-t.ts (truncated) ---
+// ============================================================
+// NEO PI-R / FFI-R — TABELAS DE T NORMALIZADO (lookup bruto→T)
+// ============================================================
+// Método OFICIAL do manual (Costa & McCrae), amostra brasileira.
+// Mais fiel que a fórmula linear paramétrica (ver neoPIRNormas /
+// calcularTScoreNeoPI em ./normative-tables).
+//
+// FORMATO: cada escala = array de 61 valores = MENOR escore bruto
+// que atinge cada T, de T=80 (índice 0) até T=20 (índice 60).
+// As faixas de bruto do manual são contíguas, então guardar apenas
+// o mínimo de cada T é uma representação SEM PERDA.
+//   lookup(bruto): t = 80 - (primeiro índice i onde bruto >= mins[i]).
+//
+// ⚠️ RASCUNHO — transcrito de fotos do manual. CONFERIR contra o
+// livro físico antes de uso clínico. Checagens internas aplicadas:
+//   (1) contagem de linhas por faixa = 15 Muito Alto / 10 Alto /
+//       11 Médio / 10 Baixo / 15 Muito Baixo = 61 = T80..T20;
+//   (2) faixas de bruto contíguas (sem buracos entre T consecutivos);
+//   (3) o bruto em T50 ≈ média da amostra (Anexo 1) — confere em
+//       todas as 15 colunas de domínio (Geral + Masc + Fem).
+// ============================================================
+import type { NeoFFIDominio } from "./normative-tables";
+import { classificarNeoT, calcularTScoreNeoFFI } from "./normative-tables";
+
+export type NeoTabelaSexo = "geral" | "masculino" | "feminino";
+
+// ------------------------------------------------------------
+// ANEXO 8 (p.114) — Cinco Dimensões NEO PI-R — GERAL
+// Verificado por Bruno: N=108→T56, C=130→T55, O=144→T66. ✓
+// ------------------------------------------------------------
+export const neoPITDominios_geral: Record<NeoFFIDominio, number[]> = {
+  //   T80  79   78   77   76   75   74   73   72   71  | 70   69   68   67   66 (Muito Alto)
+  //  65   64   63   62   61 | 60   59   58   57   56 (Alto) | 55.. (Médio) ...
+  N: [162, 160, 158, 155, 153, 151, 149, 146, 144, 142,  140, 137, 135, 133, 131,
+      128, 126, 124, 122, 119,  117, 115, 113, 110, 108,  106, 104, 101, 99, 97,
+      95, 92, 90, 88, 86,  83, 81, 79, 77, 74,  72, 70, 68, 65, 63,
+      61, 59, 56, 54, 52,  50, 47, 45, 43, 41,  38, 36, 34, 32, 29,  0],
+  E: [171, 169, 167, 165, 163, 161, 159, 157, 155, 153,  151, 150, 148, 146, 144,
+      142, 140, 138, 136, 134,  132, 130, 128, 126, 124,  122, 120, 118, 116, 114,
+      112, 110, 109, 107, 105,  103, 101, 99, 97, 95,  93, 91, 89, 87, 85,
+      83, 81, 79, 77, 75,  73, 71, 69, 68, 66,  64, 62, 60, 58, 56,  0],
+  O: [169, 167, 166, 164, 162, 160, 159, 157, 155, 153,  151, 150, 148, 146, 144,
+      143, 141, 139, 137, 135,  134, 132, 130, 128, 127,  125, 123, 121, 119, 118,
+      116, 114, 112, 111, 109,  107, 105, 104, 102, 100,  98, 96, 95, 93, 91,
+      89, 88, 86, 84, 82,  80, 79, 77, 75, 73,  72, 70, 68, 66, 64,  0],
+  A: [167, 165, 164, 162, 160, 159, 157, 155, 154, 152,  151, 149, 147, 146, 144,
+      142, 141, 139, 137, 136,  134, 133, 131, 129, 128,  126, 124, 123, 121, 120,
+      118, 116, 115, 113, 111,  110, 108, 107, 105, 103,  102, 100, 98, 97, 95,
+      94, 92, 90, 89, 87,  85, 84, 82, 81, 79,  77, 76, 74, 72, 71,  0],
+  C: [180, 178, 176, 174, 172, 170, 168, 166, 164, 161,  159, 157, 155, 153, 151,
+      149, 147, 145, 143, 141,  139, 137, 135, 133, 131,  129, 127, 125, 122, 120,
+      118, 116, 114, 112, 110,  108, 106, 104, 102, 100,  98, 96, 94, 92, 90,
+      88, 86, 83, 81, 79,  77, 75, 73, 71, 69,  67, 65, 63, 61, 59,  0],
+};
+
+// ------------------------------------------------------------
+// ANEXO 9 (p.115) — Cinco Dimensões NEO PI-R — POR SEXO — COMPLETO
+// Transcrição confirmada por contiguidade + teste bruto(T50)≈média.
+// ------------------------------------------------------------
+export const neoPITDominios_masculino: Record<NeoFFIDominio, number[]> = {
+  N: [152, 150, 148, 146, 144, 141, 139, 137, 135, 133,  131, 129, 126, 124, 122,
+      120, 118, 116, 113, 111,  109, 107, 105, 103, 101,  98, 96, 94, 92, 90,
+      88, 86, 83, 81, 79,  77, 75, 73, 71, 68,  66, 64, 62, 60, 58,
+      55, 53, 51, 49, 47,  45, 43, 40, 38, 36,  34, 32, 30, 28, 25,  0],
+  E: [165, 163, 161, 159, 157, 156, 154, 152, 150, 148,  147, 145, 143, 141, 139,
+      137, 136, 134, 132, 130,  128, 127, 125, 123, 121,  119, 118, 116, 114, 112,
+      110, 109, 107, 105, 103,  101, 99, 98, 96, 94,  92, 90, 89, 87, 85,
+      83, 81, 80, 78, 76,  74, 72, 70, 69, 67,  65, 63, 61, 60, 58,  0],
+  O: [170, 168, 166, 164, 163, 161, 159, 157, 155, 153,  152, 150, 148, 146, 144,
+      142, 141, 139, 137, 135,  133, 132, 130, 128, 126,  124, 122, 121, 119, 117,
+      115, 113, 111, 110, 108,  106, 104, 102, 100, 99,  97, 95, 93, 91, 90,
+      88, 86, 84, 82, 80,  79, 77, 75, 73, 71,  69, 68, 66, 64, 62,  0],
+  A: [168, 166, 164, 162, 161, 159, 157, 155, 154, 152,  150, 148, 147, 145, 143,
+      141, 140, 138, 136, 134,  133, 131, 129, 127, 126,  124, 122, 120, 118, 117,
+      115,
+
+--- src/content/neuroanatomia.ts (truncated) ---
+export type BrainPartId = 'prefrontal' | 'amygdala' | 'hippocampus' | 'hypothalamus' | 'cingulate' | 'insula' | 'caudate' | 'cerebellum' | 'motor_cortex' | 'somatosensory' | 'putamen' | 'context';
+
+export interface BrainPartData {
+  id: BrainPartId;
+  title: string;
+  description: string;
+  role: string;
+  color: string;
+  urls: string[];
+  modelCenter: [number, number, number];
+  cameraTarget?: [number, number, number];
+  cameraPosition?: [number, number, number];
+  explodePosition?: [number, number, number]; 
+}
+
+export const brainPartsData: Record<BrainPartId, BrainPartData> = {
+  prefrontal: {
+    id: 'prefrontal',
+    title: "Córtex Pré-Frontal",
+    description: "Sede das funções executivas, atenção sustentada, planejamento e controle inibitório (controle top-down).",
+    role: "Inibe a resposta de medo da amígdala. Na ansiedade, perde força (hipoativação), reduzindo a capacidade de racionalizar medos. No TDAH, falha na inibição de impulsos.",
+    color: "#3b82f6", 
+    urls: [
+      '/models/FJ3801_BP58201_FMA72658_Left inferior frontal gyrus.obj',
+      '/models/FJ3802_BP58213_FMA72657_Right inferior frontal gyrus.obj',
+      '/models/FJ3839_BP58174_FMA72656_Left middle frontal gyrus.obj',
+      '/models/FJ3840_BP58164_FMA72655_Right middle frontal gyrus.obj',
+      '/models/FJ3879_BP58158_FMA72654_Left superior frontal gyrus.obj',
+      '/models/FJ3880_BP58162_FMA72653_Right superior frontal gyrus.obj'
+    ],
+    modelCenter: [-0.75, -111.66, 1588.49],
+    cameraTarget: [0, -1.6, 1.6],
+    cameraPosition: [0, 4, 8],
+    explodePosition: [0, 30, 40] 
+  },
+  amygdala: {
+    id: 'amygdala',
+    title: "Amígdala",
+    description: "Centro de processamento do medo e detecção de ameaças. Modula a consolidação de memórias emocionais.",
+    role: "O 'sistema de alarme'. Dispara cascatas neuroquímicas em frações de segundo. Na ansiedade e TEPT, torna-se hiper-reativa, disparando falsos alarmes.",
+    color: "#ef4444", 
+    urls: [
+      '/models/MM179_BP58076_FMA72833_Left amygdala.obj',
+      '/models/MM179M_BP58075_FMA72832_Right amygdala.obj'
+    ],
+    modelCenter: [0.04, -100.93, 1534.68],
+    cameraTarget: [0, -1.05, -1.08],
+    cameraPosition: [0, -1, 5],
+    explodePosition: [-10, -10, 20] 
+  },
+  hippocampus: {
+    id: 'hippocampus',
+    title: "Hipocampo",
+    description: "Estrutura essencial para a consolidação da memória declarativa e regulação espacial. Possui alta densidade de receptores de glicocorticoides.",
+    role: "Fornece 'contexto' às memórias. O estresse crônico (altos níveis de cortisol) inibe a neurogênese e atrofia o hipocampo, dificultando diferenciar ameaças reais de memórias passadas (comum no TEPT).",
+    color: "#10b981", 
+    urls: [
+      '/models/MM164_BP58046_FMA72714_Left hippocampus proper.obj',
+      '/models/MM164M_BP58047_FMA72713_Right hippocampus proper.obj'
+    ],
+    modelCenter: [0.01, -81.02, 1537.53],
+    cameraTarget: [0, -0.06, -0.94],
+    cameraPosition: [-4, -1, 2],
+    explodePosition: [-30, -5, 0] 
+  },
+  hypothalamus: {
+    id: 'hypothalamus',
+    title: "Hipotálamo",
+    description: "Regulador central da homeostase e do sistema nervoso autônomo. Ponto de origem do Eixo HPA.",
+    role: "Recebe o alarme da Amígdala e aciona o Eixo HPA (Hipotálamo-Pituitária-Adrenal), liberando CRH que culminará na produção de cortisol (hormônio do estresse) pelas adrenais, preparando o corpo para lutar ou fugir.",
+    color: "#f59e0b", // amber
+    urls: [
+      '/models/FJ3817_BP58266_FMA62008_Hypothalamus.obj',
+      '/models/FJ3860_BP58266_FMA62008_Hypothalamus.obj'
+    ],
+    modelCenter: [-0.66, -101.21, 1542.16],
+    cameraTarget: [0, -1.07, -0.71],
+    cameraPosition: [0, -2, 6],
+    explodePosition: [10, -15, 10]
+  },
+  cingulate: {
+    id: 'cingulate',
+    title: "Córtex Cingulado Anterior",
+    description: "Interface crucial entre emoção (sistema límbico) e cognição (córtex pré-frontal).",
+    role: "Envolvido na percepção da dor emocional, regulação autonômica e monitoramento de erros. No TOC, o cingulado anterior fica hiperativo, gerando a sensação de que 'algo está errado'.",
+    color: "#8b5cf6", // violet
+    urls: [
+      '/models/MM193_BP58215_FMA72718_Left cingulate gyrus.obj',
+      '/models/MM193M_BP58196_FMA72717_Right cingulate gyrus.obj'
+    ],
+    modelCenter: [0, -86.59, 1568.24],
+    cameraTarget: [0, -0.34, 0.6],
+    cameraPosition: [0, 8, 6],
+    explodePosition: [0, 20, 0]
+  },
+  insula: {
+    id: 'insula',
+    title: "Ínsula (Córtex Insular)",
+    description: "Centro da interocepção: o mapa consciente das sensações viscerais do nosso corpo.",
+    role: "No pânico e na ansiedade, a Ínsula amplifica sensações normais (como o coração batendo) e as interpreta como perigos iminentes, criando um ciclo de retroalimentação catastrófica.",
+    color: "#ec4899", // pink
+    urls: [
+      '/models/MM236_BP58308_FMA72725_Left first short gyrus of insula.obj',
+      '/models/MM236M_BP58312_FMA72724_Right first short gyrus of insula.obj'
+    ],
+    mod
+
+--- src/content/normative-tables.ts (truncated) ---
+// ============================================================
+// TABELAS NORMATIVAS — extraídas dos manuais oficiais
+// ============================================================
+
+// ------ PHQ-9 ------
+export const phq9Faixas = [
+  { min: 0, max: 4, classificacao: "Mínima", descricao: "Sintomatologia depressiva mínima." },
+  { min: 5, max: 9, classificacao: "Leve", descricao: "Sintomatologia depressiva leve." },
+  { min: 10, max: 14, classificacao: "Moderada", descricao: "Sintomatologia depressiva moderada." },
+  { min: 15, max: 19, classificacao: "Moderadamente grave", descricao: "Sintomatologia depressiva moderadamente grave." },
+  { min: 20, max: 27, classificacao: "Grave", descricao: "Sintomatologia depressiva grave." },
+] as const;
+
+// ------ GAD-7 ------
+export const gad7Faixas = [
+  { min: 0, max: 4, classificacao: "Mínima", descricao: "Sintomatologia ansiosa mínima." },
+  { min: 5, max: 9, classificacao: "Leve", descricao: "Sintomatologia ansiosa leve." },
+  { min: 10, max: 14, classificacao: "Moderada", descricao: "Sintomatologia ansiosa moderada." },
+  { min: 15, max: 21, classificacao: "Grave", descricao: "Sintomatologia ansiosa grave." },
+] as const;
+
+// ------ BAI ------
+export const baiFaixas = [
+  { min: 0, max: 10, classificacao: "Mínimo", descricao: "Nível mínimo de ansiedade." },
+  { min: 11, max: 19, classificacao: "Leve", descricao: "Ansiedade leve." },
+  { min: 20, max: 30, classificacao: "Moderado", descricao: "Ansiedade moderada." },
+  { min: 31, max: 63, classificacao: "Grave", descricao: "Ansiedade grave." },
+] as const;
+
+// ------ BDI-II ------
+export const bdiFaixas = [
+  { min: 0, max: 13, classificacao: "Mínimo", descricao: "Nível mínimo de depressão." },
+  { min: 14, max: 19, classificacao: "Leve", descricao: "Depressão leve." },
+  { min: 20, max: 28, classificacao: "Moderado", descricao: "Depressão moderada." },
+  { min: 29, max: 63, classificacao: "Grave", descricao: "Depressão grave." },
+] as const;
+
+// ------ BHS (Escala de Desesperança de Beck) ------
+export const bhsFaixas = [
+  { min: 0, max: 4, classificacao: "Mínimo", descricao: "Nível mínimo de desesperança." },
+  { min: 5, max: 8, classificacao: "Leve", descricao: "Desesperança leve." },
+  { min: 9, max: 13, classificacao: "Moderado", descricao: "Desesperança moderada." },
+  { min: 14, max: 20, classificacao: "Grave", descricao: "Desesperança grave." },
+] as const;
+
+// ------ ASRS-18 (Rastreio TDAH) ------
+export const asrsFaixas = [
+  { min: 0, max: 16, classificacao: "Sem indicativo", descricao: "Sem indicativo de TDAH." },
+  { min: 17, max: 23, classificacao: "Provável", descricao: "Indicativo provável de TDAH — recomenda-se avaliação aprofundada." },
+  { min: 24, max: 72, classificacao: "Altamente provável", descricao: "Altamente provável de TDAH — avaliação neuropsicológica indicada." },
+] as const;
+
+// ------ Rosenberg / EAR (Autoestima) — escore 10-40, maior = melhor ------
+export const rosenbergFaixas = [
+  { min: 10, max: 24, classificacao: "Baixa", descricao: "Autoestima reduzida. Recomenda-se acompanhamento." },
+  { min: 25, max: 34, classificacao: "Media", descricao: "Autoestima na faixa media." },
+  { min: 35, max: 40, classificacao: "Satisfatoria", descricao: "Autoestima satisfatoria." },
+] as const;
+
+// ------ PSS-10 (Estresse Percebido) — escore 0-40 ------
+export const pss10Faixas = [
+  { min: 0, max: 13, classificacao: "Baixo", descricao: "Nivel baixo de estresse percebido." },
+  { min: 14, max: 26, classificacao: "Moderado", descricao: "Estresse percebido moderado." },
+  { min: 27, max: 40, classificacao: "Alto", descricao: "Estresse percebido alto." },
+] as const;
+
+// ------ ISI (Índice de Gravidade de Insônia) — escore 0-28 ------
+export const isiFaixas = [
+  { min: 0, max: 7, classificacao: "Sem insonia clinica", descricao: "Sem indicativo de insonia clinicamente significativa." },
+  { min: 8, max: 14, classificacao: "Insonia subclinica", descricao: "Insonia subclinica — sintomas leves." },
+  { min: 15, max: 21, classificacao: "Insonia moderada", descricao: "Insonia clinica moderada." },
+  { min: 22, max: 28, classificacao: "Insonia grave", descricao: "Insonia clinica grave." },
+] as const;
+
+// ------ AUDIT (Uso de Álcool — OMS) — escore 0-40 ------
+export const auditFaixas = [
+  { min: 0, max: 7, classificacao: "Baixo risco", descricao: "Uso de baixo risco ou abstinencia." },
+  { min: 8, max: 15, classificacao: "Uso de risco", descricao: "Uso de risco — orientacao sobre reducao recomendada." },
+  { min: 16, max: 19, classificacao: "Uso nocivo", descricao: "Uso nocivo — intervencao breve indicada." },
+  { min: 20, max: 40, classificacao: "Provavel dependencia", descricao: "Provavel dependencia — encaminhamento para avaliacao especializada." },
+] as const;
+
+// ------ SCS (Autocompaixão — Neff) — escore 26-130 (após inversão), maior = melhor ------
+// Neff (2003): mean ≤2.49 = baixa, 2.50-3.49 = moderada, ≥3.50
+
+--- src/content/parecer-templates.ts (truncated) ---
+// Templates de texto interpretativo para pareceres psicológicos
+// Tom técnico-clínico, 1-3 frases por classificação
+
+export const templatesPorTeste: Record<string, Record<string, string>> = {
+  phq9: {
+    "Mínima": "O instrumento PHQ-9 não indicou sintomatologia depressiva clinicamente significativa no período avaliado. O(a) avaliando(a) apresenta funcionamento emocional dentro dos parâmetros esperados para humor.",
+    "Leve": "Os resultados do PHQ-9 sugerem sintomas depressivos de intensidade leve. Recomenda-se monitoramento clínico e avaliação da necessidade de intervenção psicoterapêutica.",
+    "Moderada": "O PHQ-9 aponta para sintomatologia depressiva de intensidade moderada, com impacto funcional provável. Indica-se acompanhamento psicoterapêutico e avaliação quanto à necessidade de intervenção farmacológica.",
+    "Moderadamente grave": "Os resultados indicam sintomatologia depressiva moderadamente grave, sugerindo comprometimento significativo no funcionamento cotidiano. Recomenda-se intervenção psicoterapêutica e avaliação psiquiátrica.",
+    "Grave": "O PHQ-9 revela sintomatologia depressiva de intensidade grave, com comprometimento funcional importante. Indica-se acompanhamento psicoterapêutico intensivo e encaminhamento psiquiátrico para avaliação de tratamento combinado.",
+  },
+  gad7: {
+    "Mínima": "O GAD-7 não identificou sintomatologia ansiosa clinicamente significativa. O(a) avaliando(a) apresenta níveis de ansiedade dentro dos parâmetros de normalidade.",
+    "Leve": "Os resultados do GAD-7 indicam sintomas ansiosos de intensidade leve. Sugere-se monitoramento clínico e orientações sobre manejo da ansiedade.",
+    "Moderada": "O GAD-7 aponta para sintomatologia ansiosa moderada, com possível impacto no funcionamento diário. Recomenda-se intervenção psicoterapêutica, com ênfase em técnicas de manejo da ansiedade.",
+    "Grave": "Os resultados revelam sintomatologia ansiosa de intensidade grave, com comprometimento funcional significativo. Indica-se psicoterapia e avaliação psiquiátrica para tratamento combinado.",
+  },
+  bai: {
+    "Mínimo": "O Inventário de Ansiedade de Beck indica nível mínimo de ansiedade. Não foram identificados sintomas ansiosos clinicamente relevantes.",
+    "Leve": "O BAI aponta para ansiedade de intensidade leve. Os sintomas merecem acompanhamento, porém não indicam comprometimento funcional significativo.",
+    "Moderado": "Os resultados do BAI indicam ansiedade moderada, sugerindo a presença de sintomas somáticos e cognitivos de ansiedade com repercussão funcional. Recomenda-se intervenção psicoterapêutica.",
+    "Grave": "O BAI revela ansiedade de intensidade grave, com sintomas somáticos e cognitivos expressivos. Indica-se tratamento psicoterapêutico e avaliação psiquiátrica.",
+  },
+  bdi: {
+    "Mínimo": "O Inventário de Depressão de Beck aponta nível mínimo de depressão. Não foram identificados indicadores depressivos clinicamente significativos.",
+    "Leve": "O BDI-II indica sintomatologia depressiva leve. Recomenda-se monitoramento e intervenção preventiva.",
+    "Moderado": "Os resultados do BDI-II apontam para depressão moderada, com impacto funcional nas atividades cotidianas. Indica-se acompanhamento psicoterapêutico estruturado.",
+    "Grave": "O BDI-II revela sintomatologia depressiva grave, com comprometimento funcional importante e possível risco. Recomenda-se intervenção imediata com psicoterapia e avaliação psiquiátrica.",
+  },
+  bhs: {
+    "Mínimo": "A Escala de Desesperança de Beck indica nível mínimo de desesperança. O(a) avaliando(a) demonstra expectativas positivas em relação ao futuro.",
+    "Leve": "O BHS aponta para desesperança leve. Embora haja algumas cognições pessimistas, o nível não sugere risco significativo.",
+    "Moderado": "Os resultados indicam desesperança moderada, refletindo expectativas negativas sobre o futuro que merecem atenção clínica. Sugere-se trabalho psicoterapêutico focado em reestruturação cognitiva.",
+    "Grave": "O BHS revela desesperança grave, constituindo fator de risco importante. Indica-se avaliação de risco, intervenção terapêutica intensiva e monitoramento contínuo.",
+  },
+  asrs: {
+    "Sem indicativo": "O ASRS-18 não identificou indicativos de Transtorno de Déficit de Atenção e Hiperatividade. Os padrões de atenção e atividade relatados encontram-se dentro dos parâmetros esperados.",
+    "Provável": "Os resultados do ASRS-18 sugerem indicativo provável de TDAH. Recomenda-se avaliação neuropsicológica aprofundada para confirmação diagnóstica.",
+    "Altamente provável": "O ASRS-18 indica alta probabilidade de TDAH, com sintomas expressivos de desatenção e/ou hiperatividade-impulsividade. Indica-se avaliação neuropsicológica completa e acompanhamento multidisciplinar.",
+  },
+  g36: {
+    "Inferior": "O desempenho no G-36 classifica-se como Inferior, sugerindo capacidade intelectual geral abaixo da média da população de referência. Recomenda-se investigação c
+
+--- src/content/posts-loader.ts ---
+import { listarPostsPublicados, type BlogPostDB } from "@/lib/supabase";
+
+export interface BlogPost {
+  slug: string;
+  titulo: string;
+  subtitulo: string;
+  categoria: string;
+  tempoLeitura: string;
+  resumo: string;
+  tags: string[];
+  conteudo: string;
+  area?: string | null;
+  referencias?: string[] | null;
+  narracaoUrl?: string | null;
+  fonte?: "supabase";
+}
+
+let cachedPosts: BlogPost[] = [];
+let loaded = false;
+
+function mapDBToPost(row: BlogPostDB): BlogPost {
+  return {
+    slug: row.slug,
+    titulo: row.titulo,
+    subtitulo: row.subtitulo,
+    categoria: row.categoria,
+    tempoLeitura: row.tempo_leitura,
+    resumo: row.resumo,
+    tags: row.tags,
+    conteudo: row.conteudo,
+    area: row.area,
+    referencias: row.referencias,
+    narracaoUrl: row.narracao_url,
+    fonte: "supabase",
+  };
+}
+
+export async function loadDynamicPosts(): Promise<void> {
+  const rows = await listarPostsPublicados();
+  cachedPosts = rows.map(mapDBToPost);
+  loaded = true;
+}
+
+export function getAllPosts(): BlogPost[] {
+  return cachedPosts;
+}
+
+// ponytail: kept for Painel.tsx import; empty since posts now live only in Supabase
+export const posts: BlogPost[] = [];
+
+export function getPost(slug: string): BlogPost | undefined {
+  return cachedPosts.find((p) => p.slug === slug);
+}
+
+export function isDynamicLoaded(): boolean {
+  return loaded;
+}
+
+
+--- src/content/psicoed/janela.ts (truncated) ---
+// Conteúdo do módulo "Janela de Tolerância" — a faixa de ativação do
+// sistema nervoso em que conseguimos pensar com clareza, sentir sem sermos
+// dominados pela emoção e nos conectar com outras pessoas.
+
+import type { QuizConfig } from "@/components/psicoed/QuizEngine";
+
+export interface ZonaAtivacao {
+  id: "hiper" | "janela" | "hipo";
+  nome: string;
+  cor: string; // usada em inline style para o simulador
+  descricao: string;
+  sinais: string[];
+}
+
+export const zonas: ZonaAtivacao[] = [
+  {
+    id: "hiper",
+    nome: "Hiperativação",
+    cor: "#D97757",
+    descricao: "O sistema nervoso está em alerta máximo, como se um perigo estivesse acontecendo agora.",
+    sinais: ["Coração acelerado", "Respiração curta", "Agitação, inquietação", "Pensamentos acelerados", "Dificuldade de ficar parado ou focar"],
+  },
+  {
+    id: "janela",
+    nome: "Dentro da janela",
+    cor: "#7FA37F",
+    descricao: "É possível sentir emoções fortes sem ser dominado por elas, e pensar com clareza mesmo sob pressão.",
+    sinais: ["Corpo relativamente regulado", "Consigo ouvir e ser ouvido", "Emoções presentes, mas administráveis", "Consigo pensar em passos seguintes"],
+  },
+  {
+    id: "hipo",
+    nome: "Hipoativação",
+    cor: "#6B8BA4",
+    descricao: "O sistema nervoso 'desliga' como forma de proteção, quando a ativação foi longe demais.",
+    sinais: ["Cansaço, peso no corpo", "Sensação de dormência ou vazio", "Desconexão de si e dos outros", "Dificuldade de se mexer, pensar ou falar"],
+  },
+];
+
+export function zonaPorValor(v: number): ZonaAtivacao {
+  if (v >= 67) return zonas[0];
+  if (v <= 33) return zonas[2];
+  return zonas[1];
+}
+
+export interface PassoExpansao {
+  titulo: string;
+  descricao: string;
+}
+
+export const passosExpansao: PassoExpansao[] = [
+  {
+    titulo: "Regularidade no sono e nas refeições",
+    descricao: "Um corpo com rotina previsível gasta menos energia se regulando — sobra mais 'espaço' para lidar com o que aparece.",
+  },
+  {
+    titulo: "Movimento no corpo",
+    descricao: "Caminhar, alongar, respirar fundo — formas seguras de descarregar ativação acumulada, em vez de deixá-la se acumular.",
+  },
+  {
+    titulo: "Conexões seguras",
+    descricao: "Relações em que dá para ser você mesmo ajudam o sistema nervoso a perceber que, agora, não há perigo.",
+  },
+  {
+    titulo: "Nomear o que sente",
+    descricao: "Colocar em palavras o que está acontecendo ('estou ansioso', 'estou exausto') já tende a reduzir um pouco a intensidade da reação.",
+  },
+  {
+    titulo: "Paciência com o processo",
+    descricao: "A janela se expande aos poucos, com prática repetida ao longo do tempo — não de um dia para o outro.",
+  },
+];
+
+export const janelaQuiz: QuizConfig = {
+  perguntas: [
+    {
+      id: "j1",
+      pergunta: "O que é 'estar dentro da janela de tolerância'?",
+      opcoes: [
+        { id: "a", texto: "Não sentir emoção nenhuma.", correta: false, explicacao: "Estar na janela não é ausência de emoção — é conseguir senti-la sem ser dominado por ela." },
+        { id: "b", texto: "Conseguir sentir emoções fortes sem ser dominado por elas, pensando com alguma clareza.", correta: true, explicacao: "Isso mesmo — é a faixa em que emoção e razão convivem, mesmo sob pressão." },
+        { id: "c", texto: "Estar sempre calmo e relaxado.", correta: false, explicacao: "A janela permite estresse e emoção intensa — o que muda é a capacidade de seguir funcionando dentro dela." },
+      ],
+    },
+    {
+      id: "j2",
+      pergunta: "Coração acelerado, pensamentos correndo, dificuldade de ficar parado — isso costuma indicar:",
+      opcoes: [
+        { id: "a", texto: "Hipoativação.", correta: false, explicacao: "Hipoativação é o oposto: lentidão, dormência, desligamento." },
+        { id: "b", texto: "Hiperativação.", correta: true, explicacao: "Exato — sinais de alerta máximo do sistema nervoso." },
+        { id: "c", texto: "Estar dentro da janela.", correta: false, explicacao: "Dentro da janela o corpo está relativamente regulado, não em alerta máximo." },
+      ],
+    },
+    {
+      id: "j3",
+      pergunta: "Sensação de vazio, cansaço extremo, dificuldade de se mexer ou falar — isso costuma indicar:",
+      opcoes: [
+        { id: "a", texto: "Hipoativação.", correta: true, explicacao: "Isso mesmo — o sistema nervoso 'desligou' como forma de proteção." },
+        { id: "b", texto: "Hiperativação.", correta: false, explicacao: "Hiperativação é o oposto: agitação, aceleração." },
+        { id: "c", texto: "Um sinal de preguiça ou falta de esforço.", correta: false, explicacao: "Não é uma questão de esforço — é uma resposta do sistema nervoso, não uma escolha." },
+      ],
+    },
+    {
+      id: "j4",
+      pergunta: "A largura da janela de tolerância de uma pessoa:",
+      opcoes: [
+        { id: "a", texto: "É fixa e igual para todo mundo.", correta: false, explicacao: "Varia bastante entre pessoas e também no 
+
+--- src/content/psicoed/modos.ts (truncated) ---
+// Conteúdo do módulo "Modos do Esquema" — introdução simplificada aos modos
+// esquemáticos (Terapia do Esquema), com foco em 4 modos amplos e acessíveis:
+// Criança Vulnerável, Protetor Desligado, Crítico Interno e Adulto Saudável.
+// Objetivo é reconhecimento cotidiano, não diagnóstico.
+
+import type { QuizConfig } from "@/components/psicoed/QuizEngine";
+import type { FlashcardItem } from "@/components/psicoed/Flashcards";
+
+export type ModoId = "crianca-vulneravel" | "protetor-desligado" | "critico-interno" | "adulto-saudavel";
+
+export interface Modo {
+  id: ModoId;
+  nome: string;
+  cor: string;
+  descricao: string;
+  reconhecer: string[];
+}
+
+export const modos: Modo[] = [
+  {
+    id: "crianca-vulneravel",
+    nome: "Criança Vulnerável",
+    cor: "#6B8BA4",
+    descricao:
+      "A parte que sente medo, tristeza, solidão ou vergonha de forma crua — como se a necessidade não atendida de antes ainda estivesse presente agora.",
+    reconhecer: ["Sensação de pequenez ou desamparo", "Medo de ser rejeitado ou abandonado", "Vontade de se esconder ou chorar", "Sentir que 'ninguém vai entender'"],
+  },
+  {
+    id: "protetor-desligado",
+    nome: "Protetor Desligado",
+    cor: "#8B8B8B",
+    descricao:
+      "A parte que desliga o contato com a emoção para não sentir a dor — evita, adia, distrai, some. Protege no curto prazo, mas afasta da própria vida.",
+    reconhecer: ["Vontade de fugir, adiar ou evitar", "Sensação de vazio ou 'piloto automático'", "Usar tela, comida ou distração para não sentir", "Dificuldade de dizer o que sente"],
+  },
+  {
+    id: "critico-interno",
+    nome: "Crítico Interno",
+    cor: "#D97757",
+    descricao:
+      "A voz interna que cobra, compara e pune — muitas vezes ecoando mensagens recebidas no passado. Fala como se exigir fosse a única forma de cuidar.",
+    reconhecer: ["Frases como 'você não é bom o suficiente'", "Comparação constante com os outros", "Pouca tolerância a erros próprios", "Sensação de nunca ser suficiente"],
+  },
+  {
+    id: "adulto-saudavel",
+    nome: "Adulto Saudável",
+    cor: "#7FA37F",
+    descricao:
+      "A parte que consegue acolher a Criança Vulnerável, colocar limite no Crítico Interno e agir com equilíbrio, mesmo sentindo desconforto. É a que se busca fortalecer.",
+    reconhecer: ["Reconhece a emoção sem ser dominado por ela", "Consegue se falar com gentileza e firmeza", "Toma decisões considerando necessidades reais", "Pede ajuda quando precisa, sem se punir por isso"],
+  },
+];
+
+export const modoPorId = (id: ModoId) => modos.find((m) => m.id === id)!;
+
+// Quiz "qual modo está falando?" — 8 falas cotidianas.
+export const modosQuiz: QuizConfig = {
+  perguntas: [
+    {
+      id: "m1",
+      pergunta: '"Não aguento mais, quero só sumir e não pensar em nada." Qual modo está falando?',
+      opcoes: [
+        { id: "protetor-desligado", texto: "Protetor Desligado", correta: true, explicacao: "Isso mesmo — é a parte que busca desligar do sentimento em vez de processá-lo, uma forma de proteção pelo afastamento." },
+        { id: "crianca-vulneravel", texto: "Criança Vulnerável", correta: false, explicacao: "A Criança Vulnerável sentiria e expressaria a dor diretamente. Aqui a fala busca desligar da dor, não senti-la: Protetor Desligado." },
+        { id: "critico-interno", texto: "Crítico Interno", correta: false, explicacao: "O Crítico cobra e julga. Aqui não há cobrança, há um pedido de desligamento: Protetor Desligado." },
+      ],
+    },
+    {
+      id: "m2",
+      pergunta: '"Você é um fracasso, todo mundo vai perceber que você não dá conta." Qual modo está falando?',
+      opcoes: [
+        { id: "critico-interno", texto: "Crítico Interno", correta: true, explicacao: "Exato — a voz que julga e ameaça com exposição costuma ser o Crítico Interno, mesmo quando parece 'só realista'." },
+        { id: "adulto-saudavel", texto: "Adulto Saudável", correta: false, explicacao: "O Adulto Saudável fala com firmeza, mas sem humilhar. Essa fala pune e ameaça: Crítico Interno." },
+        { id: "protetor-desligado", texto: "Protetor Desligado", correta: false, explicacao: "O Protetor evita sentir, não ataca com julgamento. Essa fala julga diretamente: Crítico Interno." },
+      ],
+    },
+    {
+      id: "m3",
+      pergunta: '"Tenho tanto medo de ficar sozinho, ninguém vai gostar de mim de verdade." Qual modo está falando?',
+      opcoes: [
+        { id: "crianca-vulneravel", texto: "Criança Vulnerável", correta: true, explicacao: "Isso mesmo — o medo cru de abandono e a sensação de não ser querido são marcas típicas da Criança Vulnerável." },
+        { id: "critico-interno", texto: "Crítico Interno", correta: false, explicacao: "O Crítico julga com dureza. Aqui há medo e vulnerabilidade, não julgamento: Criança Vulnerável." },
+        { id: "protetor-desligado", texto: "Protetor Desligado", correta: false, explicacao: "O Protetor evitaria sentir esse medo diretamente. Aqui o medo está e
+
+## Instructions
+
+Analyze the above codebase context and provide your response following the format specified in the task.
