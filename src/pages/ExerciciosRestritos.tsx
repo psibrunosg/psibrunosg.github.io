@@ -109,24 +109,60 @@ export default function ExerciciosRestritos() {
     document.documentElement.setAttribute("data-theme", "lobo");
     document.title = "Exercícios Restritos | Bruno de Souza Gonçalves Psicologo | Pelotas";
 
-    const stored = localStorage.getItem("exercise_patient_code");
-    const unlocked = localStorage.getItem("exercise_restricted_unlocked");
+    let cancel = false;
 
-    if (!stored) {
-      // Sem código: tela de bloqueio
-      setLoading(false);
-      return;
-    }
+    // O acesso é revalidado no servidor a cada montagem. Antes, a liberação
+    // vinha de localStorage["exercise_restricted_unlocked"] — um array JSON que
+    // o próprio usuário edita no devtools, o que abria todo exercício restrito
+    // com uma linha no console. A fonte da verdade é patient_codes, e só ela.
+    (async () => {
+      const stored = localStorage.getItem("exercise_patient_code");
+      if (!stored) {
+        if (!cancel) setLoading(false);
+        return;
+      }
 
-    setCode(stored);
-    try {
-      setRestricted(JSON.parse(unlocked || "[]"));
-    } catch {
-      setRestricted([]);
-    }
-    setLoading(false);
+      try {
+        const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/validate-code`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code: stored }),
+        });
+        const json = await resp.json();
+        if (cancel) return;
 
-    return () => document.documentElement.removeAttribute("data-theme");
+        if (!resp.ok || !json?.valid) {
+          // Código desativado pelo terapeuta ou expirado: derruba o acesso local
+          // em vez de deixar o cache sobreviver ao fim da autorização.
+          localStorage.removeItem("exercise_patient_code");
+          localStorage.removeItem("exercise_restricted_unlocked");
+          setCode(null);
+          setRestricted([]);
+          return;
+        }
+
+        const liberados: string[] = Array.isArray(json.restricted_unlocked) ? json.restricted_unlocked : [];
+        setCode(stored);
+        setRestricted(liberados);
+        try {
+          localStorage.setItem("exercise_restricted_unlocked", JSON.stringify(liberados));
+        } catch { /* cache é conveniência, não autoridade */ }
+      } catch {
+        // Rede fora: falha fechado. Sem confirmação do servidor não se libera
+        // conteúdo clínico restrito.
+        if (!cancel) {
+          setCode(null);
+          setRestricted([]);
+        }
+      } finally {
+        if (!cancel) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancel = true;
+      document.documentElement.removeAttribute("data-theme");
+    };
   }, []);
 
   if (loading) {

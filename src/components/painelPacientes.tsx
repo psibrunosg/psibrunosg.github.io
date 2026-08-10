@@ -307,7 +307,7 @@ export function PainelPacientes() {
           <button
             onClick={handleGenerarCodigo}
             disabled={gerando || !nomePaciente.trim()}
-            className="flex items-center gap-2 rounded-full px-4 py-2 font-semibold text-white disabled:opacity-50 transition-all"
+            className="flex items-center gap-2 rounded-full px-4 py-2 font-semibold text-[var(--c-on-accent)] disabled:opacity-50 transition-all"
             style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}
           >
             <Plus size={14} /> {gerando ? "..." : "Gerar"}

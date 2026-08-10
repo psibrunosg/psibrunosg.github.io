@@ -366,7 +366,7 @@ export default function Escala() {
                 <div className="glass-card rounded-3xl p-8">
                   <div className="mb-6 flex items-center gap-3">
                     <div className="flex h-11 w-11 items-center justify-center rounded-2xl" style={{ background: "linear-gradient(140deg, var(--c-accent), var(--c-accent-lt))", boxShadow: "0 10px 26px -10px var(--c-accent)" }}>
-                      <User size={20} className="text-white" />
+                      <User size={20} className="text-[var(--c-on-accent)]" />
                     </div>
                     <div>
                       <h2 className="text-lg font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Seus dados</h2>
@@ -536,7 +536,7 @@ export default function Escala() {
                 <motion.div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl"
                   style={{ background: "linear-gradient(140deg, var(--c-accent), var(--c-accent-lt))", boxShadow: "0 16px 40px -12px var(--c-accent)" }}
                   initial={{ scale: 0, rotate: -10 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 200 }}>
-                  <ClipboardList size={30} className="text-white" />
+                  <ClipboardList size={30} className="text-[var(--c-on-accent)]" />
                 </motion.div>
                 <span className="mb-3 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--c-accent)]">{sigla}</span>
                 <h1 className="mb-3 text-3xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{config.nome}</h1>
@@ -572,7 +572,7 @@ export default function Escala() {
                         className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full pointer-events-none"
                         style={{ background: "var(--c-accent)" }}
                       >
-                        <Check size={10} className="text-white" />
+                        <Check size={10} className="text-[var(--c-on-accent)]" />
                       </motion.div>
                     )}
                   </AnimatePresence>
