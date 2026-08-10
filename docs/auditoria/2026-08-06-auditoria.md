@@ -78,9 +78,51 @@ Portões na árvore revalidada: `npm run build` ✅ · 65/65 testes ✅ · `chec
 |---|---|---|
 | 20 | `MuralhaEvidencias` sem estado de fim | Agora há 4 ocorrências de `"fim"`/`setFase` no arquivo — precisa de teste de uso para confirmar |
 
-### Não verificável sem acesso ao banco
+### Verificado contra o banco real — `hpyarwrgcdbulekfyozs` (BSpsi)
 
-Os achados **26 a 32** — INSERT anônimo com `patient_code` arbitrário, schema drift, RLS `using(true)` em seis tabelas, `exercise_sessions` SELECT `to public` sem posse, redação parcial de anexos, prompt injection e transferência a provedores de LLM — dependem de ler o schema e as policies reais. O connector do Supabase desta sessão aponta para outra organização (`zgnjcjxqeoytwhgrhlua`), não para o projeto `hpyarwrgcdbulekfyozs` do site. **Permanecem em aberto por falta de verificação, não por evidência de correção.**
+Com o connector reautorizado, os achados de banco deixaram de ser suposição. **Três conclusões da auditoria original estavam erradas.**
+
+**Estado do banco:** 1 usuário cadastrado · 27 respostas · 8 pacientes · 3 tentativas de validação · **0 sessões de exercício**.
+
+Esse zero é a prova empírica do achado 3: desde a migração para códigos de 8 dígitos, nenhuma sessão de exercício de nenhum paciente foi gravada. Com `exercise_sessions.code` agora em `varchar(8)` e a regex corrigida, deve voltar a gravar.
+
+#### Correção — o schema drift não era buraco de segurança
+
+O achado 27 dizia que `respostas_questionarios`, `patient_codes` e `blog_posts` não tinham policy de leitura versionada, e o relatório sugeria que qualquer conta autenticada poderia ler toda a base de PII. **Falso.** As policies existem no banco e são mais fortes do que o repo deixava supor — todas gatilhadas no UUID do terapeuta:
+
+```
+respostas_questionarios · SELECT e DELETE  →  auth.uid() = 'd0dddd26-…'
+patient_codes           · ALL             →  auth.uid() = 'd0dddd26-…'
+blog_posts              · SELECT/INSERT/UPDATE/DELETE → auth.uid() = 'd0dddd26-…'
+                        · SELECT público  →  publicado = true
+```
+
+O drift é real, mas é problema de **versionamento** (não dá para recriar o ambiente a partir do repo), não de exposição. Severidade cai de P1 para P3.
+
+#### Correção — o `using(true)` é latente, não ativo
+
+O achado 28 está confirmado: seis tabelas clínicas (`pacientes`, `paciente_perfil`, `paciente_mensagens`, `paciente_anexos`, `paciente_psicoed`, `conceituacoes_registros`) têm `ALL to authenticated using(true)`. Mas **existe exatamente 1 usuário cadastrado no projeto** — o próprio terapeuta. A exposição é latente: qualquer conta que venha a ser criada lê todo o prontuário e toda a memória da IA. Continua P1, mas por risco futuro, não por porta aberta hoje.
+
+#### Confirmados abertos
+
+| # | Achado | Evidência no banco |
+|---|---|---|
+| 26 | **INSERT anônimo com `patient_code` arbitrário** | O `with_check` de `questionnaire_insert_with_access_code` exige `code_allows_scale` **apenas** para `neoffir, neopir, bdi, bai, bhs, bss, cssrs`. Para YSQ, PHQ-9, GAD-7 e todas as demais, qualquer anônimo insere com o código que quiser — e um YSQ falso vira "o mais recente" lido por `psicoed-personalizada` |
+| 29 | **`exercise_sessions` SELECT sem posse** | `using (private.code_is_active(code))` com `roles = null` (PUBLIC). O predicado não amarra a linha ao chamador: conhecer **um** código ativo lê as sessões de **todos** os códigos ativos |
+
+#### Novos — só apareceram com acesso ao banco
+
+| Sev | Achado | Evidência |
+|-----|--------|-----------|
+| **P1** | **`respostas_questionarios` não tem policy de UPDATE — zero.** E `Painel.tsx:977` faz `.update({ risco_status })`. Marcar um alerta de risco suicida como "resolvido" **não persiste**: falha silenciosa por RLS. Explica também os dois números divergentes de risco do achado S2-a | `select count(*) from pg_policy … polcmd='w'` → 0 |
+| **P2** | `formularios_anonimos` e `respostas_formularios_anonimos` usam `auth.role() = 'authenticated'` em vez do UUID do terapeuta, ao contrário de todo o resto do projeto. Qualquer conta autenticada lê todas as respostas anônimas e altera os formulários | policies das duas tabelas |
+| **P3** | Proteção contra senha vazada desligada no Supabase Auth (checagem HaveIBeenPwned). Um clique no dashboard | advisor `auth_leaked_password_protection` |
+
+O único advisor de RLS é `validation_attempts` sem policy — **correto e intencional**, é tabela de service role.
+
+#### Não revalidados nesta rodada
+
+Achados **30, 31 e 32** — redação parcial de anexos, prompt injection na conceituação e transferência de dado clínico a provedores de LLM — são de código, não de banco, e não foram reverificados contra esta árvore. Permanecem como no relatório original.
 
 ---
 
