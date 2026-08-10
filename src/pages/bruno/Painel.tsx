@@ -1140,17 +1140,19 @@ export default function BrunoPainel() {
     <div className="relative min-h-screen">
       <AppAurora />
 
-      <header className="fixed left-0 right-0 top-0 z-50 px-6 py-4 glass-panel">
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <div className="flex items-center gap-3">
+      <header className="fixed left-0 right-0 top-0 z-50 px-4 py-4 glass-panel sm:px-6">
+        <div className="mx-auto flex max-w-5xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center justify-between gap-3 sm:justify-start">
             <Link to="/" className="text-sm font-semibold text-[var(--c-text)] transition-colors hover:text-[var(--c-accent)]">Bruno de Souza Gonçalves</Link>
-            <button onClick={() => setDarkMode((d) => !d)} title={darkMode ? "Modo claro" : "Modo escuro"}
-              className="rounded-full border border-[var(--c-border)] p-1.5 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]">
-              {darkMode ? <Sun size={14} /> : <Moon size={14} />}
-            </button>
-            <button onClick={logout} className="rounded-full border border-[var(--c-border)] px-3 py-1 text-[10px] text-[var(--c-muted)] transition-colors hover:text-[var(--c-danger)] hover:border-[var(--c-danger)]/40">Sair</button>
+            <div className="flex gap-2">
+              <button onClick={() => setDarkMode((d) => !d)} title={darkMode ? "Modo claro" : "Modo escuro"}
+                className="rounded-full border border-[var(--c-border)] p-1.5 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]">
+                {darkMode ? <Sun size={14} /> : <Moon size={14} />}
+              </button>
+              <button onClick={logout} className="rounded-full border border-[var(--c-border)] px-3 py-1 text-[10px] text-[var(--c-muted)] transition-colors hover:text-[var(--c-danger)] hover:border-[var(--c-danger)]/40">Sair</button>
+            </div>
           </div>
-          <div className="flex gap-1">
+          <div className="flex gap-1 overflow-x-auto pb-1 sm:pb-0 hide-scrollbar">
             <button onClick={() => setTab("overview")} className={tabBtn("overview")} style={tab === "overview" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Visão geral</button>
             <button onClick={() => { setTab("respostas"); fecharDashboard(); }} className={tabBtn("respostas")} style={tab === "respostas" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Respostas</button>
             <button onClick={() => setTab("pacientes")} className={tabBtn("pacientes")} style={tab === "pacientes" ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>Acessos</button>
