@@ -10,7 +10,7 @@ import {
   type RespostaFormularioAnonimoDB,
   type FormCampo
 } from "@/lib/supabase";
-import { Plus, Trash2, Edit, Save, X, ExternalLink, RefreshCw, BarChart2, Eye, Copy, Check } from "lucide-react";
+import { Plus, Trash2, Save, X, RefreshCw, BarChart2, Copy, Check } from "lucide-react";
 
 export function PainelFormularios() {
   const [formularios, setFormularios] = useState<FormularioAnonimoDB[]>([]);

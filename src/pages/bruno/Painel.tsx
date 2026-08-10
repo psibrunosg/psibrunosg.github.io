@@ -1133,7 +1133,7 @@ export default function BrunoPainel() {
     doc.save(`${f.id}_${new Date().toISOString().slice(0, 10)}.pdf`);
   }
 
-  const tabBtn = (id: "overview" | "respostas" | "pacientes" | "blog" | "ferramentas") =>
+  const tabBtn = (id: "overview" | "respostas" | "pacientes" | "blog" | "ferramentas" | "formularios") =>
     "px-4 py-1.5 rounded-full text-xs font-semibold transition-all " + (tab === id ? "text-white shadow-[0_8px_20px_-8px_var(--c-accent)]" : "text-[var(--c-muted)] hover:text-[var(--c-text)]");
 
   return (

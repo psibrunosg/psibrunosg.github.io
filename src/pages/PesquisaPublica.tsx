@@ -38,7 +38,7 @@ export default function PesquisaPublica() {
           setForm(data);
           // Inicializa respostas
           const ini: Record<string, string | number> = {};
-          data.campos.forEach(c => {
+          data.campos.forEach((c: any) => {
             if (c.tipo === "escala_1_5" || c.tipo === "escala_1_10") ini[c.id] = 0;
             else ini[c.id] = "";
           });
@@ -87,42 +87,48 @@ export default function PesquisaPublica() {
 
   if (loading) {
     return (
-      <AppAurora className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[var(--c-accent)]" />
-      </AppAurora>
+      <div className="relative flex min-h-screen items-center justify-center bg-[var(--c-bg)]">
+        <AppAurora />
+        <div className="relative z-10">
+          <Loader2 className="h-8 w-8 animate-spin text-[var(--c-accent)]" />
+        </div>
+      </div>
     );
   }
 
   if (error || !form) {
     return (
-      <AppAurora className="flex min-h-screen items-center justify-center p-6">
-        <motion.div variants={fadeUp} initial="hidden" animate="visible" className="glass-card max-w-md rounded-3xl p-8 text-center">
+      <div className="relative flex min-h-screen items-center justify-center bg-[var(--c-bg)] p-6">
+        <AppAurora />
+        <motion.div variants={fadeUp} initial="hidden" animate="visible" className="glass-card relative z-10 max-w-md rounded-3xl p-8 text-center">
           <p className="mb-6 text-[var(--c-danger)]">{error}</p>
           <Link to="/" className="inline-flex items-center gap-2 rounded-full border border-[var(--c-border)] px-6 py-3 text-sm font-semibold text-[var(--c-text)] hover:bg-[var(--c-surface)]">
             <ArrowLeft size={16} /> Voltar para o início
           </Link>
         </motion.div>
-      </AppAurora>
+      </div>
     );
   }
 
   if (sucesso) {
     return (
-      <AppAurora className="flex min-h-screen items-center justify-center p-6">
-        <motion.div variants={fadeUp} initial="hidden" animate="visible" className="glass-card max-w-md rounded-3xl p-8 text-center">
+      <div className="relative flex min-h-screen items-center justify-center bg-[var(--c-bg)] p-6">
+        <AppAurora />
+        <motion.div variants={fadeUp} initial="hidden" animate="visible" className="glass-card relative z-10 max-w-md rounded-3xl p-8 text-center">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[#38a169]/20 text-[#38a169]">
             <CheckCircle2 size={32} />
           </div>
           <h2 className="mb-2 text-2xl font-bold text-[var(--c-text)]">Resposta Enviada!</h2>
           <p className="text-[var(--c-muted)]">Obrigado por sua participação. Suas respostas são completamente anônimas.</p>
         </motion.div>
-      </AppAurora>
+      </div>
     );
   }
 
   return (
-    <AppAurora className="min-h-screen p-4 md:p-8">
-      <div className="mx-auto max-w-2xl">
+    <div className="relative min-h-screen bg-[var(--c-bg)]">
+      <AppAurora />
+      <div className="relative z-10 mx-auto max-w-2xl p-4 md:p-8">
         <motion.div variants={fadeUp} initial="hidden" animate="visible">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-[var(--c-text)] md:text-4xl" style={{ fontFamily: "var(--font-heading)" }}>
@@ -259,6 +265,6 @@ export default function PesquisaPublica() {
           </form>
         </motion.div>
       </div>
-    </AppAurora>
+    </div>
   );
 }
