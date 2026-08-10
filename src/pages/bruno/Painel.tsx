@@ -965,16 +965,17 @@ export default function BrunoPainel() {
   // perfil de conceituacao, a config de psicoeducacao e o nome no codigo de
   // acesso. A UI ja prometia "excluir todos os dados deste paciente".
   //
-  // ponytail: sequencia de deletes no cliente, nao transacao. Se falhar no meio,
-  // apaga parcialmente — e avisa. A versao atomica esta pronta em
-  // supabase/migrations/20260806220000_excluir_paciente_completo.sql; quando ela
-  // for aplicada, troque este corpo por um unico supabase.rpc().
+  // Uma transacao no banco, nao uma sequencia de deletes no cliente: exclusao
+  // pela metade nao e uma opcao aceitavel para um pedido de apagamento.
   async function excluirPaciente(chave: string) {
     if (!supabase) return;
     const doPaciente = respostas.filter((r) => chavePaciente(r) === chave);
     const ids = doPaciente.map((r) => r.id);
     if (!ids.length) return;
 
+    // `respostas_questionarios` nao tem FK para `pacientes`, entao o id da linha
+    // ancora precisa ser resolvido aqui — sem ele o RPC apagaria so as respostas
+    // e deixaria de pe a memoria clinica da IA.
     const ref = doPaciente[0];
     let pacienteId: number | null = null;
     if (ref.patient_code) {
@@ -986,32 +987,35 @@ export default function BrunoPainel() {
       pacienteId = data?.id ?? null;
     }
 
-    // Ordem deliberada: o dado mais sensivel sai primeiro, para que uma falha no
-    // meio deixe o resto para tras, e nao o contrario.
-    const falhas: string[] = [];
-    if (pacienteId != null) {
-      // conceituacoes_registros usa ON DELETE SET NULL — nao cai no cascade e
-      // viraria linha orfa com dado clinico. Precisa ir antes de `pacientes`.
-      const { error: e1 } = await supabase.from("conceituacoes_registros").delete().eq("paciente_id", pacienteId);
-      if (e1) falhas.push("conceituações");
-      // Cascade leva paciente_perfil, paciente_mensagens, paciente_anexos e
-      // paciente_psicoed (ON DELETE CASCADE nas migracoes 20260718*).
-      const { error: e2 } = await supabase.from("pacientes").delete().eq("id", pacienteId);
-      if (e2) falhas.push("memória de conceituação (mensagens e anexos)");
-    }
-    if (ref.patient_code) {
-      // O codigo em si e credencial e fica, para nao orfanizar exercise_sessions.
-      const { error: e3 } = await supabase.from("patient_codes").update({ nome_paciente: null }).eq("code", ref.patient_code);
-      if (e3) falhas.push("nome no código de acesso");
-    }
-    const { error: e4 } = await supabase.from("respostas_questionarios").delete().in("id", ids);
-    if (e4) falhas.push("respostas de escala");
+    const { data: resumo, error } = await supabase.rpc("excluir_paciente_completo", {
+      p_resposta_ids: ids,
+      p_paciente_id: pacienteId,
+    });
 
-    if (falhas.length) {
-      // Falha silenciosa aqui e o pior caso possivel: o terapeuta acreditaria
-      // ter cumprido um pedido de exclusao que nao foi cumprido.
-      alert(`Exclusão INCOMPLETA. Não foi possível apagar: ${falhas.join(", ")}.\n\nRepita a operação. Se persistir, os dados ainda estão no banco.`);
+    if (error) {
+      // Falha silenciosa aqui e o pior caso possivel: o terapeuta acreditaria ter
+      // cumprido um pedido de exclusao que nao foi cumprido. A transacao garante
+      // que nada foi apagado pela metade — da para repetir com seguranca.
+      const semFuncao = error.code === "PGRST202" || /excluir_paciente_completo/i.test(error.message ?? "");
+      alert(
+        semFuncao
+          ? "A exclusão NÃO foi realizada. Nenhum dado foi apagado.\n\n" +
+            "A função `excluir_paciente_completo` não existe neste banco — a migração " +
+            "20260806220000 não foi aplicada a este projeto."
+          : "A exclusão NÃO foi realizada. Nenhum dado foi apagado.\n\n" +
+            `${error.message}\n\nRepita a operação.`
+      );
+      return;
     }
+
+    const c = (resumo ?? {}) as Record<string, number>;
+    alert(
+      "Exclusão concluída.\n\n" +
+      `Respostas de escala: ${c.respostas ?? 0}\n` +
+      `Conceituações: ${c.conceituacoes ?? 0}\n` +
+      `Memória clínica (perfil, mensagens, anexos, psicoeducação): ${c.pacientes ?? 0}\n` +
+      `Códigos de acesso anonimizados: ${c.codigos_anonimizados ?? 0}`
+    );
     setPacienteChave(null);
     carregar();
   }
