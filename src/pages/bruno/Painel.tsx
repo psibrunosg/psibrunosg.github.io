@@ -1024,14 +1024,27 @@ export default function BrunoPainel() {
   // Otimista na UI; se a coluna ainda não existir (migração não aplicada), captura o
   // erro e avisa sem quebrar o restante do painel.
   async function atualizarRiscoStatus(respostaId: number, status: string) {
+    const anterior = respostas.find((r) => r.id === respostaId)?.risco_status ?? null;
     setRespostas((prev) => prev.map((r) => (r.id === respostaId ? { ...r, risco_status: status } : r)));
     setRiscoStatusErro("");
     if (!supabase) return;
     try {
-      const { error } = await supabase.from("respostas_questionarios").update({ risco_status: status }).eq("id", respostaId);
+      // `.select()` nao e cosmetico: quando o RLS recusa um UPDATE, o PostgREST
+      // devolve 200 com zero linhas, nao erro. Sem contar as linhas afetadas, a
+      // recusa passa despercebida — foi assim que "resolvido" deixou de persistir
+      // em silencio ate a policy de UPDATE ser criada (migracao 20260806230000).
+      const { data, error } = await supabase
+        .from("respostas_questionarios")
+        .update({ risco_status: status })
+        .eq("id", respostaId)
+        .select("id");
       if (error) throw error;
+      if (!data || data.length === 0) throw new Error("nenhuma linha afetada");
     } catch {
-      setRiscoStatusErro("Não foi possível salvar o status no banco (a coluna risco_status pode ainda não existir — aplique a migração).");
+      // Desfaz o otimismo: tela mostrando um status que o banco nao tem e pior
+      // que tela sem o status, porque some com o alerta de risco da triagem.
+      setRespostas((prev) => prev.map((r) => (r.id === respostaId ? { ...r, risco_status: anterior } : r)));
+      setRiscoStatusErro("Não foi possível salvar o status no banco. O alerta continua aberto — tente de novo.");
     }
   }
 
