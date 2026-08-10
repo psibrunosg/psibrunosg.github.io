@@ -56,21 +56,62 @@ export function useExerciseSession(slug: string) {
     setState(next);
   }, []);
 
-  // Carrega estado salvo do localStorage.
-  // ponytail: leitura do DB (exercise_sessions) fica para outra rodada — o save já persiste lá.
+  // Carrega o estado salvo. Com código de paciente, o banco é a fonte da
+  // verdade; o localStorage vira cache e fallback offline.
+  //
+  // Até aqui a leitura do banco nunca existiu: os ramos `if (code)` e `else`
+  // eram o mesmo código, ambos lendo só localStorage. O save gravava em
+  // exercise_sessions e nada nunca lia de volta — trocar de aparelho, limpar o
+  // cache ou usar outro navegador apagava o trabalho do paciente, mesmo com a
+  // linha intacta no servidor.
   useEffect(() => {
+    let cancel = false;
     (async () => {
       setLoading(true);
-      const local = localStorage.getItem(`exercise_${slug}`);
-      if (local) {
+
+      const lerLocal = () => {
+        const local = localStorage.getItem(`exercise_${slug}`);
+        if (!local) return null;
         try {
-          apply(JSON.parse(local));
+          return JSON.parse(local) as ExerciseSessionState;
         } catch {
-          // Fallback
+          return null;
         }
+      };
+
+      const code = localStorage.getItem("exercise_patient_code");
+      if (code && supabase) {
+        const { data, error } = await supabase
+          .from("exercise_sessions")
+          .select("payload, score, partial, completed_at")
+          .eq("code", code)
+          .eq("exercise_slug", slug)
+          .maybeSingle();
+
+        if (cancel) return;
+        if (!error && data) {
+          const doBanco: ExerciseSessionState = {
+            payload: (data.payload ?? {}) as Record<string, unknown>,
+            score: data.score ?? undefined,
+            partial: data.partial ?? true,
+            completedAt: data.completed_at ?? undefined,
+          };
+          apply(doBanco);
+          // Espelha no cache para o exercício abrir offline na próxima vez.
+          try {
+            localStorage.setItem(`exercise_${slug}`, JSON.stringify(doBanco));
+          } catch { /* storage cheio ou indisponível — o banco já tem */ }
+          setLoading(false);
+          return;
+        }
+        // Sem linha no banco (primeira vez) ou rede fora: cai no cache local.
       }
-      setLoading(false);
+
+      const local = lerLocal();
+      if (!cancel && local) apply(local);
+      if (!cancel) setLoading(false);
     })();
+    return () => { cancel = true; };
   }, [slug, apply]);
 
   // Limpa o timer no unmount: nada de gravar depois de desmontado.
