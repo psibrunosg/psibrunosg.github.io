@@ -78,6 +78,28 @@ Portões na árvore revalidada: `npm run build` ✅ · 65/65 testes ✅ · `chec
 |---|---|---|
 | 20 | `MuralhaEvidencias` sem estado de fim | Agora há 4 ocorrências de `"fim"`/`setFase` no arquivo — precisa de teste de uso para confirmar |
 
+### Correção importante — repo corrigido ≠ produção corrigida
+
+A seção "Fechados" acima foi montada lendo o **repositório**. Ao publicar as edge functions, descobriu-se que **isso não bastava**: elas não vão junto com o deploy do GitHub Pages e estavam todas paradas em julho, enquanto as correções entraram no repo em agosto.
+
+Ou seja, os achados 3, 5, 6 e 7 estavam fechados no código e **abertos em produção** — a `unlock-restricted` no ar ainda usava `jwtDecode`, e a `save-session` ainda rejeitava códigos de 8 dígitos, o que sozinho explicava por que `exercise_sessions` seguia com 0 linhas mesmo depois da coluna virar `varchar(8)`.
+
+Publicadas em 2026-08-06:
+
+| Função | Versão | O que entrou |
+|---|---|---|
+| `unlock-restricted` | v11 → **v12** | `auth.getUser` no lugar de `jwtDecode` |
+| `patient-progress` | v11 → **v12** | idem |
+| `save-session` | v11 → **v12** | regex aceitando 8 dígitos |
+| `psicoed-personalizada` | v8 → **v9** | regex, rate-limit e negativas colapsadas |
+| `conceituacao-chat` | v14 | ⚠️ **NÃO publicada** |
+
+**`conceituacao-chat` continua sem gate de auth em produção.** O gate entrou no repo em `821cea8` (10/08); a versão no ar é de 22/07. É P0 vivo: a função opera com service role sobre um `pacienteId` arbitrário vindo do body, e o `verify_jwt` da plataforma não protege — a chave anônima é um JWT válido e está no bundle público.
+
+Não foi publicada pelo MCP porque depende de três arquivos `_shared`, entre eles 239 linhas de prompt clínico. Publicá-la por essa via exigiria retranscrever ~720 linhas escapadas à mão, e um erro silencioso alteraria o prompt que conduz entrevista sobre paciente real. **Deve ser publicada a partir dos arquivos em disco**, com `supabase functions deploy conceituacao-chat` ou pelo editor do dashboard.
+
+**Lição de método:** para este projeto, "corrigido" tem dois estados — no repo e no ar. Uma auditoria que confere só o repositório superestima o que está resolvido.
+
 ### Verificado contra o banco real — `hpyarwrgcdbulekfyozs` (BSpsi)
 
 Com o connector reautorizado, os achados de banco deixaram de ser suposição. **Três conclusões da auditoria original estavam erradas.**
