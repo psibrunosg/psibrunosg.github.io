@@ -643,7 +643,7 @@ function PerfilPaciente({ respostas, onVoltar, onAbrirResposta, onExcluir, sinte
           </div>
         </div>
         <button onClick={exportarDossie}
-          className="flex flex-shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white"
+          className="flex flex-shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-[var(--c-on-accent)]"
           style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
           <Download size={14} /> Exportar dossiê (PDF)
         </button>
@@ -959,11 +959,59 @@ export default function BrunoPainel() {
     setSelecionados(new Set()); carregar();
   }
 
+  // Exclusao LGPD. Antes apagava SO respostas_questionarios — e `pacientes` nao
+  // tem FK para ela, entao nenhum cascade disparava: sobreviviam as transcricoes
+  // de IA sobre o paciente, o texto integral dos PDFs de prontuario anexados, o
+  // perfil de conceituacao, a config de psicoeducacao e o nome no codigo de
+  // acesso. A UI ja prometia "excluir todos os dados deste paciente".
+  //
+  // ponytail: sequencia de deletes no cliente, nao transacao. Se falhar no meio,
+  // apaga parcialmente — e avisa. A versao atomica esta pronta em
+  // supabase/migrations/20260806220000_excluir_paciente_completo.sql; quando ela
+  // for aplicada, troque este corpo por um unico supabase.rpc().
   async function excluirPaciente(chave: string) {
     if (!supabase) return;
-    const ids = respostas.filter((r) => chavePaciente(r) === chave).map((r) => r.id);
+    const doPaciente = respostas.filter((r) => chavePaciente(r) === chave);
+    const ids = doPaciente.map((r) => r.id);
     if (!ids.length) return;
-    await supabase.from("respostas_questionarios").delete().in("id", ids);
+
+    const ref = doPaciente[0];
+    let pacienteId: number | null = null;
+    if (ref.patient_code) {
+      const { data } = await supabase.from("pacientes").select("id").eq("patient_code", ref.patient_code).maybeSingle();
+      pacienteId = data?.id ?? null;
+    } else if (ref.nome?.trim()) {
+      const { data } = await supabase.from("pacientes").select("id").is("patient_code", null)
+        .ilike("nome_paciente", ref.nome.trim()).eq("nascimento", ref.nascimento ?? "").maybeSingle();
+      pacienteId = data?.id ?? null;
+    }
+
+    // Ordem deliberada: o dado mais sensivel sai primeiro, para que uma falha no
+    // meio deixe o resto para tras, e nao o contrario.
+    const falhas: string[] = [];
+    if (pacienteId != null) {
+      // conceituacoes_registros usa ON DELETE SET NULL — nao cai no cascade e
+      // viraria linha orfa com dado clinico. Precisa ir antes de `pacientes`.
+      const { error: e1 } = await supabase.from("conceituacoes_registros").delete().eq("paciente_id", pacienteId);
+      if (e1) falhas.push("conceituações");
+      // Cascade leva paciente_perfil, paciente_mensagens, paciente_anexos e
+      // paciente_psicoed (ON DELETE CASCADE nas migracoes 20260718*).
+      const { error: e2 } = await supabase.from("pacientes").delete().eq("id", pacienteId);
+      if (e2) falhas.push("memória de conceituação (mensagens e anexos)");
+    }
+    if (ref.patient_code) {
+      // O codigo em si e credencial e fica, para nao orfanizar exercise_sessions.
+      const { error: e3 } = await supabase.from("patient_codes").update({ nome_paciente: null }).eq("code", ref.patient_code);
+      if (e3) falhas.push("nome no código de acesso");
+    }
+    const { error: e4 } = await supabase.from("respostas_questionarios").delete().in("id", ids);
+    if (e4) falhas.push("respostas de escala");
+
+    if (falhas.length) {
+      // Falha silenciosa aqui e o pior caso possivel: o terapeuta acreditaria
+      // ter cumprido um pedido de exclusao que nao foi cumprido.
+      alert(`Exclusão INCOMPLETA. Não foi possível apagar: ${falhas.join(", ")}.\n\nRepita a operação. Se persistir, os dados ainda estão no banco.`);
+    }
     setPacienteChave(null);
     carregar();
   }
@@ -1022,7 +1070,7 @@ export default function BrunoPainel() {
           <motion.div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl"
             style={{ background: "linear-gradient(140deg, var(--c-accent), var(--c-accent-lt))", boxShadow: "0 16px 40px -12px var(--c-accent)" }}
             initial={{ scale: 0, rotate: -10 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 200 }}>
-            <Lock size={26} className="text-white" />
+            <Lock size={26} className="text-[var(--c-on-accent)]" />
           </motion.div>
           <h1 className="mb-1 text-2xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>Painel Bruno de Souza Gonçalves</h1>
           <p className="mb-6 text-xs text-[var(--c-muted)]">Acesso restrito ao psicologo</p>
@@ -1032,7 +1080,7 @@ export default function BrunoPainel() {
             placeholder="Senha" className="mb-3 w-full rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)]/60 px-4 py-3 text-[var(--c-text)] transition-colors focus:border-[var(--c-accent)] focus:outline-none" />
           {erro && <p className="mb-3 text-xs text-[var(--c-danger)]">{erro}</p>}
           <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={login} disabled={loginLoading}
-            className="w-full rounded-full px-6 py-3 font-medium text-white disabled:opacity-50"
+            className="w-full rounded-full px-6 py-3 font-medium text-[var(--c-on-accent)] disabled:opacity-50"
             style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))", boxShadow: "0 12px 30px -10px var(--c-accent)" }}>
             {loginLoading ? "Entrando..." : "Entrar"}
           </motion.button>
@@ -1134,7 +1182,7 @@ export default function BrunoPainel() {
   }
 
   const tabBtn = (id: "overview" | "respostas" | "pacientes" | "blog" | "ferramentas" | "formularios") =>
-    "px-4 py-1.5 rounded-full text-xs font-semibold transition-all " + (tab === id ? "text-white shadow-[0_8px_20px_-8px_var(--c-accent)]" : "text-[var(--c-muted)] hover:text-[var(--c-text)]");
+    "px-4 py-1.5 rounded-full text-xs font-semibold transition-all " + (tab === id ? "text-[var(--c-on-accent)] shadow-[0_8px_20px_-8px_var(--c-accent)]" : "text-[var(--c-muted)] hover:text-[var(--c-text)]");
 
   return (
     <div className="relative min-h-screen">
@@ -1375,20 +1423,20 @@ export default function BrunoPainel() {
                     <div className="flex gap-0.5 rounded-full bg-[var(--c-surface)]/60 p-0.5">
                       {(["lista", "pacientes"] as const).map((v) => (
                         <button key={v} onClick={() => { setRespView(v); setPacienteChave(null); }}
-                          className={"rounded-full px-3 py-1 text-[11px] font-semibold transition-all " + (respView === v ? "text-white" : "text-[var(--c-muted)] hover:text-[var(--c-text)]")}
+                          className={"rounded-full px-3 py-1 text-[11px] font-semibold transition-all " + (respView === v ? "text-[var(--c-on-accent)]" : "text-[var(--c-muted)] hover:text-[var(--c-text)]")}
                           style={respView === v ? { background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" } : undefined}>{v === "lista" ? "Lista" : "Por paciente"}</button>
                       ))}
                     </div>
                   </div>
                   <div className="flex gap-2">
                     <button onClick={abrirParecerAvulso}
-                      className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white"
+                      className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-[var(--c-on-accent)]"
                       style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
                       <Plus size={14} /> Novo Parecer
                     </button>
                     <button onClick={carregar} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]"><RefreshCw size={15} /></button>
                     {respView === "lista" && <motion.button whileTap={{ scale: 0.96 }} onClick={exportar} disabled={!selecionados.size || exportando}
-                      className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white transition-opacity disabled:opacity-40"
+                      className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-[var(--c-on-accent)] transition-opacity disabled:opacity-40"
                       style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
                       <Download size={14} /> {exportando ? (exportProgress ? `Gerando ${exportProgress}...` : "...") : "PDF (" + selecionados.size + ")"}
                     </motion.button>}
@@ -1489,7 +1537,7 @@ export default function BrunoPainel() {
                     <h2 className="text-xl font-semibold text-[var(--c-text)]" style={{ fontFamily: "var(--font-heading)" }}>{respostaAberta ? nomeSeguro(respostaAberta) : "Novo Parecer"}</h2>
                   </div>
                   <motion.button whileTap={{ scale: 0.96 }} onClick={exportarParecer} disabled={!parecerTestes.length}
-                    className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white transition-opacity disabled:opacity-40"
+                    className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-[var(--c-on-accent)] transition-opacity disabled:opacity-40"
                     style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
                     <Download size={14} /> Gerar Parecer PDF
                   </motion.button>
@@ -1753,7 +1801,7 @@ export default function BrunoPainel() {
                         </div>
                       </div>
                       <button onClick={() => exportarFerramentaPDF(ferramentaAberta, ferramentaDados)}
-                        className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white"
+                        className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-[var(--c-on-accent)]"
                         style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
                         <Download size={14} /> Salvar PDF
                       </button>
@@ -1812,7 +1860,7 @@ export default function BrunoPainel() {
                     )}
                     {!editando && !blogForm.titulo && (
                       <button onClick={() => setBlogForm({ ...blogForm, titulo: " " })}
-                        className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white"
+                        className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-[var(--c-on-accent)]"
                         style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
                         <Plus size={14} /> Novo post
                       </button>
@@ -1916,7 +1964,7 @@ export default function BrunoPainel() {
                       <div className="flex gap-2">
                         <button onClick={resetBlogForm} className="rounded-full border border-[var(--c-border)] px-4 py-2.5 text-xs font-semibold text-[var(--c-muted)] transition-colors hover:text-[var(--c-text)]">Cancelar</button>
                         <motion.button whileTap={{ scale: 0.96 }} onClick={salvarBlog} disabled={blogSaving}
-                          className="flex items-center gap-1.5 rounded-full px-5 py-2.5 text-xs font-semibold text-white transition-opacity disabled:opacity-50"
+                          className="flex items-center gap-1.5 rounded-full px-5 py-2.5 text-xs font-semibold text-[var(--c-on-accent)] transition-opacity disabled:opacity-50"
                           style={{ background: "linear-gradient(120deg, var(--c-accent), var(--c-accent-lt))" }}>
                           <Save size={14} /> {blogSaving ? "Salvando..." : editando ? "Atualizar" : "Salvar"}
                         </motion.button>
