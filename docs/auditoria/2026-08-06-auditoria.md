@@ -92,13 +92,21 @@ Publicadas em 2026-08-06:
 | `patient-progress` | v11 → **v12** | idem |
 | `save-session` | v11 → **v12** | regex aceitando 8 dígitos |
 | `psicoed-personalizada` | v8 → **v9** | regex, rate-limit e negativas colapsadas |
-| `conceituacao-chat` | v14 | ⚠️ **NÃO publicada** |
+| `conceituacao-chat` | v14 → **v15** | gate de terapeuta antes de qualquer leitura/escrita |
 
-**`conceituacao-chat` continua sem gate de auth em produção.** O gate entrou no repo em `821cea8` (10/08); a versão no ar é de 22/07. É P0 vivo: a função opera com service role sobre um `pacienteId` arbitrário vindo do body, e o `verify_jwt` da plataforma não protege — a chave anônima é um JWT válido e está no bundle público.
+As quatro primeiras foram publicadas pelo MCP. A `conceituacao-chat` saiu pelo CLI, a partir dos arquivos em disco, porque depende de três arquivos `_shared` — entre eles 239 linhas de prompt clínico — e publicá-la por transcrição manual arriscaria alterar em silêncio o prompt que conduz entrevista sobre paciente real.
 
-Não foi publicada pelo MCP porque depende de três arquivos `_shared`, entre eles 239 linhas de prompt clínico. Publicá-la por essa via exigiria retranscrever ~720 linhas escapadas à mão, e um erro silencioso alteraria o prompt que conduz entrevista sobre paciente real. **Deve ser publicada a partir dos arquivos em disco**, com `supabase functions deploy conceituacao-chat` ou pelo editor do dashboard.
+#### Verificação funcional em produção
 
-**Lição de método:** para este projeto, "corrigido" tem dois estados — no repo e no ar. Uma auditoria que confere só o repositório superestima o que está resolvido.
+Publicar não é o mesmo que funcionar. Os gates foram testados por HTTP contra o ambiente ao vivo:
+
+| Teste | Resultado |
+|---|---|
+| `POST /conceituacao-chat` com a **chave anônima pública**, `acao:"encerrar"`, `pacienteId:1` | `401 {"error":"Unauthorized"}` — barrado antes de tocar em dado. Essa mesma chamada antes lia todo o `paciente_mensagens` do paciente e devolvia o perfil clínico consolidado |
+| `POST /unlock-restricted` com JWT forjado `alg:none` e `sub` = UUID do terapeuta — o payload exato que o `jwtDecode` antigo aceitaria | `401 UNAUTHORIZED_UNSUPPORTED_TOKEN_ALGORITHM` |
+| `POST /save-session` com código de 8 dígitos | `400 {"error":"Code not found or inactive"}` — o **bom** 400: passou da validação de formato e falhou na busca. A versão de julho parava na regex sem consultar o banco |
+
+**Lição de método:** neste projeto "corrigido" tem três estados — no repo, no banco e no ar. Uma auditoria que confere só o repositório superestima o que está resolvido; foi o que aconteceu na primeira revalidação desta seção.
 
 ### Verificado contra o banco real — `hpyarwrgcdbulekfyozs` (BSpsi)
 
