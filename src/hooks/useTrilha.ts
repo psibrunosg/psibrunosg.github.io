@@ -3,7 +3,10 @@ import { MIN_PARA_DESBLOQUEAR, TRILHAS, XP_POR_CONCLUSAO, type TrilhaTratamento,
 
 // Progresso da trilha derivado do log local de conclusões (jardim_regas),
 // alimentado por useExerciseSession.complete() em todos os exercícios.
-// ponytail: local-first — progresso multi-dispositivo via exercise_sessions fica para depois do piloto.
+// Progresso da trilha (XP, streak, jardim) é local-first: sai de `jardim_regas` no
+// localStorage, não do banco. O payload de cada exercício já sincroniza via
+// exercise_sessions (ver useExerciseSession), mas o registro de conclusão ainda não —
+// então trilha e jardim não atravessam troca de aparelho. Fica para depois do piloto.
 
 interface Rega {
   slug: string;

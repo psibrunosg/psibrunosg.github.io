@@ -45,9 +45,6 @@ export function getAllPosts(): BlogPost[] {
   return cachedPosts;
 }
 
-// ponytail: kept for Painel.tsx import; empty since posts now live only in Supabase
-export const posts: BlogPost[] = [];
-
 export function getPost(slug: string): BlogPost | undefined {
   return cachedPosts.find((p) => p.slug === slug);
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, Trash2, Lock, FileText, ExternalLink, RefreshCw, Plus, Save, Eye, EyeOff, Edit3, X, Bold, Italic, Heading2, List, RotateCcw, Bell, AlertTriangle, Sun, Moon } from "lucide-react";
+import { Download, Trash2, Lock, FileText, RefreshCw, Plus, Save, Eye, EyeOff, Edit3, X, Bold, Italic, Heading2, List, RotateCcw, Bell, AlertTriangle, Sun, Moon } from "lucide-react";
 import { PainelPacientes } from "@/components/painelPacientes";
 import { PainelFormularios } from "@/components/PainelFormularios";
 import jsPDF from "jspdf";
@@ -19,7 +19,6 @@ import { escalas } from "@/content/escalas";
 import { escalasGerais } from "@/content/escalas-gerais";
 import type { BDIItem } from "@/content/escalas-gerais";
 import { ferramentas, type FerramentaTerapeuta } from "@/content/ferramentas-terapeuta";
-import { posts as staticPosts, type BlogPost } from "@/content/posts-loader";
 import { fadeUp, stagger } from "@/lib/motion";
 import { AppAurora } from "@/components/ui/AppAurora";
 import { ConceituacaoCognitiva } from "@/components/ConceituacaoCognitiva";
@@ -442,7 +441,7 @@ function chavePaciente(r: Resposta): string {
   return "resp:" + r.id;
 }
 
-// ponytail: agrupamento simples reaproveitado pela Visão geral e pela lista "Por paciente".
+// Agrupamento por paciente, usado pela Visão geral e por PacientesLista.
 function agruparPacientes(respostas: Resposta[]): Map<string, Resposta[]> {
   const m = new Map<string, Resposta[]>();
   for (const r of respostas) { const k = chavePaciente(r); const a = m.get(k) ?? []; a.push(r); m.set(k, a); }
@@ -450,13 +449,9 @@ function agruparPacientes(respostas: Resposta[]): Map<string, Resposta[]> {
 }
 
 function PacientesLista({ respostas, onAbrir }: { respostas: Resposta[]; onAbrir: (chave: string) => void }) {
-  const grupos = (() => {
-    const m = new Map<string, Resposta[]>();
-    for (const r of respostas) { const k = chavePaciente(r); const a = m.get(k) ?? []; a.push(r); m.set(k, a); }
-    return Array.from(m.entries())
-      .map(([chave, rs]) => ({ chave, nome: rs[0].nome, nascimento: rs[0].nascimento, patientCode: rs[0].patient_code, email: rs[0].email, rs: [...rs].sort((a, b) => new Date(b.criado_em).getTime() - new Date(a.criado_em).getTime()) }))
-      .sort((a, b) => new Date(b.rs[0].criado_em).getTime() - new Date(a.rs[0].criado_em).getTime());
-  })();
+  const grupos = Array.from(agruparPacientes(respostas).entries())
+    .map(([chave, rs]) => ({ chave, nome: rs[0].nome, nascimento: rs[0].nascimento, patientCode: rs[0].patient_code, email: rs[0].email, rs: [...rs].sort((a, b) => new Date(b.criado_em).getTime() - new Date(a.criado_em).getTime()) }))
+    .sort((a, b) => new Date(b.rs[0].criado_em).getTime() - new Date(a.rs[0].criado_em).getTime());
   if (grupos.length === 0) return <p className="py-12 text-center text-[var(--c-muted)]">Nenhum paciente.</p>;
   return (
     <div className="grid gap-3 md:grid-cols-2">
@@ -761,8 +756,6 @@ export default function BrunoPainel() {
   const [soRisco, setSoRisco] = useState(false);
   const [sortKey, setSortKey] = useState<"paciente" | "score" | "data">("data");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-  // ponytail: dismiss é só de sessão (não persiste) — reaparece ao recarregar a página.
-  const [dismissedRiscos, setDismissedRiscos] = useState<Set<number>>(new Set());
   const [pacienteChave, setPacienteChave] = useState<string | null>(null);
   const [respostaAberta, setRespostaAberta] = useState<Resposta | null>(null);
   const [historicoAberto, setHistoricoAberto] = useState<Resposta[]>([]);
@@ -786,8 +779,9 @@ export default function BrunoPainel() {
   const [consideracoes, setConsideracoes] = useState("");
   const [addTesteId, setAddTesteId] = useState<TesteId>("phq9");
   const [notificacoes, setNotificacoes] = useState<Notificacao[]>([]);
-  // Feature 10: status persistente do risco (aberto/em acompanhamento/resolvido) — "resolvido" fica
-  // oculto por padrão; dismissedRiscos (acima) continua sendo o dispensar só-de-sessão.
+  // Status persistente do risco (aberto/em acompanhamento/resolvido); "resolvido" fica oculto
+  // por padrão. É o único mecanismo de dispensa — o antigo "dispensar só de sessão" era um
+  // segundo caminho que esquecia ao recarregar, e sumiu junto com o botão que o alimentava.
   const [mostrarResolvidos, setMostrarResolvidos] = useState(false);
   const [riscoStatusErro, setRiscoStatusErro] = useState("");
   // Feature 5b: "Melhorar com IA" do parecer — reaproveita provider/model persistidos por
@@ -861,19 +855,6 @@ export default function BrunoPainel() {
     setEditando(p);
     setBlogForm({ slug: p.slug, titulo: p.titulo, subtitulo: p.subtitulo, categoria: p.categoria, tempo_leitura: p.tempo_leitura, resumo: p.resumo, tags: p.tags.join(", "), conteudo: p.conteudo, publicado: p.publicado });
     setBlogMsg("");
-  }
-
-  // Edita um post estatico (JSON): abre o editor pre-preenchido. Ao salvar, cria uma
-  // linha no Supabase com o MESMO slug, que sobrepoe o estatico no blog (getAllPosts
-  // deduplica por slug com o dinamico primeiro). setEditando(null) forca INSERT.
-  function editarEstatico(p: BlogPost) {
-    setEditando(null);
-    setBlogForm({
-      slug: p.slug, titulo: p.titulo, subtitulo: p.subtitulo, categoria: p.categoria,
-      tempo_leitura: p.tempoLeitura, resumo: p.resumo, tags: p.tags.join(", "),
-      conteudo: p.conteudo, publicado: true,
-    });
-    setBlogMsg("Editando copia do post estatico — ao salvar, cria versao editavel no Supabase que sobrepoe o original no site.");
   }
 
   function gerarSlug(titulo: string) {
@@ -1361,7 +1342,6 @@ export default function BrunoPainel() {
               // resposta flagrada — cada risco já referencia uma resposta específica (respostaId),
               // então não é preciso "achar a mais recente do grupo" separadamente.
               const riscosComStatus = riscos
-                .filter((r) => !dismissedRiscos.has(r.respostaId))
                 .map((r) => ({ ...r, status: respostas.find((x) => x.id === r.respostaId)?.risco_status || "aberto" }));
               const riscosResolvidosCount = riscosComStatus.filter((r) => r.status === "resolvido").length;
               const riscosAtivos = riscosComStatus
@@ -1425,10 +1405,6 @@ export default function BrunoPainel() {
                           <option value="em acompanhamento">Em acompanhamento</option>
                           <option value="resolvido">Resolvido</option>
                         </select>
-                        <button onClick={(e) => { e.stopPropagation(); setDismissedRiscos((prev) => new Set(prev).add(r.respostaId)); }}
-                          className="flex-shrink-0 text-[var(--c-muted)] transition-colors hover:text-[var(--c-text)]" title="Dispensar (só nesta sessão)">
-                          <X size={13} />
-                        </button>
                       </div>
                     ))}
                   </motion.div>
@@ -2028,34 +2004,6 @@ export default function BrunoPainel() {
                           </div>
                         ))}
 
-                        {staticPosts.filter((p) => !blogPosts.some((b) => b.slug === p.slug)).length > 0 && (
-                          <p className="mb-2 mt-6 text-xs font-medium uppercase tracking-wider text-[var(--c-muted)]">Estaticos ({staticPosts.filter((p) => !blogPosts.some((b) => b.slug === p.slug)).length})</p>
-                        )}
-                        {staticPosts.filter((p) => !blogPosts.some((b) => b.slug === p.slug)).map((p) => (
-                          <div key={"static-" + p.slug} className="glass-card flex items-center justify-between rounded-2xl p-5 opacity-70">
-                            <div className="flex items-start gap-4">
-                              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-[var(--c-surface)]">
-                                <FileText size={17} className="text-[var(--c-muted)]" />
-                              </div>
-                              <div>
-                                <h3 className="text-sm font-semibold text-[var(--c-text)]">{p.titulo}</h3>
-                                <div className="mt-1 flex items-center gap-2">
-                                  <span className="text-xs font-medium text-[var(--c-accent)]">{p.categoria}</span>
-                                  <span className="text-xs text-[var(--c-muted)]">{p.tempoLeitura}</span>
-                                  <span className="rounded-full bg-[var(--c-neutral-bg)] px-2 py-0.5 text-[10px] font-bold uppercase text-[var(--c-neutral-text)]">JSON</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex gap-1">
-                              <button onClick={() => editarEstatico(p)} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]" title="Editar (cria copia editavel no Supabase)">
-                                <Edit3 size={14} />
-                              </button>
-                              <Link to={"/blog/" + p.slug} className="rounded-full border border-[var(--c-border)] p-2 text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]" title="Ver post">
-                                <ExternalLink size={14} />
-                              </Link>
-                            </div>
-                          </div>
-                        ))}
                       </motion.div>
                     )}
                   </>
