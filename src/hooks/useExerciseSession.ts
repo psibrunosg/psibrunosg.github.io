@@ -10,6 +10,35 @@ export interface ExerciseSessionState {
 
 const SAVE_DEBOUNCE_MS = 500;
 
+interface SessaoDoBanco {
+  payload: Record<string, unknown> | null;
+  score: number | null;
+  partial: boolean | null;
+  completed_at: string | null;
+}
+
+async function getSession(slug: string): Promise<SessaoDoBanco | null> {
+  const code = localStorage.getItem("exercise_patient_code");
+  if (!code || !supabase) return null;
+  try {
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/save-session?exercise_slug=${encodeURIComponent(slug)}`,
+      { headers: { "X-Patient-Code": code } }
+    );
+    if (!response.ok) {
+      console.warn("get-session failed:", await response.text());
+      return null;
+    }
+    const json = await response.json();
+    return (json?.session ?? null) as SessaoDoBanco | null;
+  } catch (e) {
+    // Rede fora: o chamador cai no cache local, que e o comportamento certo
+    // para um exercicio — melhor abrir com o rascunho do que nao abrir.
+    console.warn("get-session error:", e);
+    return null;
+  }
+}
+
 async function postSession(slug: string, body: Record<string, unknown>) {
   const code = localStorage.getItem("exercise_patient_code");
   if (!code || !supabase) return;
@@ -81,15 +110,15 @@ export function useExerciseSession(slug: string) {
 
       const code = localStorage.getItem("exercise_patient_code");
       if (code && supabase) {
-        const { data, error } = await supabase
-          .from("exercise_sessions")
-          .select("payload, score, partial, completed_at")
-          .eq("code", code)
-          .eq("exercise_slug", slug)
-          .maybeSingle();
+        // Leitura via edge function, nao direto na tabela: a policy anonima de
+        // exercise_sessions filtrava pela linha (`code_is_active(code)`) e nao
+        // pelo chamador, entao um codigo ativo qualquer lia as sessoes de todos
+        // os codigos ativos. Aqui o codigo vai no header e o servidor o usa como
+        // filtro obrigatorio.
+        const data = await getSession(slug);
 
         if (cancel) return;
-        if (!error && data) {
+        if (data) {
           const doBanco: ExerciseSessionState = {
             payload: (data.payload ?? {}) as Record<string, unknown>,
             score: data.score ?? undefined,

@@ -13,12 +13,45 @@ const jsonHeaders = { ...corsHeaders, "Content-Type": "application/json" };
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  if (req.method !== "POST") return new Response("Method not allowed", { status: 405, headers: corsHeaders });
+  if (req.method !== "POST" && req.method !== "GET") {
+    return new Response("Method not allowed", { status: 405, headers: corsHeaders });
+  }
 
   try {
     const code = req.headers.get("X-Patient-Code");
     if (!code || !/^\d{5}(\d{3})?$/.test(code)) {
       return new Response(JSON.stringify({ error: "Invalid code" }), { status: 400, headers: jsonHeaders });
+    }
+
+    // GET: devolve a sessao de UM exercicio deste codigo.
+    //
+    // Existe para tirar o acesso anonimo direto de exercise_sessions. A policy
+    // que o cliente usava era `to public using (code_is_active(code))` — o
+    // predicado olha a linha, nao o chamador, entao conhecer um unico codigo
+    // ativo dava leitura das sessoes de TODOS os codigos ativos. Aqui o codigo
+    // vem do header e vira filtro obrigatorio, e o service role nunca sai deste
+    // escopo.
+    if (req.method === "GET") {
+      const slug = new URL(req.url).searchParams.get("exercise_slug");
+      if (!slug) {
+        return new Response(JSON.stringify({ error: "Missing exercise_slug" }), { status: 400, headers: jsonHeaders });
+      }
+
+      const { data: sessao, error } = await supabase
+        .from("exercise_sessions")
+        .select("payload, score, partial, completed_at")
+        .eq("code", code)
+        .eq("exercise_slug", slug)
+        .maybeSingle();
+
+      if (error) {
+        console.error("save-session GET error:", error);
+        return new Response(JSON.stringify({ error: "Internal error" }), { status: 500, headers: jsonHeaders });
+      }
+
+      // Sem sessao ainda nao e erro: e a primeira vez que o paciente abre o
+      // exercicio. O cliente cai no cache local.
+      return new Response(JSON.stringify({ session: sessao ?? null }), { status: 200, headers: jsonHeaders });
     }
 
     const { exercise_slug, payload, score, partial } = await req.json();
