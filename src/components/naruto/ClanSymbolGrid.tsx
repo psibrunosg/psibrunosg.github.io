@@ -20,6 +20,7 @@ export default function ClanSymbolGrid() {
                 src={clan.symbol}
                 alt=""
                 className="w-full h-full object-contain"
+                style={{ mixBlendMode: "screen" }}
                 loading="lazy"
               />
             </div>

@@ -86,7 +86,7 @@ export const clans: Record<ClanId, Clan> = {
   hyuga: {
     id: "hyuga",
     name: "Hyūga",
-    symbol: "/naruto/clans/hyuga.svg",
+    symbol: "/naruto/generated/symbol-hyuga.png",
     mode: "Criança Vulnerável",
     metaphor:
       "O dom de ver tudo pode virar uma maldição quando você acredita que nunca é suficiente.",
@@ -109,7 +109,7 @@ export const clans: Record<ClanId, Clan> = {
   uchiha: {
     id: "uchiha",
     name: "Uchiha",
-    symbol: "/naruto/clans/uchiha.svg",
+    symbol: "/naruto/generated/symbol-uchiha.png",
     mode: "Modos de Defesa",
     metaphor:
       "O Sharingan copia tudo para sobreviver. Às vezes nossa mente faz o mesmo.",
@@ -132,7 +132,7 @@ export const clans: Record<ClanId, Clan> = {
   nara: {
     id: "nara",
     name: "Nara",
-    symbol: "/naruto/clans/nara.svg",
+    symbol: "/naruto/generated/symbol-nara.png",
     mode: "Modo Crítico",
     metaphor: "Que saco… mas e se eu errar? Nunca vai ser suficiente.",
     color: "#1F2937",
@@ -154,7 +154,7 @@ export const clans: Record<ClanId, Clan> = {
   uzumaki: {
     id: "uzumaki",
     name: "Uzumaki",
-    symbol: "/naruto/clans/uzumaki.svg",
+    symbol: "/naruto/generated/symbol-uzumaki.png",
     mode: "Adulto Saudável",
     metaphor:
       "Eu não vou desistir! Esse é o meu jeito ninja!",
@@ -177,7 +177,7 @@ export const clans: Record<ClanId, Clan> = {
   inuzuka: {
     id: "inuzuka",
     name: "Inuzuka",
-    symbol: "/naruto/clans/inuzuka.svg",
+    symbol: "/naruto/generated/symbol-inuzuka.png",
     mode: "Modo Raivoso",
     metaphor:
       "Primeiro reage, depois pensa. É o instinto falando mais alto.",
@@ -200,7 +200,7 @@ export const clans: Record<ClanId, Clan> = {
   yamanaka: {
     id: "yamanaka",
     name: "Yamanaka",
-    symbol: "/naruto/clans/yamanaka.svg",
+    symbol: "/naruto/generated/symbol-yamanaka.png",
     mode: "Modo Complacente",
     metaphor:
       "Faço tudo para agradar, mesmo quando isso me machuca.",
@@ -223,7 +223,7 @@ export const clans: Record<ClanId, Clan> = {
   aburame: {
     id: "aburame",
     name: "Aburame",
-    symbol: "/naruto/clans/aburame.svg",
+    symbol: "/naruto/generated/symbol-aburame.png",
     mode: "Modo Isolado",
     metaphor:
       "Melhor não sentir nada do que sentir demais.",
