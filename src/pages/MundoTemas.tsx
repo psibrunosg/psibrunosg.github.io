@@ -1,6 +1,6 @@
 import { Link, Navigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ChevronRight, Gem, Scale, Eye, Layers } from "lucide-react";
+import { ArrowLeft, ChevronRight, Gem, Scale, Eye, Layers, Map } from "lucide-react";
 import { useEffect } from "react";
 import { MobileMenu } from "@/components/ui/MobileMenu";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
@@ -100,6 +100,34 @@ export default function MundoTemas() {
               );
             })}
           </div>
+
+          {mundo.id === "torajo" && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.4 }}
+              className="mb-4"
+            >
+              <Link
+                to="/psicoeducacao/mundos/torajo/verade"
+                className="group flex items-center gap-3 p-4 rounded-2xl border border-[var(--c-border)] bg-gradient-to-r from-[var(--c-surface)] to-[var(--c-surface)] hover:border-[var(--c-accent)]/60 transition-colors"
+              >
+                <span
+                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: `${mundo.cor}1a`, color: mundo.cor }}
+                >
+                  <Map size={18} />
+                </span>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-[var(--c-text)] group-hover:text-[var(--c-accent)] transition-colors">
+                    Jornada por Verade
+                  </p>
+                  <p className="text-xs text-[var(--c-muted)] mt-0.5">Uma experiência narrativa pelos modos do esquema.</p>
+                </div>
+                <ChevronRight size={16} className="text-[var(--c-muted)] group-hover:text-[var(--c-accent)] flex-shrink-0" />
+              </Link>
+            </motion.div>
+          )}
 
           {mundo.linkExtra && (
             <Link

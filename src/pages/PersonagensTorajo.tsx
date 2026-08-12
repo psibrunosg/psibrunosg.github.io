@@ -43,6 +43,8 @@ const perfis: Record<PersonagemId, string> = {
   pessy: "A detetive conspiracionista — vive em alerta, sempre esperando o próximo desastre.",
   azedo: "O debochado da turma — ataca e provoca antes que possam magoá-lo primeiro.",
   margo: "A alienada digital — trata as pessoas como código e mantém distância emocional de tudo.",
+  jay: "O observador atento — percebe os detalhes que os outros ignoram e age com cautela.",
+  abel: "O sonhador reservado — vive em seu próprio ritmo e encontra beleza no que passa despercebido.",
 };
 
 const listas = [
