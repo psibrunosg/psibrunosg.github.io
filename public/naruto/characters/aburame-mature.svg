@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 320" role="img" aria-labelledby="title">
+  <title id="title">Shino professor</title>
+  <rect width="200" height="320" fill="none"/>
+  <path d="M68 300 L82 188 L118 188 L132 300 Z" fill="#334155"/>
+  <rect x="76" y="108" width="48" height="92" rx="10" fill="#475569"/>
+  <circle cx="100" cy="78" r="33" fill="#f3d2c1"/>
+  <path d="M67 52 Q100 28 133 52 L133 90 Q100 74 67 90 Z" fill="#0f172a"/>
+  <circle cx="94" cy="73" r="8" fill="#0f172a"/>
+  <circle cx="106" cy="73" r="8" fill="#0f172a"/>
+  <path d="M93 94 Q100 92 107 94" stroke="#1a202c" stroke-width="1.5" fill="none"/>
+</svg>

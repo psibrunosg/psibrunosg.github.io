@@ -2,7 +2,7 @@
 // crenças, distorções, modos). Dado puro, sem lógica de UI.
 // Ver docs/mundo-torajo-playbook.md.
 
-export type PersonagemId = "torajo" | "morajo" | "zulmi" | "linn" | "pessy" | "azedo" | "margo";
+export type PersonagemId = "torajo" | "morajo" | "zulmi" | "linn" | "pessy" | "azedo" | "margo" | "jay" | "abel";
 
 export interface Personagem {
   id: string;
@@ -19,4 +19,6 @@ export const personagens: Record<PersonagemId, Personagem> = {
   pessy: { id: "pessy", nome: "Pessy", cor: "#E8833A", imagem: "/img/torajo/pessy.png" },
   azedo: { id: "azedo", nome: "Azedo", cor: "#E4483F", imagem: "/img/torajo/azedo.png" },
   margo: { id: "margo", nome: "Margo", cor: "#F0578F", imagem: "/img/torajo/margo.png" },
+  jay: { id: "jay", nome: "Jay", cor: "#F5A623", imagem: "/img/torajo/jay.png" },
+  abel: { id: "abel", nome: "Abel", cor: "#5B4B75", imagem: "/img/torajo/abel.png" },
 };

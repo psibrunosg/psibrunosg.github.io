@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 280" role="img" aria-labelledby="title">
+  <title id="title">Iruka pensativo</title>
+  <rect width="200" height="280" fill="none"/>
+  <!-- pernas -->
+  <path d="M80 190 L75 260 L100 260 L100 195 Z" fill="#2d3748"/>
+  <path d="M120 190 L125 260 L100 260 L100 195 Z" fill="#1a202c"/>
+  <!-- torso -->
+  <rect x="75" y="110" width="50" height="85" rx="10" fill="#4a5568"/>
+  <!-- braço esquerdo -->
+  <path d="M80 125 L60 170 L75 175 L90 135 Z" fill="#d4a574"/>
+  <!-- braço direito no queixo -->
+  <path d="M120 125 L135 165 L120 170 L110 135 Z" fill="#d4a574"/>
+  <!-- cabeça -->
+  <circle cx="100" cy="80" r="35" fill="#d4a574"/>
+  <!-- cabelo -->
+  <path d="M65 70 Q100 20 135 70 L135 90 Q100 70 65 90 Z" fill="#5c4033"/>
+  <!-- bandana -->
+  <rect x="68" y="62" width="64" height="14" rx="3" fill="#2d3748"/>
+  <circle cx="100" cy="69" r="5" fill="#718096"/>
+  <!-- expressão pensativa -->
+  <circle cx="90" cy="82" r="3" fill="#1a202c"/>
+  <circle cx="110" cy="82" r="3" fill="#1a202c"/>
+  <path d="M95 95 Q100 92 105 95" stroke="#1a202c" stroke-width="2" fill="none"/>
+</svg>

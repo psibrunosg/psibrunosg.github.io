@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 320" role="img" aria-labelledby="title">
+  <title id="title">Shino jovem</title>
+  <rect width="200" height="320" fill="none"/>
+  <path d="M72 300 L84 195 L116 195 L128 300 Z" fill="#475569"/>
+  <rect x="78" y="115" width="44" height="90" rx="10" fill="#64748b"/>
+  <circle cx="100" cy="80" r="32" fill="#f3d2c1"/>
+  <path d="M68 55 Q100 35 132 55 L132 92 Q100 78 68 92 Z" fill="#1e293b"/>
+  <circle cx="95" cy="75" r="8" fill="#1e293b"/>
+  <circle cx="105" cy="75" r="8" fill="#1e293b"/>
+  <path d="M94 95 Q100 93 106 95" stroke="#1a202c" stroke-width="1.5" fill="none"/>
+</svg>

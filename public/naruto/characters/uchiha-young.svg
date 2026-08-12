@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 320" role="img" aria-labelledby="title">
+  <title id="title">Sasuke criança</title>
+  <rect width="200" height="320" fill="none"/>
+  <path d="M70 300 L82 190 L118 190 L130 300 Z" fill="#1f2937"/>
+  <rect x="76" y="112" width="48" height="88" rx="10" fill="#374151"/>
+  <circle cx="100" cy="80" r="32" fill="#f3d2c1"/>
+  <path d="M68 55 Q100 35 132 55 L132 90 Q100 75 68 90 Z" fill="#111827"/>
+  <path d="M85 78 L98 83 L85 86 Z" fill="#1a1a2e"/>
+  <path d="M115 78 L102 83 L115 86 Z" fill="#1a1a2e"/>
+  <path d="M92 95 Q100 92 108 95" stroke="#1a1a2e" stroke-width="1.5" fill="none"/>
+</svg>

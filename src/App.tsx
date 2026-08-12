@@ -38,6 +38,8 @@ import ModosJujutsuKaisen from "./pages/ModosJujutsuKaisen";
 import MundosTematicos from "./pages/MundosTematicos";
 import MundoTemas from "./pages/MundoTemas";
 import JornadaVerade from "./pages/JornadaVerade";
+import NarutoHub from "./pages/NarutoHub";
+import NarutoClan from "./pages/NarutoClan";
 import DeOndeVemPadroes from "./pages/DeOndeVemPadroes";
 import BalaoPensamentosPage from "./pages/exercicios/BalaoPensamentosPage";
 import CacaFatosPage from "./pages/exercicios/CacaFatosPage";
@@ -104,6 +106,8 @@ export default function App() {
         <Route path="/psicoeducacao/mundos" element={<MundosTematicos />} />
         <Route path="/psicoeducacao/mundos/:mundoId" element={<MundoTemas />} />
         <Route path="/psicoeducacao/mundos/torajo/verade" element={<JornadaVerade />} />
+        <Route path="/psicoeducacao/naruto" element={<NarutoHub />} />
+        <Route path="/psicoeducacao/naruto/:clanId" element={<NarutoClan />} />
         {/* Território novo — acessível por link direto; ainda NÃO surfaceado no
             mapa público (src/content/psicoed.ts) até aprovação do Bruno. */}
         <Route path="/psicoeducacao/de-onde-vem-seus-padroes" element={<DeOndeVemPadroes />} />

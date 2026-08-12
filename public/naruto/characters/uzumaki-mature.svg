@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 320" role="img" aria-labelledby="title">
+  <title id="title">Naruto Hokage</title>
+  <rect width="200" height="320" fill="none"/>
+  <path d="M65 300 L80 185 L120 185 L135 300 Z" fill="#c2410c"/>
+  <rect x="74" y="105" width="52" height="95" rx="12" fill="#ea580c"/>
+  <circle cx="100" cy="75" r="34" fill="#f3d2c1"/>
+  <path d="M66 48 Q100 20 134 48 L136 96 Q100 78 64 96 Z" fill="#facc15"/>
+  <rect x="84" y="42" width="32" height="10" rx="2" fill="#ef4444"/>
+  <circle cx="90" cy="78" r="3" fill="#1a202c"/>
+  <circle cx="110" cy="78" r="3" fill="#1a202c"/>
+  <path d="M92 94 Q100 98 108 94" stroke="#1a202c" stroke-width="2" fill="none"/>
+</svg>

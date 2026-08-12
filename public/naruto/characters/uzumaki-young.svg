@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 320" role="img" aria-labelledby="title">
+  <title id="title">Naruto menino</title>
+  <rect width="200" height="320" fill="none"/>
+  <path d="M70 300 L82 192 L118 192 L130 300 Z" fill="#f97316"/>
+  <rect x="76" y="112" width="48" height="88" rx="10" fill="#fb923c"/>
+  <circle cx="100" cy="80" r="33" fill="#f3d2c1"/>
+  <path d="M67 52 Q100 25 133 52 L135 95 Q100 78 65 95 Z" fill="#facc15"/>
+  <circle cx="90" cy="82" r="3" fill="#1a202c"/>
+  <circle cx="110" cy="82" r="3" fill="#1a202c"/>
+  <path d="M90 96 Q100 100 110 96" stroke="#1a202c" stroke-width="2" fill="none"/>
+</svg>

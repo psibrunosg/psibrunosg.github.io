@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 280" role="img" aria-labelledby="title">
+  <title id="title">Iruka dramático</title>
+  <rect width="200" height="280" fill="none"/>
+  <!-- pernas -->
+  <path d="M80 190 L70 260 L95 260 L100 195 Z" fill="#2d3748"/>
+  <path d="M120 190 L130 260 L105 260 L100 195 Z" fill="#1a202c"/>
+  <!-- torso -->
+  <rect x="75" y="110" width="50" height="85" rx="10" fill="#4a5568"/>
+  <!-- braços para cima com punhos -->
+  <path d="M80 125 L50 90 L60 80 L90 120 Z" fill="#d4a574"/>
+  <circle cx="52" cy="82" r="9" fill="#d4a574"/>
+  <path d="M120 125 L150 90 L140 80 L110 120 Z" fill="#d4a574"/>
+  <circle cx="148" cy="82" r="9" fill="#d4a574"/>
+  <!-- cabeça -->
+  <circle cx="100" cy="80" r="35" fill="#d4a574"/>
+  <!-- veias na testa -->
+  <path d="M85 55 L95 60 M105 60 L115 55" stroke="#c53030" stroke-width="2" fill="none"/>
+  <!-- cabelo -->
+  <path d="M65 70 Q100 20 135 70 L135 90 Q100 70 65 90 Z" fill="#5c4033"/>
+  <!-- bandana -->
+  <rect x="68" y="62" width="64" height="14" rx="3" fill="#2d3748"/>
+  <circle cx="100" cy="69" r="5" fill="#718096"/>
+  <!-- expressão intensa -->
+  <path d="M85 80 L95 83 M105 83 L115 80" stroke="#1a202c" stroke-width="3" fill="none"/>
+  <path d="M92 98 Q100 102 108 98" stroke="#1a202c" stroke-width="2" fill="none"/>
+</svg>

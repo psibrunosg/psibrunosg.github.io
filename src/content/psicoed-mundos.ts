@@ -62,6 +62,22 @@ export const mundos: Mundo[] = [
       { id: "modos", titulo: "Modos do Esquema", rota: "/psicoeducacao/jujutsu-kaisen/modos", icone: "layers" },
     ],
   },
+  {
+    id: "naruto",
+    titulo: "Naruto",
+    descricaoCurta: "A Vila da Folha — sete clãs, sete modos da mente, uma jornada ninja.",
+    cor: "#C65C2E",
+    imagemCapa: "/img/mundos/naruto-placeholder.svg",
+    temas: [
+      { id: "hyuga", titulo: "Hyūga — Criança Vulnerável", rota: "/psicoeducacao/naruto/hyuga", icone: "eye" },
+      { id: "uchiha", titulo: "Uchiha — Modos de Defesa", rota: "/psicoeducacao/naruto/uchiha", icone: "gem" },
+      { id: "nara", titulo: "Nara — Modo Crítico", rota: "/psicoeducacao/naruto/nara", icone: "scale" },
+      { id: "uzumaki", titulo: "Uzumaki — Adulto Saudável", rota: "/psicoeducacao/naruto/uzumaki", icone: "layers" },
+      { id: "inuzuka", titulo: "Inuzuka — Modo Raivoso", rota: "/psicoeducacao/naruto/inuzuka", icone: "gem" },
+      { id: "yamanaka", titulo: "Yamanaka — Modo Complacente", rota: "/psicoeducacao/naruto/yamanaka", icone: "scale" },
+      { id: "aburame", titulo: "Aburame — Modo Isolado", rota: "/psicoeducacao/naruto/aburame", icone: "eye" },
+    ],
+  },
 ];
 
 export const mundoPorId = (id: string) => mundos.find((m) => m.id === id);

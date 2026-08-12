@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 320" role="img" aria-labelledby="title">
+  <title id="title">Shikamaru estrategista</title>
+  <rect width="200" height="320" fill="none"/>
+  <path d="M68 300 L82 188 L118 188 L132 300 Z" fill="#2d3748"/>
+  <rect x="76" y="108" width="48" height="92" rx="10" fill="#4a5568"/>
+  <circle cx="100" cy="78" r="33" fill="#f3d2c1"/>
+  <path d="M67 55 Q100 32 133 55 L133 92 Q100 76 67 92 Z" fill="#1a202c"/>
+  <circle cx="90" cy="80" r="3" fill="#1a202c"/>
+  <circle cx="110" cy="80" r="3" fill="#1a202c"/>
+  <path d="M93 94 Q100 90 107 94" stroke="#1a202c" stroke-width="1.5" fill="none"/>
+</svg>

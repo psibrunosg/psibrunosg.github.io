@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 320" role="img" aria-labelledby="title">
+  <title id="title">Kiba impulsivo</title>
+  <rect width="200" height="320" fill="none"/>
+  <path d="M70 300 L82 192 L118 192 L130 300 Z" fill="#7c3aed"/>
+  <rect x="76" y="112" width="48" height="88" rx="10" fill="#8b5cf6"/>
+  <circle cx="100" cy="80" r="32" fill="#f3d2c1"/>
+  <path d="M68 55 Q100 35 132 55 L132 92 Q100 76 68 92 Z" fill="#4c1d95"/>
+  <path d="M60 70 L75 85 L65 95 Z" fill="#4c1d95"/>
+  <path d="M140 70 L125 85 L135 95 Z" fill="#4c1d95"/>
+  <circle cx="90" cy="82" r="3" fill="#1a202c"/>
+  <circle cx="110" cy="82" r="3" fill="#1a202c"/>
+  <path d="M90 97 Q100 94 110 97" stroke="#1a202c" stroke-width="2" fill="none"/>
+</svg>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-labelledby="title">
+  <title id="title">Símbolo abstrato do clã Inuzuka</title>
+  <path d="M25 75 L25 35 L50 20 L75 35 L75 75 L50 90 Z" fill="none" stroke="#7C3AED" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M35 55 L50 45 L65 55 L50 70 Z" fill="#7C3AED" opacity="0.7"/>
+</svg>

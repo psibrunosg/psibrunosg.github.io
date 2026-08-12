@@ -1,0 +1,46 @@
+@keyframes naruto-fall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.7;
+  }
+  90% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(120vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes naruto-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px currentColor);
+  }
+  50% {
+    filter: drop-shadow(0 0 20px currentColor);
+  }
+}
+
+@keyframes naruto-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.naruto-symbol {
+  animation: naruto-glow 3s ease-in-out infinite;
+}
+
+.naruto-symbol:hover {
+  animation: naruto-glow 1.2s ease-in-out infinite;
+}
+
+.naruto-iruka {
+  animation: naruto-float 4s ease-in-out infinite;
+}

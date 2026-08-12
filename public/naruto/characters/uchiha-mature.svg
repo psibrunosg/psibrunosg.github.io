@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 320" role="img" aria-labelledby="title">
+  <title id="title">Sasuke Shippuden</title>
+  <rect width="200" height="320" fill="none"/>
+  <path d="M65 300 L80 185 L120 185 L135 300 Z" fill="#111827"/>
+  <rect x="74" y="105" width="52" height="95" rx="10" fill="#1f2937"/>
+  <circle cx="100" cy="75" r="34" fill="#f3d2c1"/>
+  <path d="M66 50 Q100 25 134 50 L136 95 Q100 78 64 95 Z" fill="#0f0f1a"/>
+  <path d="M83 75 L97 82 L83 87 Z" fill="#c0392b"/>
+  <path d="M117 75 L103 82 L117 87 Z" fill="#c0392b"/>
+  <path d="M92 95 Q100 92 108 95" stroke="#1a1a2e" stroke-width="1.5" fill="none"/>
+</svg>

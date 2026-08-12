@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 280" role="img" aria-labelledby="title">
+  <title id="title">Iruka correndo</title>
+  <rect width="200" height="280" fill="none"/>
+  <!-- corpo inclinado para frente -->
+  <g transform="rotate(-12 100 200)">
+    <!-- pernas -->
+    <path d="M85 180 L60 240 L80 250 L105 190 Z" fill="#2d3748"/>
+    <path d="M115 180 L150 220 L135 235 L100 195 Z" fill="#1a202c"/>
+    <!-- torso -->
+    <rect x="75" y="110" width="50" height="80" rx="10" fill="#4a5568"/>
+    <!-- braços para trás -->
+    <path d="M80 120 L40 100 L35 115 L75 135 Z" fill="#d4a574"/>
+    <path d="M120 120 L160 100 L165 115 L125 135 Z" fill="#d4a574"/>
+    <!-- cabeça -->
+    <circle cx="100" cy="80" r="35" fill="#d4a574"/>
+    <!-- cabelo -->
+    <path d="M65 70 Q100 20 135 70 L135 90 Q100 70 65 90 Z" fill="#5c4033"/>
+    <!-- bandana -->
+    <rect x="68" y="62" width="64" height="14" rx="3" fill="#2d3748"/>
+    <circle cx="100" cy="69" r="5" fill="#718096"/>
+    <!-- expressão surpresa -->
+    <circle cx="90" cy="82" r="3" fill="#1a202c"/>
+    <circle cx="110" cy="82" r="3" fill="#1a202c"/>
+    <ellipse cx="100" cy="92" rx="5" ry="7" fill="#1a202c"/>
+  </g>
+</svg>

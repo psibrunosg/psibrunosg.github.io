@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 320" role="img" aria-labelledby="title">
+  <title id="title">Ino criança</title>
+  <rect width="200" height="320" fill="none"/>
+  <path d="M72 300 L84 195 L116 195 L128 300 Z" fill="#db2777"/>
+  <rect x="78" y="115" width="44" height="90" rx="10" fill="#f472b6"/>
+  <circle cx="100" cy="80" r="32" fill="#f3d2c1"/>
+  <path d="M68 55 Q100 35 132 55 L132 92 Q100 78 68 92 Z" fill="#fce7f3"/>
+  <circle cx="90" cy="82" r="3" fill="#1a202c"/>
+  <circle cx="110" cy="82" r="3" fill="#1a202c"/>
+  <path d="M93 95 Q100 98 107 95" stroke="#1a202c" stroke-width="1.5" fill="none"/>
+</svg>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 320" role="img" aria-labelledby="title">
+  <title id="title">Hinata Shippuden</title>
+  <rect width="200" height="320" fill="none"/>
+  <path d="M65 300 L78 185 L122 185 L135 300 Z" fill="#2d4a6f"/>
+  <rect x="72" y="105" width="56" height="95" rx="12" fill="#5a7fa3"/>
+  <circle cx="100" cy="75" r="34" fill="#f3d2c1"/>
+  <path d="M66 58 Q100 25 134 58 L138 100 Q100 82 62 100 Z" fill="#1a1a2e"/>
+  <circle cx="90" cy="78" r="3.5" fill="#1a1a2e"/>
+  <circle cx="110" cy="78" r="3.5" fill="#1a1a2e"/>
+  <path d="M93 93 Q100 97 107 93" stroke="#c0392b" stroke-width="2" fill="none"/>
+</svg>
