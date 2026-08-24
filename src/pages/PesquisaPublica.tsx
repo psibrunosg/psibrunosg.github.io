@@ -38,13 +38,13 @@ export default function PesquisaPublica() {
           setForm(data);
           // Inicializa respostas
           const ini: Record<string, string | number> = {};
-          data.campos.forEach((c: any) => {
+          data.campos.forEach((c) => {
             if (c.tipo === "escala_1_5" || c.tipo === "escala_1_10") ini[c.id] = 0;
             else ini[c.id] = "";
           });
           setRespostas(ini);
         }
-      } catch (e) {
+      } catch {
         setError("Erro ao carregar o formulário.");
       } finally {
         setLoading(false);

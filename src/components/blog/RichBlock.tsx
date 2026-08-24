@@ -7,8 +7,6 @@ import { Revelar } from "./Revelar";
 import { Passos } from "./Passos";
 import type { DestaqueData, GraficoData, MindMapData, PassosData, RevelarData } from "./types";
 
-export const LINGUAGENS_RICAS = new Set(["mindmap", "grafico", "destaque", "revelar", "passos"]);
-
 function isObjeto(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
 }

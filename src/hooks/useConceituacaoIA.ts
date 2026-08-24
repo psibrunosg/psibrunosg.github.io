@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import jsPDF from "jspdf";
 import { supabase, mensagemErroEdgeFunction } from "@/lib/supabase";
 import { interpretarResposta } from "@/lib/interpret";
@@ -135,7 +135,7 @@ export function useConceituacaoIA(toolId: string, respostas: Resposta[], ferrame
   const L = ferramenta.campos.map((c) => c.label);
 
   const [dados, setDados] = useState<Record<string, string>>({});
-  const [pacienteChave, setPacienteChave] = useState("");
+  const [pacienteChave, setPacienteChaveState] = useState("");
   const [pacienteId, setPacienteId] = useState<number | null>(null);
   const [perfil, setPerfil] = useState<Record<string, unknown> | null>(null);
   const [contexto, setContexto] = useState("");
@@ -173,11 +173,19 @@ export function useConceituacaoIA(toolId: string, respostas: Resposta[], ferrame
 
   const set = (label: string, v: string) => setDados((d) => ({ ...d, [label]: v }));
 
-  const grupos = (() => {
+  const grupos = useMemo(() => {
     const m = new Map<string, Resposta[]>();
     for (const r of respostas) { const k = chavePaciente(r); const a = m.get(k) ?? []; a.push(r); m.set(k, a); }
     return Array.from(m.entries());
-  })();
+  }, [respostas]);
+
+  const setPacienteChave = useCallback((nextPacienteChave: string) => {
+    setPerfil(null);
+    setMensagens([]);
+    setSessaoId(crypto.randomUUID());
+    setPacienteId(null);
+    setPacienteChaveState(nextPacienteChave);
+  }, []);
 
   function escolherProvider(p: string) {
     setProvider(p);
@@ -200,12 +208,9 @@ export function useConceituacaoIA(toolId: string, respostas: Resposta[], ferrame
   }
 
   useEffect(() => {
-    setPerfil(null);
-    setMensagens([]);
-    setSessaoId(crypto.randomUUID());
-    if (!pacienteChave || !supabase) { setPacienteId(null); return; }
+    if (!pacienteChave || !supabase) return;
     const grupo = grupos.find(([k]) => k === pacienteChave);
-    if (!grupo) { setPacienteId(null); return; }
+    if (!grupo) return;
     let cancelado = false;
     (async () => {
       const id = await resolverPacienteId(grupo[1][0]);
@@ -219,8 +224,7 @@ export function useConceituacaoIA(toolId: string, respostas: Resposta[], ferrame
       }
     })();
     return () => { cancelado = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pacienteChave, toolId]);
+  }, [grupos, pacienteChave, toolId]);
 
   async function encerrarSessao() {
     if (!supabase || pacienteId == null || mensagens.length === 0) return;

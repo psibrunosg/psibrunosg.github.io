@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useParams, useSearchParams, Navigate } from "react-router-dom";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ChevronRight, ChevronLeft, User, Check, ClipboardList, AlertTriangle, Loader2 } from "lucide-react";
@@ -10,10 +10,18 @@ import type { EscalaGeralConfig, BDIItem } from "@/content/escalas-gerais";
 import { ESCALAS_RESTRITAS_IDS } from "@/content/escalas-restritas";
 import { AppAurora } from "@/components/ui/AppAurora";
 import {
-  computeGeralScore, computeSchemaAvg, computeThreshold,
+  computeGeralScore,
   pacienteEmRisco,
 } from "@/lib/scoring";
 import { CrisisCard } from "@/components/shared/CrisisCard";
+import {
+  computeSubmissionScore,
+  createResponseSlots,
+  nextUncrossedMilestone,
+  parseScaleDraft,
+  resolveRovingIndex,
+  type ScaleDraft,
+} from "./escalaState";
 
 type AnyConfig = EscalaConfig | EscalaGeralConfig;
 
@@ -25,14 +33,34 @@ function isBDIItem(item: unknown): item is BDIItem {
   return typeof item === "object" && item !== null && "opcoes" in item;
 }
 
+type ScaleOption = { label: string; valor: number };
+
+function getOptionsForQuestion(
+  config: AnyConfig,
+  questionIndex: number,
+  itensBase: number,
+): ScaleOption[] {
+  const itemIndex = itensBase > 0 ? questionIndex % itensBase : 0;
+  if (isEscalaGeral(config)) {
+    if (config.tipo === "likert-statements") {
+      const item = config.itens[itemIndex];
+      if (isBDIItem(item)) {
+        return item.opcoes.map((option) => ({
+          label: option.texto,
+          valor: option.valor,
+        }));
+      }
+    }
+    if (config.tipo === "binary") {
+      return [{ label: "Certo", valor: 1 }, { label: "Errado", valor: 0 }];
+    }
+    return config.opcoes ?? [];
+  }
+  return config.opcoes;
+}
+
 // ===== Merged config lookup =====
 const allConfigs: Record<string, AnyConfig> = { ...escalas, ...escalasGerais };
-
-// ponytail: rascunho guarda só o progresso das respostas — nada de identificação.
-// Dispositivo compartilhado + formulário abandonado deixaria CPF em claro por tempo indefinido.
-type Rascunho = {
-  respostas: (number | null)[]; atual: number; etapa: "form" | "dados";
-};
 
 function calcularIdade(nascimentoISO: string): number | null {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(nascimentoISO)) return null;
@@ -78,11 +106,55 @@ function telefoneValido(valor: string): boolean {
   return valor.replace(/\D/g, "").length >= 10;
 }
 
+async function requestCodeValidation(codigo: string, scaleId: string): Promise<void> {
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/validate-code`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code: codigo, scale: scaleId }),
+  });
+  const data = await response.json() as { valid?: boolean; error?: string };
+  if (!response.ok || !data.valid) {
+    throw new Error(data.error || "Código não autorizado.");
+  }
+}
+
 export default function Escala() {
   const { escalaId } = useParams<{ escalaId: string }>();
   const [searchParams] = useSearchParams();
   const config = escalaId ? allConfigs[escalaId] : undefined;
-  const requerCodigo = Boolean(config && ESCALAS_RESTRITAS_IDS.has(config.id));
+  if (!escalaId || !config) return <Navigate to="/paciente" replace />;
+
+  const requerCodigo = ESCALAS_RESTRITAS_IDS.has(config.id);
+  const codigoInicial = requerCodigo
+    ? (searchParams.get("codigo") ?? "").replace(/\D/g, "").slice(0, 8)
+    : "";
+
+  return (
+    <EscalaForm
+      key={escalaId}
+      escalaId={escalaId}
+      config={config}
+      requerCodigo={requerCodigo}
+      codigoInicial={codigoInicial}
+    />
+  );
+}
+
+interface EscalaFormProps {
+  escalaId: string;
+  config: AnyConfig;
+  requerCodigo: boolean;
+  codigoInicial: string;
+}
+
+function EscalaForm({ escalaId, config, requerCodigo, codigoInicial }: EscalaFormProps) {
+  const rodadas = (!isEscalaGeral(config) && config.rodadas) ? config.rodadas : [];
+  const numRodadas = rodadas.length || 1;
+  const itensBase = isEscalaGeral(config)
+    ? (Array.isArray(config.itens) ? config.itens.length : 0)
+    : config.itens.length;
+  const total = itensBase * numRodadas;
+  const storageKey = `escala-rascunho-${escalaId}`;
 
   const [etapa, setEtapa] = useState<"codigo" | "intro" | "form" | "dados" | "enviando" | "erro" | "resultado">(requerCodigo ? "codigo" : "intro");
   const [nascimento, setNascimento] = useState("");
@@ -95,13 +167,15 @@ export default function Escala() {
   const [responsavelNome, setResponsavelNome] = useState("");
   const [responsavelTelefone, setResponsavelTelefone] = useState("");
   const [erroValidacao, setErroValidacao] = useState<Record<string, string>>({});
-  const [codigoDigitado, setCodigoDigitado] = useState("");
+  const [codigoDigitado, setCodigoDigitado] = useState(codigoInicial);
   const [patientCode, setPatientCode] = useState("");
   const [erroCodigo, setErroCodigo] = useState("");
-  const [validandoCodigo, setValidandoCodigo] = useState(false);
+  const [validandoCodigo, setValidandoCodigo] = useState(/^\d{5}(\d{3})?$/.test(codigoInicial));
   const [consentimento, setConsentimento] = useState(false);
-  const [rascunho, setRascunho] = useState<Rascunho | null>(null);
-  const [respostas, setRespostas] = useState<(number | null)[]>([]);
+  const [rascunho, setRascunho] = useState<ScaleDraft | null>(() => (
+    parseScaleDraft(localStorage.getItem(storageKey), total)
+  ));
+  const [respostas, setRespostas] = useState<(number | null)[]>(() => createResponseSlots(total));
   const [atual, setAtual] = useState(0);
   const [erroEnvio, setErroEnvio] = useState("");
   const [rovingIndex, setRovingIndex] = useState(0);
@@ -111,19 +185,7 @@ export default function Escala() {
   const questionHeadingRef = useRef<HTMLHeadingElement>(null);
   const optionRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  const rodadas = !config ? [] : (!isEscalaGeral(config) && config.rodadas) ? config.rodadas : [];
-  const numRodadas = rodadas.length || 1;
-  const itensBase = useMemo(() => {
-    if (!config) return 0;
-    if (isEscalaGeral(config)) return Array.isArray(config.itens) ? config.itens.length : 0;
-    return config.itens.length;
-  }, [config]);
-  const total = itensBase * numRodadas;
   const pct = total > 0 ? Math.round(((atual + 1) / total) * 100) : 0;
-
-  useEffect(() => {
-    if (total > 0) setRespostas(Array(total).fill(null));
-  }, [total]);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
@@ -134,41 +196,6 @@ export default function Escala() {
     return () => document.documentElement.removeAttribute("data-theme");
   }, [config]);
 
-  // Pré-preenche e, se o formato for válido, valida automaticamente o
-  // código recebido via ?codigo= na URL (link direto gerado no painel).
-  useEffect(() => {
-    if (!requerCodigo) return;
-    const paramCodigo = searchParams.get("codigo");
-    if (!paramCodigo) return;
-    const digits = paramCodigo.replace(/\D/g, "").slice(0, 8);
-    if (!digits) return;
-    setCodigoDigitado(digits);
-    if (/^\d{5}(\d{3})?$/.test(digits)) {
-      validarCodigo(digits);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [requerCodigo]);
-
-  const storageKey = escalaId ? `escala-rascunho-${escalaId}` : "";
-
-  useEffect(() => {
-    if (!storageKey) return;
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (raw) {
-        const d = JSON.parse(raw);
-        // Rascunhos antigos trazem campos de identificação: descartados aqui, nunca re-hidratados.
-        if (Array.isArray(d.respostas) && d.respostas.some((x: number | null) => x !== null)) {
-          setRascunho({
-            respostas: d.respostas,
-            atual: typeof d.atual === "number" ? d.atual : 0,
-            etapa: d.etapa === "dados" ? "dados" : "form",
-          });
-        }
-      }
-    } catch { /* rascunho inválido, ignora */ }
-  }, [storageKey]);
-
   useEffect(() => {
     if (!storageKey || (etapa !== "form" && etapa !== "dados" && etapa !== "erro")) return;
     try {
@@ -178,38 +205,10 @@ export default function Escala() {
   }, [storageKey, etapa, respostas, atual]);
 
   useEffect(() => {
-    const answered = respostas[atual];
-    if (answered === null || answered === undefined) {
-      setRovingIndex(0);
-      return;
-    }
-    const options = getCurrentOptions();
-    const idx = options.findIndex((o) => o.valor === answered);
-    setRovingIndex(idx >= 0 ? idx : 0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [atual]);
-
-  useEffect(() => {
     if (etapa === "form" && questionHeadingRef.current) {
       questionHeadingRef.current.focus({ preventScroll: true });
     }
   }, [atual, etapa]);
-
-  // Milestone pulse animation (25%, 50%, 75%, 100%)
-  useEffect(() => {
-    if (etapa !== "form") return;
-    const milestones = [25, 50, 75, 100];
-    for (const milestone of milestones) {
-      if (pct >= milestone && !crossedMilestones.has(milestone)) {
-        setCrossedMilestones((prev) => new Set([...prev, milestone]));
-        setShowMilestonePulse(milestone);
-        setTimeout(() => setShowMilestonePulse(null), 800);
-        break;
-      }
-    }
-  }, [pct, etapa, crossedMilestones]);
-
-  if (!config) return <Navigate to="/paciente" replace />;
 
   const idade = calcularIdade(nascimento);
   const isMenor = idade !== null && idade < 18;
@@ -220,24 +219,40 @@ export default function Escala() {
     const novo = [...respostas];
     novo[atual] = valor;
     setRespostas(novo);
+
+    const milestone = nextUncrossedMilestone(
+      Math.round(((atual + 1) / total) * 100),
+      crossedMilestones,
+    );
+    if (milestone !== null) {
+      setCrossedMilestones((previous) => new Set([...previous, milestone]));
+      setShowMilestonePulse(milestone);
+      setTimeout(() => setShowMilestonePulse(null), 800);
+    }
+
     setTimeout(() => {
-      if (atual < total - 1) setAtual(atual + 1);
-      else setEtapa("dados");
+      if (atual < total - 1) {
+        const nextQuestion = atual + 1;
+        setAtual(nextQuestion);
+        setRovingIndex(resolveRovingIndex(
+          novo[nextQuestion],
+          getOptionsForQuestion(config, nextQuestion, itensBase),
+        ));
+      } else {
+        setEtapa("dados");
+      }
     }, 220);
   }
 
   async function enviarRespostas() {
     const r = respostas as number[];
-    let pontuacao = 0;
-    if (isEscalaGeral(config!)) pontuacao = computeGeralScore(config!, r).total;
-    else if (config!.scoring === "schema-avg") pontuacao = computeSchemaAvg(config! as EscalaConfig, r).pontuacao;
-    else pontuacao = computeThreshold(r).pontuacao;
+    const pontuacao = computeSubmissionScore(config, r);
 
     setErroEnvio("");
     setEtapa("enviando");
     try {
       const { error } = await salvarResposta({
-        tipo: config!.id,
+        tipo: config.id,
         nome: nome.trim(),
         cpf: cpf.replace(/\D/g, ""),
         nascimento,
@@ -275,13 +290,7 @@ export default function Escala() {
     setValidandoCodigo(true);
     setErroCodigo("");
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/validate-code`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: codigo, scale: config.id }),
-      });
-      const data = await response.json();
-      if (!response.ok || !data.valid) throw new Error(data.error || "Código não autorizado.");
+      await requestCodeValidation(codigo, config.id);
       setPatientCode(codigo);
       setEtapa("intro");
     } catch (error) {
@@ -290,9 +299,36 @@ export default function Escala() {
       setValidandoCodigo(false);
     }
   }
+
+  useEffect(() => {
+    if (!requerCodigo || !/^\d{5}(\d{3})?$/.test(codigoInicial)) return;
+    let cancelled = false;
+
+    void requestCodeValidation(codigoInicial, config.id)
+      .then(() => {
+        if (cancelled) return;
+        setPatientCode(codigoInicial);
+        setEtapa("intro");
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setErroCodigo(error instanceof Error ? error.message : "Não foi possível validar o código.");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setValidandoCodigo(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [codigoInicial, config.id, requerCodigo]);
+
   function retomarRascunho() {
     if (!rascunho) return;
     setRespostas(rascunho.respostas); setAtual(rascunho.atual);
+    setRovingIndex(resolveRovingIndex(
+      rascunho.respostas[rascunho.atual],
+      getOptionsForQuestion(config, rascunho.atual, itensBase),
+    ));
     setEtapa(rascunho.etapa === "dados" ? "dados" : "form");
     setRascunho(null);
   }
@@ -317,16 +353,17 @@ export default function Escala() {
   }
 
   function getCurrentOptions(): { label: string; valor: number }[] {
-    if (!config) return [];
-    if (isEscalaGeral(config)) {
-      if (config.tipo === "likert-statements") {
-        const item = config.itens[itemIndex];
-        if (isBDIItem(item)) return item.opcoes.map((o) => ({ label: o.texto, valor: o.valor }));
-      }
-      if (config.tipo === "binary") return [{ label: "Certo", valor: 1 }, { label: "Errado", valor: 0 }];
-      return config.opcoes ?? [];
-    }
-    return (config as EscalaConfig).opcoes;
+    return getOptionsForQuestion(config, atual, itensBase);
+  }
+
+  function handleVoltar() {
+    const previousQuestion = atual - 1;
+    if (previousQuestion < 0) return;
+    setAtual(previousQuestion);
+    setRovingIndex(resolveRovingIndex(
+      respostas[previousQuestion],
+      getOptionsForQuestion(config, previousQuestion, itensBase),
+    ));
   }
 
   const isBDI = isEscalaGeral(config) && config.tipo === "likert-statements";
@@ -641,7 +678,7 @@ export default function Escala() {
                 </div>
 
                 {atual > 0 && (
-                  <button onClick={() => setAtual(atual - 1)} className="mt-6 inline-flex items-center gap-1 text-sm text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]">
+                  <button onClick={handleVoltar} className="mt-6 inline-flex items-center gap-1 text-sm text-[var(--c-muted)] transition-colors hover:text-[var(--c-accent)]">
                     <ChevronLeft size={16} /> Voltar
                   </button>
                 )}

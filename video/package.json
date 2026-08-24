@@ -5,16 +5,29 @@
   "description": "Render pipeline (Remotion) para vídeos whiteboard das narrativas de esquema. Projeto isolado do build do site (Vite) — gera mp4 que é commitado em public/videos/.",
   "scripts": {
     "dev": "remotion studio src/index.ts",
-    "render:piloto": "remotion render src/index.ts PrivacaoEmocional out/privacao-emocional.mp4"
+    "render:piloto": "remotion render src/index.ts PrivacaoEmocional out/privacao-emocional.mp4",
+    "lint": "eslint .",
+    "typecheck": "tsc --project tsconfig.json --noEmit --pretty false"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.8",
+    "@react-three/fiber": "^9.7.0",
+    "@react-three/postprocessing": "^3.0.5",
     "@remotion/cli": "^4.0.360",
+    "@remotion/three": "^4.0.509",
+    "playwright": "^1.62.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "remotion": "^4.0.360"
+    "remotion": "^4.0.360",
+    "three": "^0.185.1"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/react": "^19.2.14",
-    "typescript": "~5.9.3"
+    "eslint": "^10.9.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.11.0",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.68.0"
   }
 }

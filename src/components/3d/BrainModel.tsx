@@ -1,9 +1,10 @@
-import { useRef, useState, useMemo } from 'react';
-import { useFrame, useLoader } from '@react-three/fiber';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useFrame, useLoader, type ThreeEvent } from '@react-three/fiber';
 import { Html, Sparkles, Line } from '@react-three/drei';
 import * as THREE from 'three';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { brainPartsData, disordersData, type BrainPartId, type BrainPartData, type DisorderId } from '@/content/neuroanatomia';
+import { cloneGroupsWithMaterials, disposeMaterials } from './brainModelGeometry';
 
 // Carrega a lista de todos os arquivos OBJ disponíveis na pasta public/models
 const allModelPaths = Object.keys(import.meta.glob('/public/models/*.obj')).map(p => p.replace('/public', ''));
@@ -33,39 +34,34 @@ const flowAnchors: Record<BrainPartId, [number, number, number]> = {
 function FullCortex({ visible, opacity }: { visible: boolean, opacity: number }) {
   // Só carrega os arquivos se estiver visível para não travar o início
   const objs = useLoader(OBJLoader, visible ? cortexUrls : []);
-  const materialsRef = useRef<THREE.MeshLambertMaterial[]>([]);
 
-  const meshes = useMemo(() => {
-    if (!visible) return new THREE.Group();
-    const combined = new THREE.Group();
-    materialsRef.current.forEach((mat) => mat.dispose());
-    materialsRef.current = [];
-    const objArray = Array.isArray(objs) ? objs : [objs];
+  const geometry = useMemo(() => {
+    if (!visible) {
+      return {
+        group: new THREE.Group(),
+        materials: [] as THREE.MeshLambertMaterial[],
+      };
+    }
 
-    objArray.forEach((obj: any) => {
-      if (!obj) return;
-      const clone = obj.clone(true);
-      clone.traverse((child: any) => {
-        if (child.isMesh) {
-          const material = new THREE.MeshLambertMaterial({
+    return cloneGroupsWithMaterials(
+      objs,
+      () => new THREE.MeshLambertMaterial({
             color: '#e5e7eb',
             transparent: true,
             opacity: opacity,
             depthWrite: false,
             side: THREE.DoubleSide,
-          });
-          child.material = material;
-          materialsRef.current.push(material);
-        }
-      });
-      combined.add(clone);
-    });
-    return combined;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [objs, visible]);
+          }),
+    );
+  }, [objs, opacity, visible]);
+
+  useEffect(
+    () => () => disposeMaterials(geometry.materials),
+    [geometry.materials],
+  );
 
   useFrame(() => {
-    materialsRef.current.forEach(mat => {
+    geometry.materials.forEach(mat => {
       mat.opacity += (opacity - mat.opacity) * 0.1;
     });
   });
@@ -74,7 +70,7 @@ function FullCortex({ visible, opacity }: { visible: boolean, opacity: number })
 
   return (
     <group>
-      <primitive object={meshes} />
+      <primitive object={geometry.group} />
     </group>
   );
 }
@@ -98,69 +94,54 @@ function BrainPart({ data, selected, hasSelection, stressLevel, isExploded, isMi
   const objs = useLoader(OBJLoader, data.urls);
   const [hovered, setHover] = useState(false);
   const groupRef = useRef<THREE.Group>(null);
-  const materialsRef = useRef<THREE.MeshLambertMaterial[]>([]);
   // Objetos reutilizáveis para evitar alocação por frame dentro de useFrame (pressão de GC em mobile)
-  const tmpColor = useRef(new THREE.Color()).current;
-  const tmpColorA = useRef(new THREE.Color()).current;
-  const tmpColorB = useRef(new THREE.Color()).current;
-  const tmpVec3 = useRef(new THREE.Vector3()).current;
+  const scratch = useMemo(() => ({
+    color: new THREE.Color(),
+    colorA: new THREE.Color(),
+    colorB: new THREE.Color(),
+    vector: new THREE.Vector3(),
+  }), []);
 
-  const { meshes, labelCenter } = useMemo(() => {
-    const combined = new THREE.Group();
-    materialsRef.current.forEach((mat) => mat.dispose());
-    materialsRef.current = [];
+  const geometry = useMemo(
+    () => cloneGroupsWithMaterials(
+      objs,
+      () => new THREE.MeshLambertMaterial({
+        color: data.color,
+        transparent: true,
+        opacity: 0.9,
+      }),
+      { labelOffsetY: 20 },
+    ),
+    [data.color, objs],
+  );
 
-    const objArray = Array.isArray(objs) ? objs : [objs];
+  useEffect(
+    () => () => disposeMaterials(geometry.materials),
+    [geometry.materials],
+  );
 
-    objArray.forEach((obj: any) => {
-      if (!obj) return;
-      const clone = obj.clone(true);
-      clone.traverse((child: any) => {
-        if (child.isMesh) {
-          // MeshLambertMaterial é muito mais leve para a placa de vídeo
-          const material = new THREE.MeshLambertMaterial({
-            color: data.color,
-            transparent: true,
-            opacity: 0.9,
-          });
-          child.material = material;
-          materialsRef.current.push(material);
-        }
-      });
-      combined.add(clone);
-    });
-
-    // Calcula o centro exato desta peça anatômica para posicionar o rótulo HTML
-    const box = new THREE.Box3().setFromObject(combined);
-    const center = new THREE.Vector3();
-    box.getCenter(center);
-    center.y += 20; // Eleva um pouco para não ficar exatamente dentro da malha
-
-    return { meshes: combined, labelCenter: center };
-  }, [objs, data.color]);
-
-  useFrame((state: any) => {
+  useFrame((state) => {
     if (groupRef.current) {
       const targetScale = selected ? scale * 1.05 : hovered ? scale * 1.02 : scale;
-      groupRef.current.scale.lerp(tmpVec3.set(targetScale, targetScale, targetScale), 0.1);
+      groupRef.current.scale.lerp(scratch.vector.set(targetScale, targetScale, targetScale), 0.1);
 
       if (isExploded && data.explodePosition) {
-        tmpVec3.set(...data.explodePosition);
+        scratch.vector.set(...data.explodePosition);
       } else {
-        tmpVec3.set(0, 0, 0);
+        scratch.vector.set(0, 0, 0);
       }
-      groupRef.current.position.lerp(tmpVec3, 0.05);
+      groupRef.current.position.lerp(scratch.vector, 0.05);
     }
 
-    materialsRef.current.forEach((mat) => {
+    geometry.materials.forEach((mat) => {
       let targetOpacity = 0.7;
-      const targetColor = tmpColor.set(data.color);
+      const targetColor = scratch.color.set(data.color);
 
       // Dica progressiva do quiz: só acende depois de 2 respostas erradas (retrieval practice
       // com scaffolding — evita dar a resposta de graça, mas previne frustração/abandono)
       if (quizTarget && data.id === quizTarget && quizHint) {
         const pulse = Math.sin(state.clock.elapsedTime * 6) * 0.5 + 0.5;
-        targetColor.lerpColors(tmpColorA.set(data.color), tmpColorB.set('#facc15'), pulse * 0.6);
+        targetColor.lerpColors(scratch.colorA.set(data.color), scratch.colorB.set('#facc15'), pulse * 0.6);
         targetOpacity = Math.max(targetOpacity, 0.6 + pulse * 0.3);
       }
 
@@ -180,7 +161,7 @@ function BrainPart({ data, selected, hasSelection, stressLevel, isExploded, isMi
         if (activeDisorder === 'tag') {
           if (data.id === 'amygdala') {
             const pulse = Math.sin(state.clock.elapsedTime * 15) * 0.5 + 0.5;
-            targetColor.lerpColors(tmpColorA.set(data.color), tmpColorB.set(1, 0, 0), pulse);
+            targetColor.lerpColors(scratch.colorA.set(data.color), scratch.colorB.set(1, 0, 0), pulse);
             targetOpacity = 0.9;
           } else if (data.id === 'prefrontal') {
             targetColor.set('#4b5563');
@@ -199,7 +180,7 @@ function BrainPart({ data, selected, hasSelection, stressLevel, isExploded, isMi
             targetOpacity = 0.3;
           }
         } else if (activeDisorder === 'tdm') {
-          targetColor.lerp(tmpColorA.set('#000000'), 0.7);
+          targetColor.lerp(scratch.colorA.set('#000000'), 0.7);
           targetOpacity = 0.3;
         } else if (activeDisorder === 'tdah') {
           // Disfunção frontoestriatal (não só frontal): dopamina/noradrenalina desreguladas
@@ -235,12 +216,12 @@ function BrainPart({ data, selected, hasSelection, stressLevel, isExploded, isMi
           if (stress > 0) {
             const speed = stress * 20;
             const pulse = Math.sin(state.clock.elapsedTime * speed) * 0.5 + 0.5;
-            targetColor.lerpColors(tmpColorA.set(data.color), tmpColorB.set(1, pulse * 0.2, pulse * 0.2), stress);
+            targetColor.lerpColors(scratch.colorA.set(data.color), scratch.colorB.set(1, pulse * 0.2, pulse * 0.2), stress);
             targetOpacity = 0.7 + (stress * 0.3);
           }
         } else if (data.id === 'prefrontal') {
           if (stress > 0) {
-            targetColor.lerpColors(tmpColorA.set(data.color), tmpColorB.set('#4b5563'), stress);
+            targetColor.lerpColors(scratch.colorA.set(data.color), scratch.colorB.set('#4b5563'), stress);
             targetOpacity = 0.7 - (stress * 0.4);
           }
         } else {
@@ -265,25 +246,25 @@ function BrainPart({ data, selected, hasSelection, stressLevel, isExploded, isMi
   return (
     <group 
       ref={groupRef}
-      onClick={(e: any) => {
+      onClick={(e: ThreeEvent<MouseEvent>) => {
         e.stopPropagation();
         onClick();
       }}
-      onPointerOver={(e: any) => {
+      onPointerOver={(e: ThreeEvent<PointerEvent>) => {
         e.stopPropagation();
         setHover(true);
         document.body.style.cursor = 'pointer';
       }}
-      onPointerOut={(e: any) => {
+      onPointerOut={(e: ThreeEvent<PointerEvent>) => {
         e.stopPropagation();
         setHover(false);
         document.body.style.cursor = 'auto';
       }}
     >
-      <primitive object={meshes} />
+      <primitive object={geometry.group} />
       
       {(selected || hovered || isExploded) && data.id !== 'context' && (
-        <Html position={[labelCenter.x, labelCenter.y, labelCenter.z]} center zIndexRange={[100, 0]}>
+        <Html position={[geometry.labelCenter.x, geometry.labelCenter.y, geometry.labelCenter.z]} center zIndexRange={[100, 0]}>
           <div className="px-2 py-1 rounded bg-black/80 text-white text-xs font-bold whitespace-nowrap backdrop-blur-sm border border-white/20 pointer-events-none">
             {data.title}
           </div>
@@ -354,6 +335,98 @@ function BrainFlowNetwork({ partIds, activeStep, isExploded }: { partIds: BrainP
   );
 }
 
+interface BrainVisualSettings {
+  ambientIntensity: number;
+  dirIntensity: number;
+  dirColor: string;
+  sparkColor: string;
+  sparkSpeed: number;
+  sparkCount: number;
+  sparkScale: number;
+  sparkNoise: number;
+}
+
+function withMotionPreference(
+  settings: BrainVisualSettings,
+  prefersReducedMotion: boolean,
+): BrainVisualSettings {
+  return prefersReducedMotion ? { ...settings, sparkSpeed: 0 } : settings;
+}
+
+function getBrainVisualSettings(
+  activeDisorder: DisorderId | null,
+  isMedicated: boolean,
+  isMindfulness: boolean,
+  stressLevel: number,
+  prefersReducedMotion: boolean,
+): BrainVisualSettings {
+  if (activeDisorder && isMedicated) {
+    const disorder = disordersData[activeDisorder];
+    return withMotionPreference({
+      ambientIntensity: (disorder.ambientIntensity + 0.7) / 2,
+      dirIntensity: (disorder.dirIntensity + 1.0) / 2,
+      dirColor: '#ecfdf5',
+      sparkColor: '#34d399',
+      sparkSpeed: disorder.sparkles.speed * 0.15,
+      sparkCount: Math.floor(disorder.sparkles.count * 0.15),
+      sparkScale: disorder.sparkles.scale * 0.7,
+      sparkNoise: disorder.sparkles.noise * 0.3,
+    }, prefersReducedMotion);
+  }
+
+  if (activeDisorder) {
+    const disorder = disordersData[activeDisorder];
+    return withMotionPreference({
+      ambientIntensity: disorder.ambientIntensity,
+      dirIntensity: disorder.dirIntensity,
+      dirColor: disorder.dirColor,
+      sparkColor: disorder.sparkles.color,
+      sparkSpeed: disorder.sparkles.speed * 0.5,
+      sparkCount: Math.floor(disorder.sparkles.count * 0.3),
+      sparkScale: disorder.sparkles.scale,
+      sparkNoise: disorder.sparkles.noise,
+    }, prefersReducedMotion);
+  }
+
+  if (isMindfulness) {
+    return withMotionPreference({
+      ambientIntensity: 0.8,
+      dirIntensity: 0.8,
+      dirColor: '#dbeafe',
+      sparkColor: '#93c5fd',
+      sparkSpeed: 0.02,
+      sparkCount: 30,
+      sparkScale: 1,
+      sparkNoise: 1,
+    }, prefersReducedMotion);
+  }
+
+  if (isMedicated) {
+    return withMotionPreference({
+      ambientIntensity: 0.7,
+      dirIntensity: 1.0,
+      dirColor: '#ecfdf5',
+      sparkColor: '#34d399',
+      sparkSpeed: 0.05,
+      sparkCount: 25,
+      sparkScale: 1,
+      sparkNoise: 1,
+    }, prefersReducedMotion);
+  }
+
+  const stress = stressLevel / 100;
+  return withMotionPreference({
+    ambientIntensity: 0.6 - stress * 0.4,
+    dirIntensity: 1.2 + stress * 0.8,
+    dirColor: stressLevel > 50 ? '#fee2e2' : '#ffffff',
+    sparkColor: stressLevel > 50 ? '#ef4444' : '#fbbf24',
+    sparkSpeed: 0.1 + stress * 0.5,
+    sparkCount: 15 + Math.floor(stress * 30),
+    sparkScale: 1,
+    sparkNoise: 1,
+  }, prefersReducedMotion);
+}
+
 interface BrainModelProps {
   onSelectPart: (partId: BrainPartId) => void;
   selectedPartId: BrainPartId | null;
@@ -373,7 +446,7 @@ export function BrainModel({ onSelectPart, selectedPartId, stressLevel, isExplod
   const groupRef = useRef<THREE.Group>(null);
   const prefersReducedMotion = useMemo(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches, []);
 
-  useFrame((state: any) => {
+  useFrame((state) => {
     if (!prefersReducedMotion && groupRef.current && !selectedPartId && stressLevel === 0 && !isMindfulness && !activeDisorder && !isMedicated) {
       groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.1) * 0.1;
     }
@@ -382,66 +455,22 @@ export function BrainModel({ onSelectPart, selectedPartId, stressLevel, isExplod
   const globalScale = 0.05;
   const brainParts = Object.values(brainPartsData);
 
-  // Default lights
-  let ambientIntensity = 0.6;
-  let dirIntensity = 1.2;
-  let dirColor = new THREE.Color("#ffffff");
-  
-  let sparkColor = '#fbbf24';
-  let sparkSpeed = 0.1;
-  let sparkCount = 20; // Reduzido drasticamente para placas fracas
-  let sparkScale = 1;
-  let sparkNoise = 1;
-
-  if (activeDisorder && disordersData[activeDisorder] && isMedicated) {
-    // Fármaco simulado sobre um transtorno ativo: a ambiência deve suavizar visivelmente,
-    // não ficar presa no clima "opressivo" do transtorno (senão o botão não parece fazer nada).
-    const disorder = disordersData[activeDisorder];
-    ambientIntensity = (disorder.ambientIntensity + 0.7) / 2;
-    dirIntensity = (disorder.dirIntensity + 1.0) / 2;
-    dirColor.set("#ecfdf5");
-
-    sparkColor = '#34d399';
-    sparkSpeed = disorder.sparkles.speed * 0.15;
-    sparkCount = Math.floor(disorder.sparkles.count * 0.15);
-    sparkScale = disorder.sparkles.scale * 0.7;
-    sparkNoise = disorder.sparkles.noise * 0.3;
-  } else if (activeDisorder && disordersData[activeDisorder]) {
-    const disorder = disordersData[activeDisorder];
-    ambientIntensity = disorder.ambientIntensity;
-    dirIntensity = disorder.dirIntensity;
-    dirColor.set(disorder.dirColor);
-
-    sparkColor = disorder.sparkles.color;
-    sparkSpeed = disorder.sparkles.speed * 0.5;
-    sparkCount = Math.floor(disorder.sparkles.count * 0.3); // 30% do original
-    sparkScale = disorder.sparkles.scale;
-    sparkNoise = disorder.sparkles.noise;
-  } else if (isMindfulness) {
-    ambientIntensity = 0.8;
-    dirIntensity = 0.8;
-    dirColor.set("#dbeafe");
-    sparkColor = '#93c5fd';
-    sparkSpeed = 0.02;
-    sparkCount = 30;
-  } else if (isMedicated) {
-    ambientIntensity = 0.7;
-    dirIntensity = 1.0;
-    dirColor.set("#ecfdf5"); // emerald tint
-    sparkColor = '#34d399'; // calm green
-    sparkSpeed = 0.05;
-    sparkCount = 25;
-  } else {
-    // Stress normal calculation
-    ambientIntensity = 0.6 - (stressLevel / 100) * 0.4;
-    dirIntensity = 1.2 + (stressLevel / 100) * 0.8;
-    if (stressLevel > 50) dirColor.set("#fee2e2");
-
-    sparkColor = stressLevel > 50 ? '#ef4444' : '#fbbf24';
-    sparkSpeed = 0.1 + (stressLevel / 100) * 0.5;
-    sparkCount = 15 + Math.floor((stressLevel / 100) * 30);
-  }
-  if (prefersReducedMotion) sparkSpeed = 0;
+  const {
+    ambientIntensity,
+    dirIntensity,
+    dirColor,
+    sparkColor,
+    sparkSpeed,
+    sparkCount,
+    sparkScale,
+    sparkNoise,
+  } = getBrainVisualSettings(
+    activeDisorder,
+    isMedicated,
+    isMindfulness,
+    stressLevel,
+    prefersReducedMotion,
+  );
 
   // Córtex opacity based on selection
   const cortexOpacity = isExploded ? 0.1 : (selectedPartId ? 0.15 : 0.3);

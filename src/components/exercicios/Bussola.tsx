@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useExerciseSession } from "@/hooks/useExerciseSession";
+import { shuffleWith } from "./exerciseState";
 
 type Fase = "ranking" | "resultado";
 
@@ -9,7 +10,7 @@ const VALORES_INICIAIS = ["Saúde", "Relacionamentos", "Trabalho", "Criatividade
 export default function Bussola() {
   const { save, complete } = useExerciseSession("bussola-valores");
   const [fase, setFase] = useState<Fase>("ranking");
-  const [ranking, setRanking] = useState<string[]>([...VALORES_INICIAIS].sort(() => Math.random() - 0.5));
+  const [ranking, setRanking] = useState<string[]>(() => shuffleWith(VALORES_INICIAIS, Math.random));
 
   const handleMove = (item: string, direction: "up" | "down") => {
     const idx = ranking.indexOf(item);

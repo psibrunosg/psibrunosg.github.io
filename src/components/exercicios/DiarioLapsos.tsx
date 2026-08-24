@@ -10,7 +10,6 @@ interface Lapso {
   reacao: string;
   consequencia: string;
   licao: string;
-  [key: string]: any;
 }
 
 export default function DiarioLapsos() {
@@ -25,7 +24,7 @@ export default function DiarioLapsos() {
 
   const handleFinalizar = () => {
     if (!lapso.disparador.trim() || !lapso.reacao.trim() || !lapso.licao.trim()) return;
-    save(lapso);
+    save({ ...lapso });
     complete(100);
     setFase("resultado");
   };

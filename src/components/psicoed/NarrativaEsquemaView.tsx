@@ -1,7 +1,20 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { Sparkles, ArrowDown, Heart, Footprints } from "lucide-react";
+import type { ReactNode } from "react";
 import type { NarrativaEsquema } from "@/content/psicoed/narrativas-esquemas";
 import { necessidades } from "@/content/psicoed/narrativas-esquemas";
+
+function Elo({ children, corDot }: { children: ReactNode; corDot: string }) {
+  return (
+    <div className="flex gap-3">
+      <div className="flex flex-col items-center pt-1">
+        <span className="h-2.5 w-2.5 flex-shrink-0 rounded-full" style={{ background: corDot }} />
+        <span className="my-1 w-px flex-1" style={{ borderLeft: "2px dashed var(--c-border)" }} />
+      </div>
+      <div className="pb-5">{children}</div>
+    </div>
+  );
+}
 
 // Renderiza uma narrativa de esquema desdobrada: história da criança (espinha),
 // as "linhas" conectando necessidade → esquema → modo → gatilho (profundidade),
@@ -11,16 +24,6 @@ export function NarrativaEsquemaView({ n, escore }: { n: NarrativaEsquema; escor
   const reduced = useReducedMotion();
   const necessidade = necessidades[n.dominioId];
   const revelar = { hidden: reduced ? {} : { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } };
-
-  const Elo = ({ children, corDot }: { children: React.ReactNode; corDot: string }) => (
-    <div className="flex gap-3">
-      <div className="flex flex-col items-center pt-1">
-        <span className="h-2.5 w-2.5 flex-shrink-0 rounded-full" style={{ background: corDot }} />
-        <span className="my-1 w-px flex-1" style={{ borderLeft: "2px dashed var(--c-border)" }} />
-      </div>
-      <div className="pb-5">{children}</div>
-    </div>
-  );
 
   return (
     <motion.div

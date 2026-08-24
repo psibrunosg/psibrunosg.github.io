@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, Suspense, useRef } from "react";
+import React, { useState, useEffect, Suspense, useRef } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, BookOpen, AlertCircle, Loader2, Activity, Maximize2, Minimize2, Flower2, Link as LinkIcon, Wind, Stethoscope, Pill, Target, CheckCircle2, XCircle, Brain, Map, ChevronLeft, ChevronRight } from "lucide-react";
 import { Canvas } from "@react-three/fiber";
@@ -11,17 +11,25 @@ import { contato } from "@/content/copy";
 import { BrainModel } from "@/components/3d/BrainModel";
 import { brainPartsData, disordersData, guidedToursData, type BrainPartId, type DisorderId, type GuidedTourId } from "@/content/neuroanatomia";
 
-class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: any}> {
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: unknown;
+}
+
+class ErrorBoundary extends React.Component<{children: React.ReactNode}, ErrorBoundaryState> {
   constructor(props: {children: React.ReactNode}) {
     super(props);
     this.state = { hasError: false, error: null };
   }
-  static getDerivedStateFromError(error: any) {
+  static getDerivedStateFromError(error: unknown) {
     return { hasError: true, error };
   }
   render() {
     if (this.state.hasError) {
-      return <div className="p-4 bg-red-500 text-white"><h1 className="font-bold">Algo quebrou no 3D:</h1><pre>{this.state.error?.toString()}</pre></div>;
+      const message = this.state.error instanceof Error
+        ? this.state.error.message
+        : String(this.state.error ?? 'Erro desconhecido');
+      return <div className="p-4 bg-red-500 text-white"><h1 className="font-bold">Algo quebrou no 3D:</h1><pre>{message}</pre></div>;
     }
     return this.props.children;
   }
@@ -36,7 +44,7 @@ const navItems = [
 ];
 
 function CameraManager({ selectedPartId, flowPartIds, flowStep }: { selectedPartId: BrainPartId | null, flowPartIds: BrainPartId[], flowStep: number }) {
-  const controlsRef = useRef<any>(null);
+  const controlsRef = useRef<React.ElementRef<typeof CameraControls>>(null);
 
   useEffect(() => {
     if (controlsRef.current) {

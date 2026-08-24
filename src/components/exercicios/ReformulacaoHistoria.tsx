@@ -8,7 +8,6 @@ interface Historia {
   original: string;
   crenca: string;
   reformulada: string;
-  [key: string]: any;
 }
 
 export default function ReformulacaoHistoria() {
@@ -23,7 +22,7 @@ export default function ReformulacaoHistoria() {
 
   const handleFinalizar = () => {
     if (!historia.crenca.trim() || !historia.reformulada.trim()) return;
-    save(historia);
+    save({ ...historia });
     complete(100);
     setFase("resultado");
   };

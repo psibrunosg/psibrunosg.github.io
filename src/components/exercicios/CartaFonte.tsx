@@ -8,7 +8,6 @@ interface Carta {
   figura: string;
   conteudo: string;
   aprendizado: string;
-  [key: string]: any;
 }
 
 export default function CartaFonte() {
@@ -23,7 +22,7 @@ export default function CartaFonte() {
 
   const handleFinalizar = () => {
     if (!carta.conteudo.trim() || !carta.aprendizado.trim()) return;
-    save(carta);
+    save({ ...carta });
     complete(100);
     setFase("resultado");
   };

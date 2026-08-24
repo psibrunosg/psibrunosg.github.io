@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { RotateCcw } from "lucide-react";
 import { useExerciseSession } from "@/hooks/useExerciseSession";
+import { createMatchingGameState, type MatchingCard } from "./exerciseState";
 
 const PARES = [
   { esquerda: "Catastrofização", direita: 'Pensamento: "Tudo vai dar errado"' },
@@ -12,42 +13,31 @@ const PARES = [
   { esquerda: "Filtro mental", direita: "Foco só no negativo" },
 ];
 
-interface Carta {
-  id: string;
-  tipo: "esquerda" | "direita";
-  texto: string;
-  virada: boolean;
-  acertada: boolean;
-  pairIdx: number;
-}
+const MATCHING_PAIRS = PARES.map((pair) => ({
+  left: pair.esquerda,
+  right: pair.direita,
+}));
+const INITIAL_GAME = createMatchingGameState(MATCHING_PAIRS, Math.random);
 
 export default function ParesMente() {
   const { complete } = useExerciseSession("pares-mente");
-  const [cartas, setCartas] = useState<Carta[]>([]);
-  const [selecionadas, setSelecionadas] = useState<string[]>([]);
-  const [acertadas, setAcertadas] = useState(0);
-  const [score, setScore] = useState(0);
-
-  useEffect(() => {
-    iniciarJogo();
-  }, []);
+  const [cartas, setCartas] = useState<MatchingCard[]>(INITIAL_GAME.cards);
+  const [selecionadas, setSelecionadas] = useState<string[]>(INITIAL_GAME.selectedIds);
+  const [acertadas, setAcertadas] = useState(INITIAL_GAME.matchedPairs);
+  const [score, setScore] = useState(INITIAL_GAME.score);
 
   const iniciarJogo = () => {
-    const novasCartas: Carta[] = [];
-    PARES.forEach((par, idx) => {
-      novasCartas.push({ id: `l${idx}`, tipo: "esquerda", texto: par.esquerda, virada: false, acertada: false, pairIdx: idx });
-      novasCartas.push({ id: `r${idx}`, tipo: "direita", texto: par.direita, virada: false, acertada: false, pairIdx: idx });
-    });
-    setCartas(novasCartas.sort(() => Math.random() - 0.5));
-    setSelecionadas([]);
-    setAcertadas(0);
-    setScore(0);
+    const game = createMatchingGameState(MATCHING_PAIRS, Math.random);
+    setCartas(game.cards);
+    setSelecionadas(game.selectedIds);
+    setAcertadas(game.matchedPairs);
+    setScore(game.score);
   };
 
   const handleClick = (id: string) => {
     // Bloqueia 3º clique enquanto o par atual está sendo avaliado
     if (selecionadas.length >= 2) return;
-    if (selecionadas.includes(id) || cartas.find((c) => c.id === id)?.acertada) return;
+    if (selecionadas.includes(id) || cartas.find((c) => c.id === id)?.matched) return;
 
     const novaSelecionada = [...selecionadas, id];
     setSelecionadas(novaSelecionada);
@@ -57,12 +47,12 @@ export default function ParesMente() {
       const carta1 = cartas.find((c) => c.id === id1)!;
       const carta2 = cartas.find((c) => c.id === id2)!;
 
-      if (carta1.pairIdx === carta2.pairIdx) {
+      if (carta1.pairIndex === carta2.pairIndex) {
         // Acertou
         setTimeout(() => {
           setCartas((prev) =>
             prev.map((c) =>
-              c.id === id1 || c.id === id2 ? { ...c, acertada: true } : c
+              c.id === id1 || c.id === id2 ? { ...c, matched: true } : c
             )
           );
           setAcertadas((a) => {
@@ -100,18 +90,18 @@ export default function ParesMente() {
             key={carta.id}
             onClick={() => handleClick(carta.id)}
             className={`aspect-square rounded-xl font-semibold text-xs p-2 text-center transition-all ${
-              carta.acertada
+              carta.matched
                 ? "bg-green-500/20 text-green-700 cursor-default"
                 : selecionadas.includes(carta.id)
                   ? "bg-[var(--c-accent)] text-[var(--c-on-accent)]"
                   : "bg-[var(--c-border)] text-[var(--c-muted)] hover:bg-[var(--c-accent)]/30"
             }`}
-            disabled={carta.acertada || completado}
-            whileHover={!carta.acertada && !selecionadas.includes(carta.id) ? { scale: 1.05 } : {}}
-            whileTap={!carta.acertada && !selecionadas.includes(carta.id) ? { scale: 0.95 } : {}}
+            disabled={carta.matched || completado}
+            whileHover={!carta.matched && !selecionadas.includes(carta.id) ? { scale: 1.05 } : {}}
+            whileTap={!carta.matched && !selecionadas.includes(carta.id) ? { scale: 0.95 } : {}}
           >
-            {selecionadas.includes(carta.id) || carta.acertada ? (
-              <div className="break-words leading-tight">{carta.texto}</div>
+            {selecionadas.includes(carta.id) || carta.matched ? (
+              <div className="break-words leading-tight">{carta.text}</div>
             ) : (
               "?"
             )}

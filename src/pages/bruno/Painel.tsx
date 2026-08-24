@@ -501,15 +501,25 @@ function PainelCorrelacoes({ correls }: { correls: Correlacao[] }) {
 // seus padrões"). Decisão clínica: nada liberado por padrão; revelar escore
 // nomeado ao paciente nasce desligado. Resolve/cria o paciente_id (mesma lógica
 // da Conceituação) e faz upsert em paciente_psicoed.
+function PsicoedSwitch({ on, onToggle, disabled }: { on: boolean; onToggle: () => void; disabled?: boolean }) {
+  return (
+    <button onClick={onToggle} disabled={disabled}
+      className="relative h-6 w-11 flex-shrink-0 rounded-full transition-colors disabled:opacity-50"
+      style={{ background: on ? "var(--c-accent)" : "var(--c-border)" }} aria-pressed={on}>
+      <span className="absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all" style={{ left: on ? "22px" : "2px" }} />
+    </button>
+  );
+}
+
 function ControlePsicoedPaciente({ patientCode, nome, nascimento }: { patientCode?: string; nome?: string | null; nascimento?: string }) {
   const [pacienteId, setPacienteId] = useState<number | null>(null);
   const [liberado, setLiberado] = useState(false);
   const [revelar, setRevelar] = useState(false);
-  const [carregando, setCarregando] = useState(true);
+  const [carregando, setCarregando] = useState(Boolean(supabase));
   const [salvando, setSalvando] = useState(false);
 
   useEffect(() => {
-    if (!supabase) { setCarregando(false); return; }
+    if (!supabase) return;
     let cancel = false;
     (async () => {
       // Resolve o paciente na tabela âncora (cria se não existir).
@@ -556,14 +566,6 @@ function ControlePsicoedPaciente({ patientCode, nome, nascimento }: { patientCod
 
   if (!supabase) return null;
 
-  const Switch = ({ on, onToggle, disabled }: { on: boolean; onToggle: () => void; disabled?: boolean }) => (
-    <button onClick={onToggle} disabled={disabled}
-      className="relative h-6 w-11 flex-shrink-0 rounded-full transition-colors disabled:opacity-50"
-      style={{ background: on ? "var(--c-accent)" : "var(--c-border)" }} aria-pressed={on}>
-      <span className="absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all" style={{ left: on ? "22px" : "2px" }} />
-    </button>
-  );
-
   return (
     <motion.div variants={fadeUp} className="glass-card mb-6 rounded-2xl p-5">
       <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-[var(--c-accent)]">Psicoeducação personalizada</p>
@@ -578,14 +580,14 @@ function ControlePsicoedPaciente({ patientCode, nome, nascimento }: { patientCod
               <p className="text-sm font-medium text-[var(--c-text)]">Liberar território "De onde vêm seus padrões"</p>
               <p className="mt-0.5 text-xs text-[var(--c-muted)]">Ao ligar, o paciente (com o código dele) vê a jornada ajustada aos esquemas ativos no YSQ dele.</p>
             </div>
-            <Switch on={liberado} disabled={salvando} onToggle={() => salvar({ liberado: !liberado })} />
+            <PsicoedSwitch on={liberado} disabled={salvando} onToggle={() => salvar({ liberado: !liberado })} />
           </div>
           <div className={`flex items-start justify-between gap-4 border-t border-[var(--c-border)] pt-4 ${liberado ? "" : "opacity-50"}`}>
             <div>
               <p className="text-sm font-medium text-[var(--c-text)]">Revelar o escore/nome do esquema</p>
               <p className="mt-0.5 text-xs text-[var(--c-muted)]">Desligado: o paciente vê a narrativa sem o escore cru. Ligue só quando fizer sentido clínico para este paciente.</p>
             </div>
-            <Switch on={revelar} disabled={salvando || !liberado} onToggle={() => salvar({ revelar: !revelar })} />
+            <PsicoedSwitch on={revelar} disabled={salvando || !liberado} onToggle={() => salvar({ revelar: !revelar })} />
           </div>
         </div>
       )}
@@ -746,7 +748,7 @@ export default function BrunoPainel() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
-  const [loginLoading, setLoginLoading] = useState(true);
+  const [loginLoading, setLoginLoading] = useState(Boolean(supabase));
   const [tab, setTab] = useState<"overview" | "respostas" | "pacientes" | "blog" | "ferramentas" | "formularios">("overview");
   const [respView, setRespView] = useState<"lista" | "pacientes">("lista");
   // ponytail: busca/filtros/ordenação da lista de respostas — estado local simples, sem lib de tabela.
@@ -805,7 +807,6 @@ export default function BrunoPainel() {
     document.documentElement.setAttribute("data-theme", "lobo");
     document.title = "Painel | Bruno de Souza Gonçalves";
     if (!supabase) {
-      setLoginLoading(false);
       return () => { document.documentElement.removeAttribute("data-theme"); document.documentElement.removeAttribute("data-mode"); };
     }
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -1361,10 +1362,11 @@ export default function BrunoPainel() {
                 if (busca.trim() && !nomeSeguro(r).toLowerCase().includes(busca.trim().toLowerCase())) return false;
                 return true;
               }).sort((a, b) => {
-                let cmp = 0;
-                if (sortKey === "paciente") cmp = nomeSeguro(a).localeCompare(nomeSeguro(b));
-                else if (sortKey === "score") cmp = a.pontuacao - b.pontuacao;
-                else cmp = new Date(a.criado_em).getTime() - new Date(b.criado_em).getTime();
+                const cmp = sortKey === "paciente"
+                  ? nomeSeguro(a).localeCompare(nomeSeguro(b))
+                  : sortKey === "score"
+                    ? a.pontuacao - b.pontuacao
+                    : new Date(a.criado_em).getTime() - new Date(b.criado_em).getTime();
                 return sortDir === "asc" ? cmp : -cmp;
               });
 

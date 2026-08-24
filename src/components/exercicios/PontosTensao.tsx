@@ -10,7 +10,6 @@ interface Ponto {
   acao: string;
   custo: string;
   alternativa: string;
-  [key: string]: any;
 }
 
 export default function PontosTensao() {

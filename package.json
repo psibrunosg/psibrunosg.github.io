@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "check:neuro-models": "node scripts/check-neuro-models.mjs",
+    "check:repo-hygiene": "node scripts/check-repo-hygiene.mjs",
     "test:watch": "vitest"
   },
   "dependencies": {

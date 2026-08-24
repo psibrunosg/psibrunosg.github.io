@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, type PanInfo } from "framer-motion";
 import { useExerciseSession } from "@/hooks/useExerciseSession";
 
 const PREOCUPACOES = [
@@ -74,7 +74,7 @@ export default function ChuvaPreocupacoes() {
     return () => clearInterval(spawnInterval);
   }, [gameState]);
 
-  const handleDragEnd = (id: string, info: any) => {
+  const handleDragEnd = (id: string, info: PanInfo) => {
     const preoc = preocupacoes.find((p) => p.id === id);
     if (!preoc) return;
 

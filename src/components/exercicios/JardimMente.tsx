@@ -1,13 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Calendar } from "lucide-react";
-
-interface Planta {
-  slug: string;
-  estagio: number; // 0-5 (semente, broto, folhas, flores, fruto, árvore)
-  ultimaRega: string; // ISO
-  sessoesConcluidas: number;
-}
+import { daysSinceWatering, parseGardenSnapshot } from "./exerciseState";
 
 const ESTAGIOS = [
   { emoji: "🌱", desc: "Semente" },
@@ -34,50 +28,14 @@ const NOMES: Record<string, string> = {
   "conecte-abc": "Conecte A-B-C",
 };
 
+const JARDIM_REFERENCE_TIME = Date.now();
+
 export default function JardimMente() {
-  const [plantas, setPlantas] = useState<Planta[]>([]);
-  const [totalSessoes, setTotalSessoes] = useState(0);
-
-  // Jardim real: cada sessão concluída (via useExerciseSession.complete) grava uma "rega" em jardim_regas.
-  // Uma planta por exercício praticado; estágio cresce com o nº de sessões concluídas.
-  useEffect(() => {
-    let regas: Array<{ slug: string; data: string }> = [];
-    try {
-      regas = JSON.parse(localStorage.getItem("jardim_regas") || "[]");
-    } catch {
-      regas = [];
-    }
-
-    const porSlug = new Map<string, { count: number; ultima: string }>();
-    for (const r of regas) {
-      const atual = porSlug.get(r.slug);
-      if (!atual) {
-        porSlug.set(r.slug, { count: 1, ultima: r.data });
-      } else {
-        porSlug.set(r.slug, {
-          count: atual.count + 1,
-          ultima: r.data > atual.ultima ? r.data : atual.ultima,
-        });
-      }
-    }
-
-    const novasPlantas: Planta[] = Array.from(porSlug.entries()).map(([slug, info]) => ({
-      slug,
-      estagio: Math.min(5, info.count - 1),
-      ultimaRega: info.ultima,
-      sessoesConcluidas: info.count,
-    }));
-    novasPlantas.sort((a, b) => b.sessoesConcluidas - a.sessoesConcluidas);
-
-    setPlantas(novasPlantas);
-    setTotalSessoes(regas.length);
-  }, []);
-
-  const calcularDiasDesdeRega = (iso: string) => {
-    const diff = Date.now() - new Date(iso).getTime();
-    if (Number.isNaN(diff)) return 0;
-    return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
-  };
+  const [snapshot] = useState(() => (
+    parseGardenSnapshot(localStorage.getItem("jardim_regas"))
+  ));
+  const plantas = snapshot.plants;
+  const totalSessoes = snapshot.totalSessions;
 
   return (
     <div className="space-y-4">
@@ -104,8 +62,8 @@ export default function JardimMente() {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4" role="list">
             {plantas.map((planta) => {
-              const estagio = ESTAGIOS[planta.estagio];
-              const diasDesdeRega = calcularDiasDesdeRega(planta.ultimaRega);
+              const estagio = ESTAGIOS[planta.stage];
+              const diasDesdeRega = daysSinceWatering(planta.lastWateredAt, JARDIM_REFERENCE_TIME);
               const saudavel = diasDesdeRega < 14;
 
               return (
@@ -121,7 +79,7 @@ export default function JardimMente() {
                     {NOMES[planta.slug] ?? planta.slug}
                   </p>
                   <p className="text-[9px] text-[var(--c-muted)] mt-1">
-                    {estagio.desc} · {planta.sessoesConcluidas} {planta.sessoesConcluidas === 1 ? "sessão" : "sessões"}
+                    {estagio.desc} · {planta.completedSessions} {planta.completedSessions === 1 ? "sessão" : "sessões"}
                   </p>
 
                   <div className="mt-2 flex items-center justify-center gap-1 text-[9px] text-[var(--c-muted)]">

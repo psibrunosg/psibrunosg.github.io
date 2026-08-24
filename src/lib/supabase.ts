@@ -153,7 +153,8 @@ export async function deletarFormularioAnonimo(id: string) {
 
 export async function getFormularioAnonimo(id: string) {
   if (!supabase) return { error: { message: "Supabase nao configurado" }, data: null };
-  return supabase.from("formularios_anonimos").select("*").eq("id", id).single();
+  const { data, error } = await supabase.from("formularios_anonimos").select("*").eq("id", id).single();
+  return { data: data as FormularioAnonimoDB | null, error };
 }
 
 export async function enviarRespostaFormularioAnonimo(resposta: Omit<RespostaFormularioAnonimoDB, "id" | "criado_em">) {

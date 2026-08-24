@@ -6,6 +6,13 @@ interface BadgeProps {
   mensagem?: string;
 }
 
+const CORES_CONFETE = ["var(--c-accent)", "var(--c-accent-lt)", "#E5C687"];
+const PARTICULAS_CONFETE = Array.from({ length: 14 }, (_, index) => ({
+  x: (index * 37 + 11) % 100,
+  delay: ((index * 3) % 5) / 10,
+  color: CORES_CONFETE[index % CORES_CONFETE.length],
+}));
+
 /**
  * Celebração leve de conclusão de módulo. Tom de constância, nunca de
  * "melhora clínica" (restrição do CFP) — apenas reconhece que a pessoa
@@ -51,26 +58,18 @@ export default function Badge({
 
 // Confete leve com CSS/motion, sem dependências externas.
 function ConfeteLeve() {
-  const cores = ["var(--c-accent)", "var(--c-accent-lt)", "#E5C687"];
-  const particulas = Array.from({ length: 14 });
-
   return (
     <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-      {particulas.map((_, i) => {
-        const x = Math.random() * 100;
-        const delay = Math.random() * 0.4;
-        const cor = cores[i % cores.length];
-        return (
-          <motion.span
-            key={i}
-            initial={{ opacity: 0, y: -20, x: `${x}%` }}
-            animate={{ opacity: [0, 1, 0], y: 140 }}
-            transition={{ duration: 1.4, delay, ease: "easeOut" }}
-            className="absolute top-0 w-1.5 h-1.5 rounded-full"
-            style={{ backgroundColor: cor }}
-          />
-        );
-      })}
+      {PARTICULAS_CONFETE.map((particle, index) => (
+        <motion.span
+          key={index}
+          initial={{ opacity: 0, y: -20, x: `${particle.x}%` }}
+          animate={{ opacity: [0, 1, 0], y: 140 }}
+          transition={{ duration: 1.4, delay: particle.delay, ease: "easeOut" }}
+          className="absolute top-0 w-1.5 h-1.5 rounded-full"
+          style={{ backgroundColor: particle.color }}
+        />
+      ))}
     </div>
   );
 }

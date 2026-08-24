@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useExerciseSession } from "@/hooks/useExerciseSession";
 
 /**
@@ -12,11 +12,7 @@ import { useExerciseSession } from "@/hooks/useExerciseSession";
  */
 export function useProgresso(moduloId: string) {
   const session = useExerciseSession(`psicoed:${moduloId}`);
-  const [hasCode, setHasCode] = useState(false);
-
-  useEffect(() => {
-    setHasCode(!!localStorage.getItem("exercise_patient_code"));
-  }, []);
+  const [hasCode] = useState(() => !!localStorage.getItem("exercise_patient_code"));
 
   return { ...session, hasCode };
 }

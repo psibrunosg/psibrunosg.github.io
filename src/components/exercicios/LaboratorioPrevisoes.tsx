@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Plus, CheckCircle2, XCircle } from "lucide-react";
 import { useExerciseSession } from "@/hooks/useExerciseSession";
+import { nextAvailableId, selectPersistedArray } from "./exerciseState";
 
 interface Previsao {
   id: string;
@@ -11,39 +12,40 @@ interface Previsao {
   notasResultado?: string;
 }
 
+const TODAY = new Date().toISOString().slice(0, 10);
+
+function formatDatePtBr(date: string) {
+  const [year, month, day] = date.split("-");
+  return year && month && day ? `${day}/${month}/${year}` : date;
+}
+
 export default function LaboratorioPrevisoes() {
-  const { state, loading, save, complete } = useExerciseSession("lab-previsoes");
-  const [previsoes, setPrevisoes] = useState<Previsao[]>([]);
+  const { state, save, complete } = useExerciseSession("lab-previsoes");
+  const [localPrevisoes, setLocalPrevisoes] = useState<Previsao[] | null>(null);
   const [novaPrevisao, setNovaPrevisao] = useState("");
   const [dataPrazo, setDataPrazo] = useState("");
-  const [modo, setModo] = useState<"registrar" | "revisar">("registrar");
-
-  // Retoma previsões salvas (localStorage/DB) — o Laboratório só funciona com retorno ao longo do tempo
-  useEffect(() => {
-    if (loading) return;
-    const salvas = state.payload?.previsoes as Previsao[] | undefined;
-    if (salvas && salvas.length > 0) {
-      setPrevisoes(salvas);
-      // Se há previsões vencidas sem resultado, abre direto na revisão
-      const hoje = new Date().toISOString().slice(0, 10);
-      if (salvas.some((p) => !p.resultado && p.data <= hoje)) {
-        setModo("revisar");
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading]);
+  const [modoOverride, setModoOverride] = useState<"registrar" | "revisar" | null>(null);
+  const previsoes = selectPersistedArray<Previsao>(localPrevisoes, state.payload?.previsoes);
+  const modo = modoOverride
+    ?? (previsoes.some((previsao) => !previsao.resultado && previsao.data <= TODAY)
+      ? "revisar"
+      : "registrar");
 
   const persistir = (novas: Previsao[]) => {
-    setPrevisoes(novas);
+    setLocalPrevisoes(novas);
     save({ previsoes: novas });
   };
 
   const handleRegistrar = () => {
     if (!novaPrevisao.trim() || !dataPrazo) return;
+    const id = nextAvailableId(
+      previsoes.map((previsao) => previsao.id),
+      `${dataPrazo}:${novaPrevisao}`,
+    );
     persistir([
       ...previsoes,
       {
-        id: Date.now().toString(),
+        id,
         texto: novaPrevisao,
         data: dataPrazo,
       },
@@ -73,7 +75,7 @@ export default function LaboratorioPrevisoes() {
         {(["registrar", "revisar"] as const).map((m) => (
           <button
             key={m}
-            onClick={() => setModo(m)}
+            onClick={() => setModoOverride(m)}
             className={`px-4 py-2 rounded-full font-semibold text-sm transition-all ${
               modo === m
                 ? "bg-[var(--c-accent)] text-[var(--c-on-accent)]"
@@ -136,12 +138,12 @@ export default function LaboratorioPrevisoes() {
 
           {/* Previsões */}
           {previsoes.map((pred) => {
-            const vencida = !pred.resultado && pred.data <= new Date().toISOString().slice(0, 10);
+            const vencida = !pred.resultado && pred.data <= TODAY;
             return (
             <motion.div key={pred.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`glass-card rounded-lg p-3 ${vencida ? "border-l-4" : ""}`} style={vencida ? { borderLeftColor: "var(--c-accent)" } : undefined}>
               <p className="text-xs font-semibold text-[var(--c-text)] mb-1">{pred.texto}</p>
               <p className="text-[10px] text-[var(--c-muted)] mb-2">
-                Prazo: {new Date(`${pred.data}T12:00:00`).toLocaleDateString("pt-BR")}
+                Prazo: {formatDatePtBr(pred.data)}
                 {vencida && <span className="ml-2 font-semibold text-[var(--c-accent)]">• Hora de testar: o que aconteceu de verdade?</span>}
               </p>
 

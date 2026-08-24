@@ -7,3 +7,5 @@ supabase/.temp/
 video/out/
 .worktrees/
 .superpowers/
+.claude-flow/
+graphify-out/

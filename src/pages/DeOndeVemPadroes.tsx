@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Sprout, ChevronDown, Loader2, KeyRound } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { MobileMenu } from "@/components/ui/MobileMenu";
 import { EthicalFooter } from "@/components/shared/EthicalFooter";
 import { SkipLink } from "@/components/shared/SkipLink";
@@ -34,7 +34,8 @@ function narrativaPorId(id: string): NarrativaEsquema | undefined {
 
 export default function DeOndeVemPadroes() {
   const [abertoId, setAbertoId] = useState<string | null>(null);
-  const [codigo, setCodigo] = useState("");
+  const [codigo, setCodigo] = useState(() => localStorage.getItem("exercise_patient_code") ?? "");
+  const [codigoInicial] = useState(codigo);
   const [buscando, setBuscando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [perso, setPerso] = useState<Personalizacao | null>(null);
@@ -45,14 +46,7 @@ export default function DeOndeVemPadroes() {
     return () => document.documentElement.removeAttribute("data-theme");
   }, []);
 
-  // Se já houver um código salvo (fluxo do paciente), tenta personalizar sozinho.
-  useEffect(() => {
-    const salvo = localStorage.getItem("exercise_patient_code");
-    if (salvo) { setCodigo(salvo); void personalizar(salvo); }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  async function personalizar(cod: string) {
+  const personalizar = useCallback(async (cod: string) => {
     const c = cod.trim();
     if (!c || !supabase) return;
     setBuscando(true);
@@ -67,7 +61,14 @@ export default function DeOndeVemPadroes() {
     } finally {
       setBuscando(false);
     }
-  }
+  }, []);
+
+  // Se já houver um código salvo (fluxo do paciente), tenta personalizar sozinho.
+  useEffect(() => {
+    if (codigoInicial) {
+      void Promise.resolve().then(() => personalizar(codigoInicial));
+    }
+  }, [codigoInicial, personalizar]);
 
   // Esquemas ativos do paciente (quando liberado), na ordem retornada pela função.
   const ativos = useMemo(() => {

@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useExerciseSession } from "@/hooks/useExerciseSession";
+import { selectPersistedArray } from "./exerciseState";
 
 type Fase = "adicionar" | "colecao";
 
@@ -8,28 +9,21 @@ interface Forca {
   adversidade: string;
   comoLidou: string;
   recurso: string;
-  [key: string]: any;
 }
 
 export default function CofreForças() {
-  const { state, loading, save, complete } = useExerciseSession("cofre-forcas");
+  const { state, save, complete } = useExerciseSession("cofre-forcas");
   const [fase, setFase] = useState<Fase>("adicionar");
-  const [forcas, setForcas] = useState<Forca[]>([]);
+  const [localForcas, setLocalForcas] = useState<Forca[] | null>(null);
   const [nova, setNova] = useState<Forca>({ adversidade: "", comoLidou: "", recurso: "" });
-
-  // Um cofre que esvazia a cada visita não é um cofre: retoma a coleção salva
-  useEffect(() => {
-    if (loading) return;
-    const salvas = state.payload?.forcas as Forca[] | undefined;
-    if (salvas && salvas.length > 0) setForcas(salvas);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading]);
+  const forcas = selectPersistedArray<Forca>(localForcas, state.payload?.forcas);
 
   const handleAdicionar = () => {
     if (nova.adversidade.trim() && nova.comoLidou.trim() && nova.recurso.trim()) {
-      setForcas([...forcas, nova]);
+      const novasForcas = [...forcas, nova];
+      setLocalForcas(novasForcas);
       setNova({ adversidade: "", comoLidou: "", recurso: "" });
-      save({ forcas: [...forcas, nova] });
+      save({ forcas: novasForcas });
     }
   };
 

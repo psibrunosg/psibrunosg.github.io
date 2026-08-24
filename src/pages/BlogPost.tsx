@@ -5,9 +5,10 @@ import { useState, useEffect, useMemo, useRef, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { Element as HastElement } from "hast";
-import { RichBlock, LINGUAGENS_RICAS } from "@/components/blog/RichBlock";
+import { RichBlock } from "@/components/blog/RichBlock";
+import { LINGUAGENS_RICAS } from "@/components/blog/richBlockLanguages";
 import { GlossarioTermo } from "@/components/blog/GlossarioTermo";
-import { getPost, loadDynamicPosts, isDynamicLoaded, type BlogPost as BlogPostType } from "@/content/posts-loader";
+import { getPost, loadDynamicPosts, isDynamicLoaded } from "@/content/posts-loader";
 import { areaDe } from "@/content/areas-blog";
 import { GLOSSARIO } from "@/content/glossario";
 import { MobileMenu } from "@/components/ui/MobileMenu";
@@ -119,10 +120,11 @@ const CALLOUTS: Record<string, { Icon: typeof KeyRound }> = {
 
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
-  const [post, setPost] = useState<BlogPostType | undefined>(() => slug ? getPost(slug) : undefined);
-  const [loading, setLoading] = useState(!post);
+  const [, refreshCatalog] = useState(0);
   const [progresso, setProgresso] = useState(0);
   const artigoRef = useRef<HTMLDivElement>(null);
+  const post = slug ? getPost(slug) : undefined;
+  const loading = Boolean(slug && !post && !isDynamicLoaded());
 
   const area = areaDe(post?.area ?? undefined);
   const cor = area?.cor ?? "var(--c-accent)";
@@ -137,20 +139,18 @@ export default function BlogPost() {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
-    if (post) {
-      document.title = post.titulo + " | Bruno de Souza Gonçalves Psicologo";
-      setLoading(false);
-    } else if (slug && !isDynamicLoaded()) {
-      loadDynamicPosts().then(() => {
-        const found = getPost(slug);
-        setPost(found);
-        setLoading(false);
-      });
-    } else {
-      setLoading(false);
-    }
+    if (post) document.title = post.titulo + " | Bruno de Souza Gonçalves Psicologo";
     return () => document.documentElement.removeAttribute("data-theme");
-  }, [slug, post]);
+  }, [post]);
+
+  useEffect(() => {
+    if (!slug || post || isDynamicLoaded()) return;
+    let cancelled = false;
+    void loadDynamicPosts().finally(() => {
+      if (!cancelled) refreshCatalog((version) => version + 1);
+    });
+    return () => { cancelled = true; };
+  }, [post, slug]);
 
   useEffect(() => {
     function onScroll() {

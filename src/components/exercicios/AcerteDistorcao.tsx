@@ -18,6 +18,7 @@ const EQUILIBRADOS = [
   "Posso aprender com erros",
 ];
 
+type PensamentoBase = string | (typeof DISTORCOES)[number];
 type GameState = "ready" | "playing" | "finished";
 
 export default function AcerteDistorcao() {
@@ -33,7 +34,7 @@ export default function AcerteDistorcao() {
     const interval = setInterval(() => {
       const isDistorcao = Math.random() > 0.3;
       const baseList = isDistorcao ? DISTORCOES : EQUILIBRADOS;
-      const texto = baseList[Math.floor(Math.random() * baseList.length)] as any;
+      const texto = baseList[Math.floor(Math.random() * baseList.length)] as PensamentoBase;
       const desc = typeof texto === "string" ? texto : texto.desc;
       const id = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 
