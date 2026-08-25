@@ -94,9 +94,10 @@ body {
 .hero-bg {
     position: absolute;
     inset: -10%;
-    background-image: url('/img/hero-bg.jpg');
-    background-size: cover;
-    background-position: center 40%;
+    width: 120%;
+    height: 120%;
+    object-fit: cover;
+    object-position: center 40%;
     will-change: transform;
 }
 

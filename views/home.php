@@ -1,6 +1,6 @@
 <!-- HERO -->
 <section class="hero">
-    <div class="hero-bg" id="hero-bg"></div>
+    <video class="hero-bg" id="hero-bg" src="/video/hero-bg.mp4" autoplay loop muted playsinline poster="/img/hero-bg.jpg"></video>
     <div class="hero-overlay"></div>
 
     <div class="hero-content">
