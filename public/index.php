@@ -1,4 +1,12 @@
 <?php
+// Se rodando via servidor embutido do PHP, serve arquivos estáticos normalmente (CSS, JS, Imagens)
+if (php_sapi_name() === 'cli-server') {
+    $file = __DIR__ . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    if (is_file($file)) {
+        return false;
+    }
+}
+
 $request = $_SERVER['REQUEST_URI'];
 $path = parse_url($request, PHP_URL_PATH);
 
