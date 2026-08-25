@@ -1,0 +1,50 @@
+services:
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./:/var/www/html
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - php
+    networks:
+      - proxy-network
+      - portal-network
+    command: >
+      sh -c "exec nginx -g 'daemon off;'"
+
+  php:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.php
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=portal
+      - DB_USER=portal
+      - DB_PASS=portal
+    depends_on:
+      - postgres
+    networks:
+      - portal-network
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=portal
+      - POSTGRES_USER=portal
+      - POSTGRES_PASSWORD=portal
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    networks:
+      - portal-network
+
+volumes:
+  postgres_data:
+
+networks:
+  proxy-network:
+    external: true
+    name: proxy-network
+  portal-network:
+    driver: bridge
