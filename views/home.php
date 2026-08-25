@@ -1,10 +1,9 @@
 <!-- HERO -->
 <section class="hero">
-    <div class="hero-bg"></div>
+    <div class="hero-bg" id="hero-bg"></div>
     <div class="hero-overlay"></div>
 
     <div class="hero-content">
-        <p class="hero-eyebrow">Psicólogo Clínico · Bruno Souza</p>
         <h1>Compreender a própria mente é o primeiro passo para cuidar dela.</h1>
         <p>Este portal é um espaço seguro dedicado à saúde mental — pautado na ciência, na transparência e na empatia. Aqui você encontra ferramentas para se conhecer melhor e caminhos para quando precisar de apoio.</p>
         <a href="#ferramentas" class="hero-cta">Explorar o portal ↓</a>
