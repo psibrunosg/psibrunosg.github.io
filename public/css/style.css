@@ -1,0 +1,84 @@
+:root {
+    --bg-light: #fdfbf7;
+    --gold: #d4af37;
+    --text-main: #2c3e50;
+    --text-muted: #5c6b73;
+}
+body {
+    background-color: var(--bg-light);
+    background-image: url('/img/golden-clouds-bg.jpg');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+    color: var(--text-main);
+    font-family: system-ui, -apple-system, sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+.hero {
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+    background: radial-gradient(circle at center, rgba(253, 251, 247, 0.7) 0%, rgba(253, 251, 247, 0.95) 100%);
+}
+h1 {
+    font-family: 'Georgia', serif;
+    font-size: 3.5rem;
+    font-weight: 400;
+    margin-bottom: 1rem;
+    color: var(--text-main);
+}
+p.subtitle {
+    font-size: 1.25rem;
+    max-width: 650px;
+    color: var(--text-muted);
+    line-height: 1.8;
+}
+.grid {
+    display: flex;
+    gap: 2rem;
+    padding: 4rem 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    background: rgba(253, 251, 247, 0.9);
+}
+.card {
+    background: #ffffff;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    padding: 2.5rem;
+    border-radius: 8px;
+    width: 320px;
+    transition: all 0.5s ease;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+.card:hover {
+    border-color: var(--gold);
+    box-shadow: 0 8px 24px rgba(212, 175, 55, 0.15);
+    transform: translateY(-5px);
+}
+.card h2 {
+    font-family: 'Georgia', serif;
+    color: var(--gold);
+    margin-top: 0;
+    font-size: 1.5rem;
+}
+.card p {
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+.fade-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 1s ease, transform 1s ease;
+}
+.fade-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
