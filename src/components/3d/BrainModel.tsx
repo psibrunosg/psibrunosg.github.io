@@ -15,7 +15,7 @@ const usedUrls = new Set(Object.values(brainPartsData).flatMap(part => part.urls
 const corticalMarkers = ['gyrus', 'lobule', 'cuneus', 'precuneus', 'operculum', 'pole.obj', 'entorhinal area', 'subiculum', 'uncus'];
 const cortexUrls = allModelPaths.filter(url => !usedUrls.has(url) && corticalMarkers.some(marker => url.toLowerCase().includes(marker)));
 const atlasCenter: [number, number, number] = [0, -79.82, 1556.34];
-const flowAnchors: Record<BrainPartId, [number, number, number]> = {
+const flowAnchors: Partial<Record<BrainPartId, [number, number, number]>> = {
   prefrontal: [31.9, -111.66, 1588.49],
   amygdala: [22.9, -100.93, 1534.68],
   hippocampus: [25.5, -81.02, 1537.53],
@@ -27,7 +27,7 @@ const flowAnchors: Record<BrainPartId, [number, number, number]> = {
   motor_cortex: [31.7, -72.11, 1593.62],
   somatosensory: [33.9, -56.07, 1593.8],
   putamen: [25.3, -96.95, 1558.49],
-  context: [9.9, -76.26, 1506.43],
+  brainstem: [9.9, -76.26, 1506.43],
 };
 
 // Componente para o Córtex Completo
@@ -263,7 +263,7 @@ function BrainPart({ data, selected, hasSelection, stressLevel, isExploded, isMi
     >
       <primitive object={geometry.group} />
       
-      {(selected || hovered || isExploded) && data.id !== 'context' && (
+      {(selected || hovered || isExploded) && (
         <Html position={[geometry.labelCenter.x, geometry.labelCenter.y, geometry.labelCenter.z]} center zIndexRange={[100, 0]}>
           <div className="px-2 py-1 rounded bg-black/80 text-white text-xs font-bold whitespace-nowrap backdrop-blur-sm border border-white/20 pointer-events-none">
             {data.title}
@@ -278,23 +278,29 @@ function FlowSegment({ from, to, active, index }: { from: BrainPartId, to: Brain
   const dotRef = useRef<THREE.Mesh>(null);
   const prefersReducedMotion = useMemo(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches, []);
   const curve = useMemo(() => {
-    const start = new THREE.Vector3(...flowAnchors[from]);
-    const end = new THREE.Vector3(...flowAnchors[to]);
+    const startAnchor = flowAnchors[from];
+    const endAnchor = flowAnchors[to];
+    if (!startAnchor || !endAnchor) return null;
+
+    const start = new THREE.Vector3(...startAnchor);
+    const end = new THREE.Vector3(...endAnchor);
     const mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
     mid.x += 12;
     mid.z += 35;
     return new THREE.QuadraticBezierCurve3(start, mid, end);
   }, [from, to]);
-  const points = useMemo(() => curve.getPoints(36), [curve]);
+  const points = useMemo(() => curve?.getPoints(36) ?? [], [curve]);
   const dotPosition = useMemo(() => new THREE.Vector3(), []);
 
   useFrame((state) => {
-    if (dotRef.current) {
+    if (dotRef.current && curve) {
       const progress = prefersReducedMotion ? 0.5 : (state.clock.elapsedTime * 0.18 + index * 0.2) % 1;
       curve.getPointAt(progress, dotPosition);
       dotRef.current.position.copy(dotPosition);
     }
   });
+
+  if (!curve) return null;
 
   return (
     <group>
@@ -509,11 +515,7 @@ export function BrainModel({ onSelectPart, selectedPartId, stressLevel, isExplod
             activeDisorder={activeDisorder}
             quizTarget={quizTarget}
             quizHint={quizHint}
-            onClick={() => {
-              if (part.id !== 'context') {
-                onSelectPart(part.id);
-              }
-            }}
+            onClick={() => onSelectPart(part.id)}
           />
         ))}
         {/* Renderiza o córtex de fundo, se habilitado */}

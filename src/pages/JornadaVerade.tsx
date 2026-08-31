@@ -166,8 +166,8 @@ export default function JornadaVerade() {
           )
           .fromTo(
             `${secao} .verade-texto > *`,
-            { opacity: 0, y: 24 },
-            { opacity: 1, y: 0, duration: 0.55, stagger: 0.08, ease: "power2.out" },
+            { opacity: 0, y: 32, filter: "blur(10px)" },
+            { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.8, stagger: 0.12, ease: "power3.out" },
             0.15,
           );
       });
@@ -247,8 +247,14 @@ export default function JornadaVerade() {
                 style={{
                   background: isFinal
                     ? "linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.05) 100%)"
-                    : "linear-gradient(180deg, rgba(10,10,15,0.55) 0%, rgba(10,10,15,0.4) 50%, rgba(10,10,15,0.65) 100%)",
+                    : "linear-gradient(180deg, rgba(10,10,15,0.7) 0%, rgba(10,10,15,0.5) 50%, rgba(10,10,15,0.8) 100%)",
                 }}
+              />
+              
+              {/* Ambient Glow dinâmico */}
+              <div 
+                 className="absolute inset-0 -z-[4] opacity-30 pointer-events-none transition-opacity duration-1000"
+                 style={{ background: `radial-gradient(circle at 60% 40%, ${cap.cor}33 0%, transparent 50%)` }}
               />
 
               <div className="relative z-10 max-w-5xl w-full grid md:grid-cols-2 gap-8 md:gap-12 items-center">

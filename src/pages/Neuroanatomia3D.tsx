@@ -134,9 +134,9 @@ export default function Neuroanatomia3D() {
         : isTherapyActive
           ? ['amygdala', 'prefrontal']
           : isMindfulness
-            ? ['context', 'insula', 'prefrontal', 'amygdala']
+            ? ['brainstem', 'insula', 'prefrontal', 'amygdala']
             : stressLevel > 0
-              ? ['amygdala', 'hypothalamus', 'context']
+              ? ['amygdala', 'hypothalamus', 'brainstem']
               : [],
     [activeTour, activeDisorder, isTherapyActive, isMindfulness, stressLevel]
   );

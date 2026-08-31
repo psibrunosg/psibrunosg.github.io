@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(rtk tsc *)"
+      "Bash(rtk tsc *)",
+      "mcp__fe76111e-7ab4-4be0-bfae-c8cb5558a26f__balance"
     ]
   }
 }

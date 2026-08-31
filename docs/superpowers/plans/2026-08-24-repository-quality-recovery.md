@@ -743,7 +743,7 @@ Inspect full diffs for every modified quality file. Confirm:
 - the staged cleanup deletion set remains the approved one;
 - no generated `dist/`, `out/`, log, cache, or secret is staged.
 
-## Task 11: Stage the allowlisted patch, reverify it, and create the only commit
+## Task 11: Stage the allowlisted patch, reverify it, and create the only commit (Concluída)
 
 **Files:**
 

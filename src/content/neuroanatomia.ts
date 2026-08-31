@@ -1,4 +1,4 @@
-export type BrainPartId = 'prefrontal' | 'amygdala' | 'hippocampus' | 'hypothalamus' | 'cingulate' | 'insula' | 'caudate' | 'cerebellum' | 'motor_cortex' | 'somatosensory' | 'putamen' | 'context';
+export type BrainPartId = 'prefrontal' | 'orbitofrontal' | 'amygdala' | 'hippocampus' | 'hypothalamus' | 'cingulate' | 'insula' | 'caudate' | 'cerebellum' | 'motor_cortex' | 'somatosensory' | 'putamen' | 'temporal_lobe' | 'parietal_lobe' | 'occipital_lobe' | 'thalamus' | 'brainstem';
 
 export interface BrainPartData {
   id: BrainPartId;
@@ -16,13 +16,11 @@ export interface BrainPartData {
 export const brainPartsData: Record<BrainPartId, BrainPartData> = {
   prefrontal: {
     id: 'prefrontal',
-    title: "Córtex Pré-Frontal",
+    title: "Córtex Pré-Frontal (Dorsolateral)",
     description: "Sede das funções executivas, atenção sustentada, planejamento e controle inibitório (controle top-down).",
     role: "Inibe a resposta de medo da amígdala. Na ansiedade, perde força (hipoativação), reduzindo a capacidade de racionalizar medos. No TDAH, falha na inibição de impulsos.",
     color: "#3b82f6", 
     urls: [
-      '/models/FJ3801_BP58201_FMA72658_Left inferior frontal gyrus.obj',
-      '/models/FJ3802_BP58213_FMA72657_Right inferior frontal gyrus.obj',
       '/models/FJ3839_BP58174_FMA72656_Left middle frontal gyrus.obj',
       '/models/FJ3840_BP58164_FMA72655_Right middle frontal gyrus.obj',
       '/models/FJ3879_BP58158_FMA72654_Left superior frontal gyrus.obj',
@@ -32,6 +30,25 @@ export const brainPartsData: Record<BrainPartId, BrainPartData> = {
     cameraTarget: [0, -1.6, 1.6],
     cameraPosition: [0, 4, 8],
     explodePosition: [0, 30, 40] 
+  },
+  orbitofrontal: {
+    id: 'orbitofrontal',
+    title: "Córtex Orbitofrontal",
+    description: "Área fundamental para a regulação emocional, processamento de recompensas sociais e tomada de decisão baseada em valores.",
+    role: "Avalia riscos e recompensas de forma emocional. Lesões ou disfunções aqui geram impulsividade severa e perda de traquejo social.",
+    color: "#2563eb", // darker blue
+    urls: [
+      '/models/FJ3801_BP58201_FMA72658_Left inferior frontal gyrus.obj',
+      '/models/FJ3802_BP58213_FMA72657_Right inferior frontal gyrus.obj',
+      '/models/FJ7465_BP58083_FMA256200_Left anterior orbital gyrus.obj',
+      '/models/FJ7465M_BP58144_FMA256198_Right anterior orbital gyrus.obj',
+      '/models/FJ7466_BP58137_FMA72757_Left lateral orbital gyrus.obj',
+      '/models/FJ7466M_BP58089_FMA72756_Right lateral orbital gyrus.obj'
+    ],
+    modelCenter: [-0.75, -111.66, 1588.49],
+    cameraTarget: [0, -2.0, 1.0],
+    cameraPosition: [0, 2, 8],
+    explodePosition: [0, 10, 45]
   },
   amygdala: {
     id: 'amygdala',
@@ -183,13 +200,93 @@ export const brainPartsData: Record<BrainPartId, BrainPartData> = {
     cameraPosition: [-6, 0, 3],
     explodePosition: [-20, 0, 20]
   },
-  context: {
-    id: 'context',
-    title: "Tronco Cerebral",
-    description: "Conecta o encéfalo à medula espinhal.",
-    role: "Controla funções vitais autônomas, como respiração e batimentos cardíacos, que também se alteram drasticamente na ansiedade e pânico.",
+  temporal_lobe: {
+    id: 'temporal_lobe',
+    title: "Lobo Temporal",
+    description: "Processamento auditivo, compreensão da linguagem (Wernicke) e memória semântica.",
+    role: "Trabalha em conjunto com o hipocampo (que fica em seu interior) para guardar memórias de longo prazo e entender o significado das coisas.",
+    color: "#6366f1", // indigo
+    urls: [
+      '/models/MM267_BP58180_FMA72684_Left superior temporal gyrus.obj',
+      '/models/MM267M_BP58179_FMA72683_Right superior temporal gyrus.obj',
+      '/models/MM248_BP58186_FMA72686_Left middle temporal gyrus.obj',
+      '/models/MM248M_BP58190_FMA72685_Right middle temporal gyrus.obj',
+      '/models/MM268_BP58157_FMA72688_Left inferior temporal gyrus.obj',
+      '/models/MM268M_BP58203_FMA72687_Right inferior temporal gyrus.obj'
+    ],
+    modelCenter: [-0.65, -96.95, 1558.49],
+    cameraTarget: [5, -1.0, 0.0],
+    cameraPosition: [10, 0, 5],
+    explodePosition: [50, -10, 0]
+  },
+  parietal_lobe: {
+    id: 'parietal_lobe',
+    title: "Lobo Parietal",
+    description: "Integração sensorial multimodal, noção espacial e navegação.",
+    role: "Junta as peças: audição, visão e tato. Nos permite saber onde nosso corpo está e interagir com objetos ao redor.",
+    color: "#0284c7", // light blue
+    urls: [
+      '/models/MM247_BP58171_FMA72672_Left superior parietal lobule.obj',
+      '/models/MM247M_BP58216_FMA72671_Right superior parietal lobule.obj',
+      '/models/MM242_BP58129_FMA72670_Left angular gyrus.obj',
+      '/models/MM242M_BP58135_FMA72669_Right angular gyrus.obj',
+      '/models/MM250_BP58138_FMA72668_Left supramarginal gyrus.obj',
+      '/models/MM250M_BP58095_FMA72667_Right supramarginal gyrus.obj'
+    ],
+    modelCenter: [-0.65, -96.95, 1558.49],
+    cameraTarget: [0, 2.0, -1.0],
+    cameraPosition: [0, 10, -5],
+    explodePosition: [0, 50, -15]
+  },
+  occipital_lobe: {
+    id: 'occipital_lobe',
+    title: "Lobo Occipital",
+    description: "Centro de processamento visual primário do cérebro.",
+    role: "Decodifica formas, cores e movimento. Na hipervigilância, o cérebro direciona mais recursos para a visão a fim de varrer o ambiente por ameaças.",
+    color: "#d946ef", // fuchsia
+    urls: [
+      '/models/MM243_BP58184_FMA72680_Left cuneus.obj',
+      '/models/MM243M_BP58202_FMA72679_Right cuneus.obj',
+      '/models/MM245_BP58222_FMA72676_Left superior occipital gyrus.obj',
+      '/models/MM245M_BP58187_FMA72675_Right superior occipital gyrus.obj',
+      '/models/MM251_BP58200_FMA72678_Left lateral occipital gyrus.obj',
+      '/models/MM251M_BP58206_FMA72677_Right lateral occipital gyrus.obj',
+      '/models/MM252_BP58173_FMA72682_Left lingual gyrus.obj',
+      '/models/MM252M_BP58183_FMA72681_Right lingual gyrus.obj'
+    ],
+    modelCenter: [-0.65, -96.95, 1558.49],
+    cameraTarget: [0, 0.0, -4.0],
+    cameraPosition: [0, 2, -12],
+    explodePosition: [0, 0, -50]
+  },
+  thalamus: {
+    id: 'thalamus',
+    title: "Tálamo",
+    description: "A grande estação de retransmissão sensorial do cérebro.",
+    role: "Filtra e distribui quase todas as informações sensoriais (exceto olfato) para o córtex. Em traumas, pode falhar em filtrar estímulos, sobrecarregando o cérebro.",
+    color: "#fb923c", // orange
+    urls: [
+      '/models/FJ7548_BP58060_FMA73022_Left oral pulvinar nucleus.obj',
+      '/models/FJ7548M_BP58067_FMA73021_Right oral pulvinar nucleus.obj',
+      '/models/FJ7544_BP58070_FMA73032_Left inferior pulvinar nucleus.obj',
+      '/models/FJ7544M_BP58071_FMA73031_Right inferior pulvinar nucleus.obj',
+      '/models/FJ7540_BP58104_FMA73008_Parvicellular part of left medial dorsal nucleus.obj',
+      '/models/FJ7540M_BP58115_FMA73006_Parvicellular part of right medial dorsal nucleus.obj'
+    ],
+    modelCenter: [-0.65, -96.95, 1558.49],
+    cameraTarget: [0, 0.0, 0.0],
+    cameraPosition: [0, 2, 4],
+    explodePosition: [0, 5, -5]
+  },
+  brainstem: {
+    id: 'brainstem',
+    title: "Tronco Encefálico",
+    description: "Conecta o encéfalo à medula espinhal (Mesencéfalo, Ponte e Bulbo).",
+    role: "Controla funções vitais autônomas como respiração e batimentos cardíacos. É aqui que os sinais de pânico se traduzem em sintomas físicos viscerais.",
     color: "#e5e7eb", 
     urls: [
+      '/models/FJ3865_BP58281_FMA61993_Midbrain.obj',
+      '/models/FJ3824_BP58281_FMA61993_Midbrain.obj',
       '/models/FJ3828_BP58274_FMA67943_Pons.obj',
       '/models/FJ3869_BP58274_FMA67943_Pons.obj',
       '/models/FJ3823_BP58279_FMA62004_Medulla oblongata.obj',
@@ -250,7 +347,7 @@ export const guidedToursData: Record<GuidedTourId, GuidedTourData> = {
     description: 'Interocepção e catastrofização no cérebro.',
     steps: [
       {
-        partId: 'context',
+        partId: 'brainstem',
         title: '1. Alteração Fisiológica',
         content: 'O Tronco Cerebral regula funções autônomas. Por um leve estresse ou esforço, o coração bate mais rápido e a respiração acelera.'
       },

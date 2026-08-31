@@ -1,5 +1,6 @@
 import { Composition } from "remotion";
 import { PrivacaoEmocional } from "./compositions/PrivacaoEmocional";
+import { NeuroLutaFuga } from "./compositions/NeuroLutaFuga";
 
 const FPS = 30;
 const BEAT_FRAMES = 135; // ~4.5s por beat
@@ -13,6 +14,15 @@ export const RemotionRoot: React.FC = () => {
         id="PrivacaoEmocional"
         component={PrivacaoEmocional}
         durationInFrames={DURATION}
+        fps={FPS}
+        width={1080}
+        height={1080}
+        defaultProps={{}}
+      />
+      <Composition
+        id="NeuroLutaFuga"
+        component={NeuroLutaFuga}
+        durationInFrames={Math.round(FPS * 4.0) * 6 + 60} // 6 beats * 4.0s + respiro
         fps={FPS}
         width={1080}
         height={1080}

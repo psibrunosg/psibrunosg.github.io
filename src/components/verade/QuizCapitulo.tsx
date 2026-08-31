@@ -38,7 +38,14 @@ export default function QuizCapitulo({ capitulo, onAcerto, onReflexao, jaRespond
 
   if (reflexivo) {
     return (
-      <div className="rounded-2xl border border-[var(--c-border)] bg-[var(--c-surface)]/95 backdrop-blur-sm p-5 md:p-6 shadow-lg">
+      <div 
+        className="relative rounded-3xl border bg-black/40 backdrop-blur-2xl p-6 md:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden"
+        style={{ borderColor: `${cor}44`, boxShadow: `0 8px 32px -12px ${cor}33, inset 0 0 0 1px ${cor}22` }}
+      >
+        {/* Ambient glow inside card */}
+        <div className="absolute top-0 right-0 w-32 h-32 blur-[60px] opacity-20 pointer-events-none" style={{ backgroundColor: cor }} />
+        
+        <div className="relative z-10">
         <div className="flex items-center gap-2 mb-3">
           <Sparkles size={18} style={{ color: cor }} />
           <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: cor }}>
@@ -77,12 +84,20 @@ export default function QuizCapitulo({ capitulo, onAcerto, onReflexao, jaRespond
             Obrigado por olhar para dentro. A metacognição começa exatamente assim: notar quem está no comando.
           </motion.div>
         )}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="rounded-2xl border border-[var(--c-border)] bg-[var(--c-surface)]/95 backdrop-blur-sm p-5 md:p-6 shadow-lg">
+    <div 
+      className="relative rounded-3xl border bg-black/40 backdrop-blur-2xl p-6 md:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden"
+      style={{ borderColor: `${cor}44`, boxShadow: `0 8px 32px -12px ${cor}33, inset 0 0 0 1px ${cor}22` }}
+    >
+      {/* Ambient glow inside card */}
+      <div className="absolute -top-10 -right-10 w-40 h-40 blur-[70px] opacity-20 pointer-events-none" style={{ backgroundColor: cor }} />
+      
+      <div className="relative z-10">
       <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: cor }}>
         Quiz do capítulo
       </p>
@@ -106,8 +121,13 @@ export default function QuizCapitulo({ capitulo, onAcerto, onReflexao, jaRespond
               <button
                 onClick={() => handleEscolher(opcao.id)}
                 disabled={mostrar}
-                className={`w-full text-left p-4 rounded-xl border transition-colors flex items-start gap-3 ${corOpcao}`}
+                className={`group relative w-full text-left p-4 rounded-xl border transition-all duration-300 flex items-start gap-3 overflow-hidden ${corOpcao}`}
+                style={!mostrar ? { borderColor: 'rgba(255,255,255,0.1)' } : {}}
               >
+                {/* Glow on hover */}
+                {!mostrar && (
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-300 pointer-events-none" style={{ backgroundColor: cor }} />
+                )}
                 {mostrar && (
                   <span className="mt-0.5 flex-shrink-0">
                     {opcao.correto ? (
@@ -148,6 +168,7 @@ export default function QuizCapitulo({ capitulo, onAcerto, onReflexao, jaRespond
           {capitulo.recompensa.titulo}: {capitulo.recompensa.descricao}
         </motion.div>
       )}
+      </div>
     </div>
   );
 }

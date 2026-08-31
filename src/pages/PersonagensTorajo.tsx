@@ -192,8 +192,12 @@ export default function PersonagensTorajo() {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "lobo");
+    document.documentElement.setAttribute("data-mode", "noturno");
     document.title = "A Turma do Mundo Torajo | Psicoeducação | Bruno de Souza Gonçalves";
-    return () => document.documentElement.removeAttribute("data-theme");
+    return () => {
+      document.documentElement.removeAttribute("data-theme");
+      document.documentElement.removeAttribute("data-mode");
+    };
   }, []);
 
   return (
@@ -202,8 +206,14 @@ export default function PersonagensTorajo() {
       <MobileMenu items={navItems} crp={contato.crp} whatsappLink={contato.whatsappLink} />
       <WhatsAppFloat />
 
-      <main id="main" className="min-h-screen bg-[var(--c-bg)] pt-28 pb-24 px-6">
-        <div className="max-w-3xl mx-auto">
+      <main id="main" className="relative min-h-screen bg-[var(--c-bg-dark)] pt-28 pb-24 px-6 overflow-hidden">
+        {/* Background glow sutil baseado no personagem selecionado */}
+        <div 
+          className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full blur-[120px] -z-10 pointer-events-none transition-colors duration-1000 opacity-20"
+          style={{ backgroundColor: personagem.cor }} 
+        />
+        
+        <div className="max-w-3xl mx-auto relative z-10">
           <Link
             to="/psicoeducacao/mundos/torajo"
             className="inline-flex items-center gap-2 text-sm text-[var(--c-muted)] hover:text-[var(--c-accent)] transition-colors mb-12"
@@ -231,67 +241,104 @@ export default function PersonagensTorajo() {
           </motion.div>
 
           {/* Seletor de personagem */}
-          <div className="flex flex-wrap gap-3 mb-8">
-            {Object.values(personagens).map((p) => (
-              <button
-                key={p.id}
-                onClick={() => setSelecionado(p.id as PersonagemId)}
-                className="flex flex-col items-center gap-1.5 focus:outline-none"
-              >
-                <img
-                  src={p.imagem}
-                  alt={p.nome}
-                  className="w-16 h-16 rounded-full object-cover object-top border-2 transition-transform"
+          <div className="flex flex-wrap md:flex-nowrap gap-3 md:gap-4 mb-12 justify-center overflow-x-auto pb-2">
+            {Object.values(personagens).map((p) => {
+              const isSelected = selecionado === p.id;
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => setSelecionado(p.id as PersonagemId)}
+                  className="group relative flex flex-col items-center gap-2 focus:outline-none transition-all duration-300"
                   style={{
-                    borderColor: p.cor,
-                    transform: selecionado === p.id ? "scale(1.1)" : "scale(1)",
-                    boxShadow: selecionado === p.id ? `0 0 0 3px ${p.cor}33` : "none",
+                    transform: isSelected ? "scale(1.15) translateY(-4px)" : "scale(1)",
+                    opacity: isSelected ? 1 : 0.5,
                   }}
-                />
-                <span
-                  className="text-xs font-semibold"
-                  style={{ color: selecionado === p.id ? p.cor : "var(--c-muted)" }}
                 >
-                  {p.nome}
-                </span>
-              </button>
-            ))}
+                  {/* Glow effect for selected */}
+                  {isSelected && (
+                    <div 
+                      className="absolute inset-0 rounded-full blur-md opacity-40 -z-10" 
+                      style={{ backgroundColor: p.cor }}
+                    />
+                  )}
+                  <img
+                    src={p.imagem}
+                    alt={p.nome}
+                    className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover object-top border-2 transition-all duration-300 group-hover:opacity-100 shadow-xl"
+                    style={{
+                      borderColor: isSelected ? p.cor : "var(--c-border)",
+                      boxShadow: isSelected ? `0 0 20px -2px ${p.cor}88, inset 0 0 10px ${p.cor}44` : "none",
+                    }}
+                  />
+                  <span
+                    className="text-[10px] uppercase tracking-widest font-bold transition-colors"
+                    style={{ color: isSelected ? p.cor : "var(--c-muted)" }}
+                  >
+                    {p.nome}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           {/* Perfil do personagem selecionado */}
-          <div
+          <motion.div
             key={selecionado}
-            className="rounded-3xl border p-5 md:p-6 mb-10"
-            style={{ borderColor: `${personagem.cor}55`, background: `${personagem.cor}0d` }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="relative rounded-3xl overflow-hidden p-6 md:p-8 mb-16 backdrop-blur-2xl border"
+            style={{ 
+              borderColor: `${personagem.cor}33`, 
+              background: `linear-gradient(135deg, ${personagem.cor}15 0%, rgba(10,10,15,0.7) 100%)`,
+              boxShadow: `0 8px 32px -8px ${personagem.cor}22, inset 0 0 0 1px ${personagem.cor}11`
+            }}
           >
-            <p className="text-lg font-semibold mb-1" style={{ color: personagem.cor, fontFamily: "var(--font-heading)" }}>
-              {personagem.nome}
-            </p>
-            <p className="text-sm text-[var(--c-text)] mb-5">{perfis[selecionado]}</p>
+            {/* Subtle glow highlight on top left */}
+            <div className="absolute -top-16 -left-16 w-40 h-40 rounded-full blur-3xl opacity-20 pointer-events-none" style={{ backgroundColor: personagem.cor }} />
 
-            <div className="grid sm:grid-cols-2 gap-4">
-              {listas.map((lista) => {
-                const itens = lista.dados.filter((d) => d.personagem === selecionado);
-                if (itens.length === 0) return null;
-                return (
-                  <div key={lista.titulo}>
-                    <p className="text-[11px] uppercase tracking-widest font-semibold text-[var(--c-muted)] mb-1.5">
-                      {lista.titulo}
-                    </p>
-                    <ul className="space-y-1">
-                      {itens.map((item) => (
-                        <li key={item.id}>
-                          <Link to={lista.rota} className="text-sm text-[var(--c-text)] hover:underline">
-                            {item.titulo}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                );
-              })}
+            <div className="relative z-10">
+              <div className="flex items-center gap-4 mb-3">
+                <h2 className="text-2xl md:text-3xl font-bold tracking-tight" style={{ color: personagem.cor, fontFamily: "var(--font-heading)" }}>
+                  {personagem.nome}
+                </h2>
+                <div className="h-[1px] flex-1 opacity-20" style={{ background: `linear-gradient(to right, ${personagem.cor}, transparent)` }} />
+              </div>
+              
+              <p className="text-base text-[var(--c-text)]/90 mb-8 font-medium leading-relaxed max-w-2xl">
+                {perfis[selecionado]}
+              </p>
+
+              <div className="grid sm:grid-cols-2 gap-8">
+                {listas.map((lista) => {
+                  const itens = lista.dados.filter((d) => d.personagem === selecionado);
+                  if (itens.length === 0) return null;
+                  return (
+                    <div key={lista.titulo} className="space-y-3">
+                      <p className="text-[10px] uppercase tracking-[0.2em] font-bold" style={{ color: "var(--c-muted)" }}>
+                        {lista.titulo}
+                      </p>
+                      <ul className="space-y-2">
+                        {itens.map((item) => (
+                          <li key={item.id}>
+                            <Link 
+                              to={lista.rota} 
+                              className="group flex items-start gap-2 text-sm text-[var(--c-text)] hover:text-white transition-colors"
+                            >
+                              <span className="opacity-0 -ml-3 transition-all duration-300 group-hover:opacity-100 group-hover:ml-0 mt-0.5" style={{ color: personagem.cor }}>
+                                ✦
+                              </span>
+                              <span>{item.titulo}</span>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Pratique */}
           <div>
